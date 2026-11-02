@@ -25,6 +25,9 @@ services:
       Tlp__DiscordWebhookUrl: ${TLP_DISCORD_WEBHOOK:-}
       Tlp__BehindProxy: ${TLP_BEHIND_PROXY:-false}
       Tlp__GroupTorrents: ${TLP_GROUP_TORRENTS:-true}
+      # The room helper reaches Syncplay over the compose network.
+      Tlp__Syncplay__BotHost: syncplay
+      Tlp__Syncplay__RoomBot: ${TLP_ROOM_HELPER:-true}
     volumes:
       # Read-write so cleanup can delete old episodes. Put tonight's files here.
       - ${SHELF_DIR:-./shelf}:/shelf

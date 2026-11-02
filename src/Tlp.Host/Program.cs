@@ -18,6 +18,9 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<CleanupService>())
 builder.Services.AddSingleton<GroupTorrents>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<GroupTorrents>());
 builder.Services.AddHostedService<SyncplayProcess>();
+builder.Services.AddSingleton<ReadyBoard>();
+builder.Services.AddSingleton<RoomBot>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<RoomBot>());
 builder.Services.AddHttpClient<DiscordAnnouncer>();
 builder.Services.ConfigureHttpJsonOptions(o =>
 {
@@ -78,6 +81,29 @@ app.MapGet("/n/{token}/files/{index:int}/{name}", (string token, int index, stri
     var full = shelf.Resolve(night.Items[index].ShelfPath);
     if (full is null) return Results.NotFound();
     return Results.File(full, "application/octet-stream", night.Items[index].FileName, enableRangeProcessing: true);
+});
+
+// Viewer apps report their name and download progress here (see ViewerReport).
+app.MapPost("/n/{token}/status", async (HttpContext ctx, string token, NightStore store, ReadyBoard board) =>
+{
+    var night = store.FindByToken(token);
+    if (night is null) return Results.NotFound();
+    if (ctx.Request.ContentLength is > 64 * 1024) return Results.StatusCode(413);
+    ViewerReport? report;
+    try
+    {
+        using var reader = new StreamReader(ctx.Request.Body);
+        var body = await reader.ReadToEndAsync(ctx.RequestAborted);
+        if (body.Length > 64 * 1024) return Results.StatusCode(413);
+        report = PackJson.DeserializeReport(body);
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        return Results.BadRequest(new { error = "Not a viewer report." });
+    }
+    if (report is null) return Results.BadRequest(new { error = "Not a viewer report." });
+    var error = board.Record(night, report);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { error });
 });
 
 app.MapGet("/n/{token}", (string token, NightStore store, Shelf shelf, HashCache hashes, GroupTorrents torrents) =>
@@ -178,10 +204,32 @@ admin.MapPost("/nights/{id}/announce", async (string id, NightStore store, Disco
     }
 });
 
-admin.MapGet("/settings", (DiscordAnnouncer discord) => Results.Ok(new { discord = discord.Configured, groupTorrents = opts.GroupTorrents }));
+// Who's ready: download reports from viewer apps, and who's in the Syncplay room with which file.
+admin.MapGet("/nights/{id}/status", (string id, NightStore store, ReadyBoard board, RoomBot bot) =>
+{
+    var night = store.Nights.FirstOrDefault(n => n.Id == id);
+    if (night is null) return Results.NotFound();
+    return Results.Ok(NightStatus.Build(night, board.For(id), bot.Snapshot, DateTimeOffset.UtcNow));
+});
 
-admin.MapDelete("/nights/{id}", async (string id, NightStore store) =>
-    await store.RemoveAsync(id) ? Results.NoContent() : Results.NotFound());
+admin.MapPost("/nights/{id}/playlist", async (string id, bool? force, NightStore store, RoomBot bot) =>
+{
+    var night = store.Nights.FirstOrDefault(n => n.Id == id);
+    if (night is null) return Results.NotFound();
+    var push = bot.PushNowAsync(night, force ?? false);
+    var finished = await Task.WhenAny(push, Task.Delay(TimeSpan.FromSeconds(30)));
+    return finished == push
+        ? Results.Ok(new { message = push.Result })
+        : Results.Ok(new { message = "Syncplay isn't answering the room helper right now; it will keep trying." });
+});
+
+admin.MapGet("/settings", (DiscordAnnouncer discord) => Results.Ok(new { discord = discord.Configured, groupTorrents = opts.GroupTorrents, roomBot = opts.Syncplay.RoomBot }));
+
+admin.MapDelete("/nights/{id}", async (string id, NightStore store, ReadyBoard board) =>
+{
+    board.Forget(id);
+    return await store.RemoveAsync(id) ? Results.NoContent() : Results.NotFound();
+});
 
 admin.MapPost("/magnets/from-page", async (FromPageRequest req, PageFetcher fetcher, CancellationToken ct) =>
 {

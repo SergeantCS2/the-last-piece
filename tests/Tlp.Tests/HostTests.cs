@@ -31,6 +31,7 @@ public sealed class HostFixture : IDisposable
             b.UseSetting("Tlp:Syncplay:PublicHost", "sync.example.com");
             b.UseSetting("Tlp:Syncplay:Password", "pw");
             b.UseSetting("Tlp:CleanupInterval", "01:00:00");
+            b.UseSetting("Tlp:Syncplay:RoomBot", "false");
         });
     }
 

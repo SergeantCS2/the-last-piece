@@ -48,6 +48,7 @@ public class GroupTorrentTests
             b.UseSetting("Tlp:AdminToken", "t");
             b.UseSetting("Tlp:PublicBaseUrl", baseUrl);
             b.UseSetting("urls", baseUrl);
+            b.UseSetting("Tlp:Syncplay:RoomBot", "false");
         });
         factory.UseKestrel();
         factory.StartServer();

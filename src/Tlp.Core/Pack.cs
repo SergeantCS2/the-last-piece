@@ -18,6 +18,39 @@ public sealed record Pack
     public DateTimeOffset? StartsAt { get; init; }
     public required SyncplayInfo Syncplay { get; init; }
     public required IReadOnlyList<PackItem> Items { get; init; }
+    /// <summary>
+    /// Optional address where viewers post a <see cref="ViewerReport"/> (name and download progress),
+    /// so the host can see who's ready. Viewers can turn this off.
+    /// </summary>
+    public string? StatusUri { get; init; }
+}
+
+/// <summary>What a viewer tells the host: who they are and how far each file has got.</summary>
+public sealed record ViewerReport
+{
+    public const int MaxNameLength = 32;
+    public required string Name { get; init; }
+    /// <summary>The viewer app's version, for "who needs to update".</summary>
+    public string? App { get; init; }
+    public required IReadOnlyList<ViewerFileReport> Files { get; init; }
+}
+
+public sealed record ViewerFileReport
+{
+    public required string FileName { get; init; }
+    public required ViewerFileState State { get; init; }
+    /// <summary>0 to 100.</summary>
+    public int Percent { get; init; }
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ViewerFileState>))]
+public enum ViewerFileState
+{
+    [JsonStringEnumMemberName("missing")] Missing,
+    [JsonStringEnumMemberName("downloading")] Downloading,
+    [JsonStringEnumMemberName("checking")] Checking,
+    [JsonStringEnumMemberName("ready")] Ready,
+    [JsonStringEnumMemberName("failed")] Failed,
 }
 
 public sealed record SyncplayInfo
@@ -86,8 +119,11 @@ public static class PackJson
     // Reflection-free versions for the viewer app, which is trimmed to keep the download small.
     public static string SerializePack(Pack pack) => JsonSerializer.Serialize(pack, CoreJsonContext.Default.Pack);
     public static Pack? DeserializePack(string json) => JsonSerializer.Deserialize(json, CoreJsonContext.Default.Pack);
+    public static string SerializeReport(ViewerReport report) => JsonSerializer.Serialize(report, CoreJsonContext.Default.ViewerReport);
+    public static ViewerReport? DeserializeReport(string json) => JsonSerializer.Deserialize(json, CoreJsonContext.Default.ViewerReport);
 }
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(Pack))]
+[JsonSerializable(typeof(ViewerReport))]
 internal sealed partial class CoreJsonContext : JsonSerializerContext;

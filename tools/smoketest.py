@@ -189,6 +189,28 @@ async def expect_user(host: str, port: int, password: str | None, room: str, use
         await asyncio.sleep(2.0)
 
 
+async def expect_playlist(host: str, port: int, password: str | None, room: str, wait: float,
+                          files: list[str] | None) -> None:
+    """Join `room` and read the shared playlist the server sends on arrival.
+    Passes when it isn't empty (or equals `files`, if given). Retries until `wait` runs out.
+    Note: anyone watching in that room is paused when this checker leaves (Syncplay's pauseOnLeave)."""
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + wait
+    while True:
+        checker = await Viewer.connect(host, port, "playlist-check")
+        await checker.hello(room, password)
+        # The server sends the room's playlist just before its Hello reply.
+        change = await checker.wait_for("Set", lambda body: "playlistChange" in body)
+        got = change["playlistChange"].get("files") or []
+        await checker.close()
+        if got and (files is None or got == files):
+            print(f"PASS  room '{room}' playlist: {got}")
+            return
+        if loop.time() >= deadline:
+            raise AssertionError(f"room '{room}' playlist is {got}, expected {files or 'something'}")
+        await asyncio.sleep(3.0)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--host", default="127.0.0.1")
@@ -201,10 +223,17 @@ def main() -> int:
                         help="instead of the smoke test, wait until this user is in --room")
     parser.add_argument("--expect-file", action="store_true",
                         help="with --expect-user, also wait until that user's player has a file open")
+    parser.add_argument("--expect-playlist", action="store_true",
+                        help="instead of the smoke test, wait until --room has a shared playlist")
+    parser.add_argument("--playlist-files", default=None,
+                        help="with --expect-playlist, the exact files expected, separated by |")
     args = parser.parse_args()
 
     try:
-        if args.expect_user:
+        if args.expect_playlist:
+            files = args.playlist_files.split("|") if args.playlist_files else None
+            asyncio.run(expect_playlist(args.host, args.port, args.password, args.room, max(args.wait, 5), files))
+        elif args.expect_user:
             asyncio.run(expect_user(args.host, args.port, args.password, args.room, args.expect_user, max(args.wait, 10),
                                     args.expect_file))
         else:

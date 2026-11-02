@@ -44,6 +44,7 @@ public static class PackBuilder
                 Password = opts.Syncplay.Password,
             },
             Items = items,
+            StatusUri = $"{baseUrl}/n/{night.Token}/status",
         };
     }
 }

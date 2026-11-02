@@ -55,4 +55,15 @@ public sealed class SyncplayOptions
     /// </summary>
     public string? ServerCommand { get; set; }
     public string? ServerArguments { get; set; }
+
+    /// <summary>
+    /// The room helper: a quiet Syncplay connection that fills each night's shared playlist and
+    /// shows who's in the room on the admin page.
+    /// </summary>
+    public bool RoomBot { get; set; } = true;
+    /// <summary>Where the host app itself reaches Syncplay. "syncplay" in docker-compose, 127.0.0.1 for native installs.</summary>
+    public string BotHost { get; set; } = "127.0.0.1";
+    public string BotName { get; set; } = "TheLastPiece";
+    public string BotRoom { get; set; } = "_thelastpiece";
+    public TimeSpan BotPollInterval { get; set; } = TimeSpan.FromSeconds(15);
 }

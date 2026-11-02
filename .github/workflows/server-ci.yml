@@ -2,9 +2,9 @@ name: server
 
 on:
   push:
-    paths: ["server/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
+    paths: ["server/**", "src/Tlp.Host/**", "src/Tlp.Core/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
   pull_request:
-    paths: ["server/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
+    paths: ["server/**", "src/Tlp.Host/**", "src/Tlp.Core/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
   workflow_dispatch:
 
 jobs:
@@ -27,6 +27,22 @@ jobs:
       - name: Smoke test (join, pause sync, chat, wrong password)
         run: python3 ../tools/smoketest.py --password ci-password --room movienight --wait 60
 
+      - name: Start the host app too
+        run: |
+          mkdir -p shelf && head -c 100000 /dev/urandom > "shelf/Show - 01.mkv" && head -c 100000 /dev/urandom > "shelf/Show - 02.mkv"
+          sudo chown -R 1654 shelf
+          sed -i "s/^TLP_ADMIN_TOKEN=.*/TLP_ADMIN_TOKEN=ci-token/" .env
+          docker compose up -d --build host
+          for i in $(seq 60); do curl -fs localhost:8080/healthz && break; sleep 1; done
+
+      - name: Room helper puts a night's episodes in the shared playlist
+        run: |
+          curl -fs -H "Authorization: Bearer ci-token" -H "Content-Type: application/json" \
+            -d '{"title":"CI night","items":[{"shelfPath":"Show - 01.mkv"},{"shelfPath":"Show - 02.mkv"}]}' \
+            localhost:8080/api/admin/nights | tee night.json
+          python3 ../tools/smoketest.py --password ci-password --room movienight --expect-playlist \
+            --playlist-files "Show - 01.mkv|Show - 02.mkv" --wait 60
+
       - name: Server logs
         if: always()
-        run: docker compose logs syncplay
+        run: docker compose logs syncplay host
