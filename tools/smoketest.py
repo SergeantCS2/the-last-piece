@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""Smoke test for the movie night Syncplay server.
+
+Speaks Syncplay's line-delimited JSON protocol directly (no Syncplay client
+needed) and checks the things movie night depends on:
+
+  1. a wrong password is rejected
+  2. two viewers can join the same room
+  3. when one viewer pauses, the other is told (and by whom)
+  4. chat messages reach the other viewer (this is what mpv shows on screen)
+
+Usage:
+    python3 tools/smoketest.py --host 127.0.0.1 --port 8999 --password secret
+
+Exits 0 on success, 1 on the first failed check. Standard library only.
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import hashlib
+import json
+import sys
+
+PROTOCOL_VERSION = "1.7.6"  # what we claim to be; the server only uses it for feature gating
+
+
+class Viewer:
+    def __init__(self, name: str, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        self.name = name
+        self.reader = reader
+        self.writer = writer
+
+    @classmethod
+    async def connect(cls, host: str, port: int, name: str) -> "Viewer":
+        reader, writer = await asyncio.open_connection(host, port)
+        return cls(name, reader, writer)
+
+    async def send(self, message: dict) -> None:
+        self.writer.write((json.dumps(message) + "\r\n").encode("utf-8"))
+        await self.writer.drain()
+
+    async def hello(self, room: str, password: str | None) -> None:
+        hello: dict = {
+            "username": self.name,
+            "room": {"name": room},
+            "version": "1.2.255",
+            "realversion": PROTOCOL_VERSION,
+            "features": {"chat": True, "readiness": True, "sharedPlaylists": True},
+        }
+        if password:
+            # Syncplay clients send the MD5 hex of the password, not the password.
+            hello["password"] = hashlib.md5(password.encode("utf-8")).hexdigest()
+        await self.send({"Hello": hello})
+
+    async def wait_for(self, key: str, predicate=lambda body: True, timeout: float = 5.0) -> dict:
+        """Read messages until one has `key` and matches `predicate`."""
+
+        async def _loop() -> dict:
+            while True:
+                line = await self.reader.readline()
+                if not line:
+                    raise ConnectionError(f"{self.name}: server closed the connection")
+                message = json.loads(line.decode("utf-8"))
+                if "Error" in message and key != "Error":
+                    raise RuntimeError(f"{self.name}: server error: {message['Error']}")
+                # Answer server pings so the session looks like a real client.
+                if "State" in message and key != "State":
+                    await self._ack_state(message["State"])
+                    continue
+                if key in message and predicate(message[key]):
+                    return message[key]
+
+        return await asyncio.wait_for(_loop(), timeout)
+
+    async def _ack_state(self, state: dict) -> None:
+        ping = state.get("ping", {})
+        await self.send({
+            "State": {
+                "ping": {"latencyCalculation": ping.get("latencyCalculation", 0), "clientRtt": 0},
+            }
+        })
+
+    async def close(self) -> None:
+        self.writer.close()
+        try:
+            await self.writer.wait_closed()
+        except ConnectionError:
+            pass
+
+
+async def run(host: str, port: int, password: str | None, room: str) -> None:
+    def ok(msg: str) -> None:
+        print(f"PASS  {msg}")
+
+    # 1. Wrong password is rejected (only meaningful when the server has one).
+    if password:
+        intruder = await Viewer.connect(host, port, "intruder")
+        await intruder.hello(room, password + "-wrong")
+        error = await intruder.wait_for("Error")
+        assert "password" in error.get("message", "").lower(), error
+        await intruder.close()
+        ok("wrong password rejected")
+
+    # 2. Two viewers join the same room.
+    alice = await Viewer.connect(host, port, "alice")
+    await alice.hello(room, password)
+    hello = await alice.wait_for("Hello")
+    assert hello.get("room", {}).get("name") == room, hello
+    ok(f"alice joined room '{room}' (server {hello.get('realversion')})")
+
+    bob = await Viewer.connect(host, port, "bob")
+    await bob.hello(room, password)
+    await bob.wait_for("Hello")
+    ok("bob joined the same room")
+
+    await alice.send({"List": None})
+    listing = await alice.wait_for("List", lambda body: room in body and "bob" in body[room])
+    assert {"alice", "bob"} <= set(listing[room]), listing
+    ok("room lists both viewers")
+
+    # 3. Alice pauses at 42s; Bob should be told, attributed to Alice.
+    await alice.send({"State": {"playstate": {"position": 42.0, "paused": True, "doSeek": False}}})
+    state = await bob.wait_for(
+        "State",
+        lambda body: body.get("playstate", {}).get("paused") is True
+        and body.get("playstate", {}).get("setBy") == "alice",
+    )
+    ok(f"bob was paused by alice at {state['playstate']['position']:.1f}s")
+
+    # 4. Chat reaches the other viewer.
+    await alice.send({"Chat": "popcorn ready?"})
+    chat = await bob.wait_for("Chat", lambda body: body.get("message") == "popcorn ready?")
+    assert chat.get("username") == "alice", chat
+    ok("chat delivered to bob")
+
+    await alice.close()
+    await bob.close()
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8999)
+    parser.add_argument("--password", default=None)
+    parser.add_argument("--room", default="smoketest-temp")
+    args = parser.parse_args()
+
+    try:
+        asyncio.run(run(args.host, args.port, args.password, args.room))
+    except Exception as exc:  # noqa: BLE001 - report any failure plainly
+        print(f"FAIL  {type(exc).__name__}: {exc}")
+        return 1
+    print("All checks passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

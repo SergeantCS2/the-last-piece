@@ -1,0 +1,10 @@
+# The shelf: serves tonight's files, untouched, over HTTPS with a shared login.
+# mpv can play straight from these URLs (full original quality, all subtitle
+# and audio tracks), or friends can download ahead of time.
+{$SHELF_SITE::8080} {
+	basic_auth {
+		{$SHELF_USER} {$SHELF_PASSWORD_HASH}
+	}
+	root * /srv/shelf
+	file_server browse
+}

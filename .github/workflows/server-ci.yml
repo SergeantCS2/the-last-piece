@@ -1,0 +1,41 @@
+name: server
+
+on:
+  push:
+    paths: ["server/**", "tools/**", ".github/workflows/server-ci.yml"]
+  pull_request:
+    paths: ["server/**", "tools/**", ".github/workflows/server-ci.yml"]
+  workflow_dispatch:
+
+jobs:
+  smoketest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write a throwaway .env
+        run: |
+          cp .env.example .env
+          sed -i 's/^SYNCPLAY_PASSWORD=.*/SYNCPLAY_PASSWORD=ci-password/' .env
+
+      - name: Build and start the Syncplay server
+        run: docker compose up -d --build syncplay
+
+      - name: Wait for port 8999
+        run: |
+          for i in $(seq 1 30); do
+            (echo > /dev/tcp/127.0.0.1/8999) 2>/dev/null && exit 0
+            sleep 1
+          done
+          docker compose logs syncplay
+          exit 1
+
+      - name: Smoke test (join, pause sync, chat, wrong password)
+        run: python3 ../tools/smoketest.py --password ci-password --room movienight
+
+      - name: Server logs
+        if: always()
+        run: docker compose logs syncplay

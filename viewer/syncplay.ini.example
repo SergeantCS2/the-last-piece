@@ -1,0 +1,32 @@
+; Syncplay settings for movie night.
+; Windows: save as %APPDATA%\syncplay.ini   (paste %APPDATA% into Explorer's address bar)
+; Linux:   ~/.config/syncplay.ini
+; Anything left out falls back to Syncplay's defaults, and the Syncplay
+; window still opens first so you can check everything before connecting.
+
+[server_data]
+host = sync.example.com
+port = 8999
+; Leave blank and type it in the Syncplay window the first time.
+password =
+
+[client_settings]
+name = YourName
+room = movienight
+; The folder where you keep movie night files. Syncplay finds the playlist's
+; files here by filename, so keep the names exactly as shared.
+mediaSearchDirectories = ['C:\\Users\\YOU\\Videos\\MovieNight']
+sharedPlaylistEnabled = True
+; Lets the shared playlist play files straight from the host's shelf.
+onlySwitchToTrustedDomains = True
+trustedDomains = ['youtube.com', 'youtu.be', 'shelf.example.com']
+; If someone drops out, everyone pauses until they're back.
+pauseOnLeave = True
+
+[gui]
+; Chat typed in mpv (press Enter) and shown over the video.
+chatInputEnabled = True
+chatOutputEnabled = True
+; Scrolling = comments fly across the screen, niconico style.
+; Chatroom = stacked messages that fade out.
+chatOutputMode = Scrolling

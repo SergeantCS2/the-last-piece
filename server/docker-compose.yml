@@ -1,0 +1,40 @@
+# Movie night backend.
+#   docker compose up -d                      -> Syncplay server only
+#   docker compose --profile shelf up -d      -> plus the HTTPS file shelf
+services:
+  syncplay:
+    build: .
+    image: the-last-piece/syncplay-server:1.7.6
+    restart: unless-stopped
+    ports:
+      - "8999:8999"
+    env_file: .env
+    environment:
+      SYNCPLAY_ROOMS_DB: /data/rooms.db
+      SYNCPLAY_PERMANENT_ROOMS: /config/permanent-rooms.txt
+      SYNCPLAY_MOTD_FILE: /config/motd.txt
+      # Uncomment once you have certs (privkey.pem, cert.pem, chain.pem):
+      # SYNCPLAY_TLS_DIR: /certs
+    volumes:
+      - syncplay-data:/data
+      - ./motd.txt:/config/motd.txt:ro
+      - ./permanent-rooms.txt:/config/permanent-rooms.txt:ro
+      # - /etc/letsencrypt/live/sync.example.com:/certs:ro
+
+  shelf:
+    image: caddy:2
+    profiles: ["shelf"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${SHELF_DIR:-./shelf}:/srv/shelf:ro
+      - caddy-data:/data
+
+volumes:
+  syncplay-data:
+  caddy-data:

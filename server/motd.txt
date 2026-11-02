@@ -1,0 +1,2 @@
+Welcome to movie night.
+Voice stays on Discord. Press Enter in mpv to chat on screen.

@@ -1,0 +1,4 @@
+.env
+server/shelf/
+__pycache__/
+*.pyc
