@@ -18,7 +18,9 @@ public static class ThemeManager
     /// <summary>Looks built into the app, in the order the Settings list shows them.</summary>
     private static readonly Look[] Looks =
     [
-        new(DefaultTheme, () => new Themes.DefaultTheme(), () => new Themes.DefaultLook()),
+        // Plain and ordinary: the shared styles only, no decor or motion.
+        new(DefaultTheme, () => new Themes.BasicTheme()),
+        new("Warm", () => new Themes.WarmTheme(), () => new Themes.WarmLook()),
         // The terminal look in two inks, the cyberpunk HUD and synthwave.
         new("Phosphor Amber", () => new Themes.PhosphorAmberTokens(), () => new Themes.PhosphorLook()),
         new("Phosphor Green", () => new Themes.PhosphorGreenTokens(), () => new Themes.PhosphorLook()),

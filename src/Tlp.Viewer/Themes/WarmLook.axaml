@@ -1,12 +1,12 @@
 <!--
-  The default look's parts: soft cards with a small caps label, the app's puzzle-piece mark beside
-  its name, a faint warm glow in the corner, and a clock. Quiet on purpose: it should suit any
+  The Warm look's parts: soft cards with a small caps label, a faint warm glow in the corner,
+  and a clock. Quiet on purpose: it should suit any
   night. Fonts Space Grotesk (SIL OFL) for the title and Inter for the rest.
 -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="using:Tlp.Viewer.Decor"
-        x:Class="Tlp.Viewer.Themes.DefaultLook">
+        x:Class="Tlp.Viewer.Themes.WarmLook">
   <Style Selector="ContentControl.backdrop">
     <Setter Property="Template">
       <ControlTemplate>
@@ -15,20 +15,6 @@
     </Setter>
   </Style>
 
-  <Style Selector="ContentControl.kicker">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <StackPanel Orientation="Horizontal" Spacing="7" Margin="1,0,0,2">
-          <!-- The puzzle piece from the logo ideas, as a small mark. -->
-          <Viewbox Width="14" Height="14" VerticalAlignment="Center">
-            <Path Fill="{DynamicResource TlpAccent}" Data="M20,20 H40 A10,10 0 1,1 60,20 H80 V40 A10,10 0 1,1 80,60 V80 H20 V60 A10,10 0 1,0 20,40 Z"/>
-          </Viewbox>
-          <TextBlock Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}" FontSize="11" FontWeight="SemiBold"
-                     LetterSpacing="2" Foreground="{DynamicResource TlpMutedText}" VerticalAlignment="Center"/>
-        </StackPanel>
-      </ControlTemplate>
-    </Setter>
-  </Style>
   <Style Selector="TextBlock.title">
     <Setter Property="FontWeight" Value="Bold"/>
   </Style>

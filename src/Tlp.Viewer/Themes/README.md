@@ -19,10 +19,11 @@ run time, so picking a look in Settings previews it straight away; Save settings
 
 | Look | Idea | Fonts |
 |---|---|---|
-| Default | Clean, warm neutral cards with a red accent; follows Windows light or dark | Space Grotesk, Inter |
+| Default | Plain on purpose: system-style colours, standard blue accent, no decor or motion; only the shared styles | Inter |
+| Warm | Clean, warm neutral cards with a red accent and a clock; follows Windows light or dark | Space Grotesk, Inter |
 | Phosphor Amber / Green | Retro-future terminal: CRT glass, scanlines, glow, bracket buttons, blinking cursor | VT323, IBM Plex Mono |
-| Breach | Cyberpunk hacking HUD: chamfered panels, glitch title, hex buffer readout, hazard stripes | Chakra Petch, Rajdhani, Share Tech Mono |
-| Outrun | Synthwave: neon sign title, striped sun, perspective grid, VHS line | Monoton, Mr Dafoe, Exo 2 |
+| Breach | Cyberpunk hacking HUD: chamfered panels, glitch title, hazard stripes | Chakra Petch, Rajdhani, Share Tech Mono |
+| Outrun | Synthwave: neon sign title, striped sun, perspective grid, VHS line | Monoton, Exo 2 |
 
 Motion (glow bands, glitch, flicker, twinkling stars) pauses while the window isn't active, to save
 power, and stays off when the viewer unticks "Animate the look" in Settings. Both work through a

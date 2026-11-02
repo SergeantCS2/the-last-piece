@@ -1,16 +1,19 @@
-# Logo concepts
+# Logo
 
-First ideas for the host to pick from or redirect. Each is a single SVG that works on light and
-dark backgrounds (`logo-concepts.png` shows both).
+The host picked **A, the piece** (a puzzle piece with a play button) and asked for more detail in the
+spirit of the cyberpunk and retro-terminal looks. Two detailed takes, our own drawings:
 
-- **A, the piece:** a puzzle piece with a play button, in a pink-to-violet gradient.
-- **B, the last piece:** three grey tiles and the missing fourth, a red piece with a play button.
-- **C, film piece:** a puzzle-piece outline with film sprocket holes and a play button.
+- **Neon** (`a-neon.svg`): cut corners, a pink-to-violet edge with a cyan colour split, circuit
+  traces, scanlines, hazard stripes and corner marks. Now the app icon, the host pages' tab icon
+  and the README logo.
+- **Terminal** (`a-terminal.svg`): a riveted steel plate with an amber CRT screen, scanlines, a
+  glowing play button, a cursor and a status lamp on the knob.
 
-Once one is picked it gets a proper wordmark, app icon sizes (Windows `.ico`, installer,
-favicon for the host pages) and colours to match the chosen theme.
+Each has a `-small.svg` with the shape and play button only, used at 32 px and under where the
+detail turns to mud. `make-icon.py` picks it up by itself.
 
-Until then concept B stands in as a placeholder: the app's window and taskbar icon, the
-installer, the host pages' browser tab and the README. To swap it, run
-`python3 tools/make-icon.py docs/logo/<picked>.svg`, point the README's logo at the same file,
-and paste the SVG into the host pages' `<link rel="icon">` (see the script's notes).
+To switch to Terminal: `python3 tools/make-icon.py docs/logo/a-terminal.svg`, point the README's
+logo at it, and paste `a-terminal-small.svg` into the host pages' `<link rel="icon">`
+(`wwwroot/index.html` and `Services/NightPage.cs`).
+
+The first rough ideas (A, B and C) are kept as `concept-*.svg` and `logo-concepts.png`.

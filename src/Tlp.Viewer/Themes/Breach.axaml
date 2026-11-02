@@ -103,17 +103,6 @@
   </Style>
 
   <!-- ===== Header ===== -->
-  <Style Selector="ContentControl.kicker">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <StackPanel Orientation="Horizontal" Spacing="8" Margin="2,0,0,2">
-          <Path Fill="#FF4655" Data="M0,0 H10 L6,8 H0 Z" VerticalAlignment="Center"/>
-          <TextBlock Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}, ConverterParameter='{}{0} // SYNC VIEWER'}"
-                     FontFamily="{DynamicResource TlpMonoFont}" FontSize="12" LetterSpacing="3" Foreground="#22E5F0" VerticalAlignment="Center"/>
-        </StackPanel>
-      </ControlTemplate>
-    </Setter>
-  </Style>
   <Style Selector="ContentControl.brand">
     <Setter Property="Template">
       <ControlTemplate>

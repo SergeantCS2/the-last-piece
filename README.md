@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo/concept-b.svg" width="96" alt="The Last Piece logo (placeholder until a logo is picked)">
+  <img src="docs/logo/a-neon.svg" width="112" alt="The Last Piece logo: a neon puzzle piece with a play button">
 </p>
 
 <h1 align="center">The Last Piece</h1>
@@ -26,12 +26,12 @@
 </p>
 
 <p align="center">
-  <img src="docs/readme/hero.png" width="820" alt="The Last Piece viewer window in the Default look, dark mode, with tonight's episodes downloading">
+  <img src="docs/readme/hero.png" width="820" alt="The Last Piece viewer window in the Warm look, dark mode, with the queued episodes downloading">
 </p>
 
 <p align="center">
-  <img src="docs/readme/looks-strip.png" width="820" alt="The four looks side by side: Default, Phosphor, Breach and Outrun">
-  <br><sub>Four looks built in: Default, Phosphor, Breach and Outrun. Pick one in Settings.</sub>
+  <img src="docs/readme/looks-strip.png" width="820" alt="The looks side by side: Default, Warm, Phosphor, Breach and Outrun">
+  <br><sub>Five looks built in: Default, Warm, Phosphor, Breach and Outrun. Pick one in Settings.</sub>
 </p>
 
 ---
@@ -240,7 +240,7 @@ Phone:
 - [x] Subtitle and audio switching: menus in the player (S and A, or right-click), VLC's V and B keys, and a default choice in Settings. PROVEN in tests; INFERRED in the real player until CI's mpv check and a person confirm it.
 - [x] Volume up to 130, 200 or 300% (Settings, "Loudest volume"). Mouse wheel and arrow keys change volume rather than seeking, so a stray key doesn't move the whole room.
 - [x] App name and publisher in one place (`Directory.Build.props`).
-- [x] Four looks in the app, redesigned as full designs rather than colour swaps: Default, Phosphor (amber or green), Breach and Outrun (see [Themes](#themes)).
+- [x] Five looks in the app: a plain Default, plus full designs (not colour swaps) Warm, Phosphor (amber or green), Breach and Outrun (see [Themes](#themes)).
 - [ ] The host picks which looks ship and which is the default; the admin page follows the pick.
 - [ ] Logo: three concepts drafted in `docs/logo` for the host to pick from.
 - [x] Polished README top: centred logo, name, tagline, links, build badges, a framed screenshot and the four looks. The logo is a placeholder (concept B) until the host picks one.
@@ -306,18 +306,19 @@ Costs and rules are from the providers' pages in late 2026 (INFERRED that they h
 
 Every colour, font, shape and bit of decoration in the viewer app comes from the selected look. The app's self-test checks each look defines every setting and that its fonts load.
 
-Four looks are in the app now (Settings, "Look"; picking one previews it). Each is a full design with its own shapes, decoration and motion, not just colours:
+Five looks are in the app now (Settings, "Look"; picking one previews it). Default is plain on purpose; the other four are full designs with their own shapes, decoration and motion, not just colours:
 
-- **Default.** Clean, warm neutral cards with a red accent. Follows Windows light or dark.
+- **Default.** Basic and ordinary: system-style greys, one font, a standard blue accent, no decoration or motion. Follows Windows light or dark. The app starts in this one.
+- **Warm.** Clean, warm neutral cards with a red accent and a clock. Follows Windows light or dark.
 - **Phosphor** (amber or green ink). A retro-future terminal: curved CRT glass, scanlines, glow, `[ BRACKET ]` buttons and a blinking cursor.
-- **Breach.** A cyberpunk hacking HUD: chamfered panels, a glitching title, a hex buffer readout and hazard stripes.
+- **Breach.** A cyberpunk hacking HUD: chamfered panels, a glitching title and hazard stripes.
 - **Outrun.** Synthwave: a neon sign title, a striped sun over a perspective grid, and a VHS tracking line.
 
 They use our own colours and art and freely licensed fonts, with no artwork, logos, fonts or names from any game or film. Motion pauses when the window isn't active, and a box in Settings turns it off. How looks are built is in [`src/Tlp.Viewer/Themes/README.md`](src/Tlp.Viewer/Themes/README.md).
 
-| Default | Phosphor | Breach | Outrun |
-|---|---|---|---|
-| ![Default](docs/themes/default.png) | ![Phosphor](docs/themes/phosphor-amber.png) | ![Breach](docs/themes/breach.png) | ![Outrun](docs/themes/outrun.png) |
+| Default | Warm | Phosphor | Breach | Outrun |
+|---|---|---|---|---|
+| ![Default](docs/themes/default.png) | ![Warm](docs/themes/warm.png) | ![Phosphor](docs/themes/phosphor-amber.png) | ![Breach](docs/themes/breach.png) | ![Outrun](docs/themes/outrun.png) |
 
 *Captured from the app on Linux (`--showcase`). INFERRED to look the same on Windows; not yet seen there.*
 

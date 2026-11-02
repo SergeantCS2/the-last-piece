@@ -5,7 +5,7 @@
   Parts of the window a theme can restyle (all in MainWindow.axaml):
     ContentControl.backdrop / .overlay   decor layers behind / above the app, mouse-transparent
     ContentControl.side                  the header's right-hand corner (clock, stamp, ticket...)
-    ContentControl.kicker / .brand       the small line above the title, and the title
+    ContentControl.brand                 the title (the host's group name)
     HeaderedContentControl.panel         the "Queue" and "Files" boxes, and Settings (an Expander
                                          drawn as a panel with a ToggleButton.exphead header)
     ContentControl.statusbar             the status line with the Join button
@@ -44,14 +44,7 @@
     <Setter Property="Foreground" Value="{DynamicResource TlpMutedText}"/>
   </Style>
 
-  <!-- Header: the app's name small, then the title. -->
-  <Style Selector="ContentControl.kicker">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <TextBlock Classes="small muted" Text="{TemplateBinding Content}"/>
-      </ControlTemplate>
-    </Setter>
-  </Style>
+  <!-- Header: the title alone (no app-name line above it, 2026-11-02). -->
   <Style Selector="ContentControl.brand">
     <Setter Property="Template">
       <ControlTemplate>

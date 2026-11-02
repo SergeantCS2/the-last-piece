@@ -1,11 +1,11 @@
 <!--
-  The default look: clean and calm, follows Windows light or dark mode. Every colour, font and
-  size the shared styles use comes from these keys (see Themes/README.md); DefaultLook
-  (DefaultLook.axaml) adds its cards, header and buttons.
+  The Warm look: clean warm cards, follows Windows light or dark mode. Every colour, font and
+  size the shared styles use comes from these keys (see Themes/README.md); WarmLook
+  (WarmLook.axaml) adds its cards, header and buttons.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    x:Class="Tlp.Viewer.Themes.DefaultTheme">
+                    x:Class="Tlp.Viewer.Themes.WarmTheme">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
       <SolidColorBrush x:Key="TlpWindowBackground" Color="#F6F5F3"/>

@@ -1,7 +1,7 @@
 <!--
   Outrun: synthwave. Dusk purple sky with stars, a striped sun, a neon perspective grid on the
-  horizon, chrome-and-neon title with a hand-written "tonight", VHS-style tracking lines, sunset
-  gradients. Our own drawing; fonts Monoton, Mr Dafoe and Exo 2 (SIL OFL).
+  horizon, chrome-and-neon title, VHS-style tracking lines, sunset
+  gradients. Our own drawing; fonts Monoton and Exo 2 (SIL OFL).
 -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -197,23 +197,11 @@
   </Style>
 
   <!-- ===== Header ===== -->
-  <Style Selector="ContentControl.kicker">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <TextBlock Margin="4,0,0,2" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="11" LetterSpacing="5" Foreground="#2DE2E6"
-                   Effect="{StaticResource OrCyanGlow}"
-                   Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}, ConverterParameter='{}{0}  ·  AFTER DARK'}"/>
-      </ControlTemplate>
-    </Setter>
-  </Style>
   <Style Selector="ContentControl.brand">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid HorizontalAlignment="Left" Margin="0,0,0,10">
+        <Grid HorizontalAlignment="Left">
           <TextBlock Classes="title" Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}"/>
-          <TextBlock Classes="script" Text="tonight" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-46,-22">
-            <TextBlock.RenderTransform><RotateTransform Angle="-9"/></TextBlock.RenderTransform>
-          </TextBlock>
         </Grid>
       </ControlTemplate>
     </Setter>
@@ -222,12 +210,6 @@
     <Setter Property="FontWeight" Value="Normal"/>
     <Setter Property="Foreground" Value="#FF6FE0"/>
     <Setter Property="Effect" Value="{StaticResource OrPinkGlow}"/>
-  </Style>
-  <Style Selector="TextBlock.script">
-    <Setter Property="FontFamily" Value="avares://TheLastPiece/Assets/Fonts#Mr Dafoe, $Default"/>
-    <Setter Property="FontSize" Value="44"/>
-    <Setter Property="Foreground" Value="#2DE2E6"/>
-    <Setter Property="Effect" Value="{StaticResource OrCyanGlow}"/>
   </Style>
   <Style Selector="ContentControl.brand:not(.still) /template/ TextBlock.title">
     <Style.Animations>

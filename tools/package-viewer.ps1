@@ -90,7 +90,7 @@ Libraries built into TheLastPiece.exe:
 - Velopack (installer and updates), MIT License, https://github.com/velopack/velopack
 
 Fonts used by the app's looks, SIL Open Font License 1.1 (licence texts in licenses/fonts):
-Space Grotesk, VT323, IBM Plex Mono, Chakra Petch, Rajdhani, Share Tech Mono, Monoton, Mr Dafoe, Exo 2.
+Space Grotesk, VT323, IBM Plex Mono, Chakra Petch, Rajdhani, Share Tech Mono, Monoton, Exo 2.
 Inter (through Avalonia.Fonts.Inter), SIL Open Font License 1.1, https://github.com/rsms/inter
 "@ | Set-Content (Join-Path $stage "THIRD-PARTY-NOTICES.txt")
 

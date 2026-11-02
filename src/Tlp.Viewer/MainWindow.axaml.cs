@@ -27,7 +27,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Title = Tlp.Core.AppInfo.Name;
-        Kicker.Content = Tlp.Core.AppInfo.Name;
         ShowGroup(_settings.GroupName);
         // The looks' motion (Themes/) pauses while the window is in the background, so a look
         // never costs anything while the movie plays.
@@ -83,7 +82,7 @@ public partial class MainWindow : Window
     private void SetStill(bool still)
     {
         still |= MotionBox.IsChecked == false;
-        foreach (var part in new Control[] { Backdrop, Overlay, Brand, Kicker, HeaderSide })
+        foreach (var part in new Control[] { Backdrop, Overlay, Brand, HeaderSide })
             part.Classes.Set("still", still);
     }
 
