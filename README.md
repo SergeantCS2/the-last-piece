@@ -52,7 +52,7 @@
 - **Bundled player is mpv, set up to look like VLC.** Anime subtitles are styled ASS, which VLC and mpv both draw with libass. mpv rather than VLC because Syncplay's on-screen chat only works in mpv.
 - **No more uTorrent needed.** The viewer app has an open-source torrent engine built in (MonoTorrent, MIT).
 - **Host knows who's ready.** The host keeps a quiet helper in Syncplay that fills each night's room playlist (so everyone moves to the next episode together) and shows, per friend, what's downloaded and who's in the room.
-- **Proper installer with auto-update.** `Setup.exe` installs per user with no admin prompt, registers movie night links, and updates itself from GitHub Releases. Signing slots into CI once the host picks a route (see [Signing](#signing)).
+- **Proper installer with auto-update.** `Setup.exe` installs per user with no admin prompt, registers movie night links, and updates itself from GitHub Releases. Signing slots into CI once the project picks a route (see [Signing](#signing)).
 - **Status:**
   - 107 automated tests on Linux, including a group torrent between the real host app and two friends.
   - The room helper filled a real Syncplay 1.7.6 room's playlist, here and in CI.
@@ -84,7 +84,7 @@ From the host, 2026-11-02:
   - Or they download from the host's copy.
   - Either way, the app checks they have the same file.
 - P2P between friends wanted.
-- Hosting is Linux or WSL: the host's Windows PC (Docker/WSL) or a Linux server. Native Windows and Linux are nice to have. Cleanup has to be easy.
+- Hosting is Linux or WSL: a Windows PC (Docker/WSL) or a Linux server. Native Windows and Linux are nice to have. Cleanup has to be easy.
 - A text chat that pops up on screen would be fun.
 - A custom Android app later is fine.
 - Eventually public.
@@ -94,7 +94,7 @@ From the host, 2026-11-02:
 ```
                                Discord (voice, unchanged)
 
- ┌──────────────────────── Host (the host's PC in WSL, or Linux server) ──────────────────┐
+ ┌──────────────────────── Host (a PC in WSL, or a Linux server) ──────────────────────┐
  │  Host app (:8080, HTTPS via Caddy)              Syncplay server (:8999)             │
  │  - admin page: shelf, nights, cleanup           - rooms, shared playlist            │
  │  - movie night link → pack.json + web page      - play/pause/seek sync              │
@@ -131,7 +131,7 @@ One link per night. The host app turns it into a page with an "Open in The Last 
 | **Public magnet** (built in) | The episode came from a public torrent. The host pastes the magnet, or pastes the page and the host app finds it. | None: friends download from the public swarm. |
 | **Host's copy** (plain download) | Fallback, or for anyone who prefers it. | One copy per friend. |
 
-**Get to my server.** The host can have the host download a public magnet onto its own shelf first ("Get to my server" next to a found magnet, or the tick box when creating a night). When it finishes, every night that lists that magnet switches to the host's copy by itself, so friends get it from his server: the group torrent (his own private "magnet") plus the plain download, with the public magnet left as a last resort. Half-downloaded files stay out of the shelf until they're complete, it resumes after a restart, and it stops sharing with the public swarm once done. PROVEN in a test with a real torrent transfer through the host app; INFERRED for public swarms and the host's network.
+**Get to my server.** The host app can download a public magnet onto its own shelf first ("Get to my server" next to a found magnet, or the tick box when creating a night). When it finishes, every night that lists that magnet switches to the host's copy by itself, so friends get it from the host's server: the group torrent (the host's own private "magnet") plus the plain download, with the public magnet left as a last resort. Half-downloaded files stay out of the shelf until they're complete, it resumes after a restart, and it stops sharing with the public swarm once done. PROVEN in a test with a real torrent transfer through the host app; INFERRED for public swarms and real home networks.
 
 - **Picking a source.** Each friend chooses in settings:
   - Best available (default): group torrent, then the host's copy, then the public magnet.
@@ -148,14 +148,14 @@ One link per night. The host app turns it into a page with an "Open in The Last 
 - **Group torrent, for files on the host's shelf:**
   - The host app makes a private `.torrent` for each shelf file in a night, in the background.
   - It runs the tracker itself, behind the night's secret link, so only people with the link find each other. Private means clients don't use DHT or peer exchange, so strangers can't join.
-  - The shelf link is the web seed: the host's copy is always there to fill gaps, without a torrent client on the host.
+  - The shelf link is the web seed: The host's copy is always there to fill gaps, without a torrent client on the host.
   - PROVEN, with the real host app over real sockets:
     - Friend A downloads with nobody else around, entirely from the web seed.
-    - the host's file is then deleted, and friend B still gets the whole file from friend A through the tracker.
+    - The host's file is then deleted, and friend B still gets the whole file from friend A through the tracker.
 - **Public magnets** download inside the app too, and finished files keep seeding while the app is open. PROVEN with two local peers.
 - **Where it can fall short (INFERRED, test on a real night):**
   - The tracker hands out the address each friend connects from. If the host app runs behind something that hides those addresses, friends can't find each other and everyone pulls from the web seed instead.
-    - Hiding happens with Docker Desktop or WSL port forwarding on Windows (UNKNOWN for the host's setup), and with a reverse proxy unless `TLP_BEHIND_PROXY=true`.
+    - Hiding happens with Docker Desktop or WSL port forwarding on Windows (UNKNOWN for a given setup), and with a reverse proxy unless `TLP_BEHIND_PROXY=true`.
     - Downloads still work either way, they just don't save the host's upload.
   - Two friends can swap pieces only if at least one of them can accept connections. The app asks the router via UPnP; routers without it limit sharing to friends who can.
 - **Sync stays on the Syncplay server.** Peer-to-peer sync without a server is possible but would mean rewriting Syncplay for little gain.
@@ -231,7 +231,7 @@ Viewer app (Windows):
 
 Phone:
 - [x] The night page (the link opened on a phone) has an "On a phone" part: download the files, then the Synkplay server, port, room and password, each with a Copy button.
-- [ ] The host tests Synkplay on Android: connect to our server, open an ASS-heavy MKV from a shelf link, check sync and subtitles.
+- [ ] Test Synkplay on Android: connect to our server, open an ASS-heavy MKV from a shelf link, check sync and subtitles.
 
 ## Roadmap after the MVP
 
@@ -242,7 +242,7 @@ Phone:
 - [x] App name and publisher in one place (`Directory.Build.props`).
 - [x] Five looks in the app: a plain Default, plus full designs (not colour swaps) Warm, Phosphor (amber or green), Breach and Outrun (see [Themes](#themes)).
 - [x] Default is the plain look (2026-11-02); Warm, Phosphor, Breach and Outrun ship as choices in Settings. The host pages stay plain to match, with the logo.
-- [x] Logo: The host picked the piece, drawn in more detail as Neon (the logo) with Terminal kept as an alternate (`docs/logo`).
+- [x] Logo: the piece, drawn in more detail as Neon (the logo) with Terminal kept as an alternate (`docs/logo`).
 - [x] Polished README top: centred logo, name, tagline, links, build badges, a framed screenshot and the looks.
 - [x] Swap in the picked logo and look (app icon, host pages' tab icon and header, README).
 - [ ] Screenshots of the player and host pages further down (needs a browser and mpv on a real machine; INFERRED until then).
@@ -251,7 +251,7 @@ Phone:
 - [ ] First person-tested night (the checklist below).
 
 **Later**
-- Signing, once the host picks a route (SignPath when the project is public and settled). Until then Windows SmartScreen warns on the unsigned `Setup.exe` ("More info, Run anyway").
+- Signing, once the project picks a route (SignPath when the project is public and settled). Until then Windows SmartScreen warns on the unsigned `Setup.exe` ("More info, Run anyway").
 - Smaller download (see [Download size](#download-size)).
 
 **Phase 3: going public**
@@ -282,7 +282,7 @@ Already removed: mpv's installer and updater scripts. For comparison, one 1080p 
 CI builds a Velopack installer (MIT) next to the zip, in the `TheLastPiece-installer` artifact:
 - `TheLastPiece-win-Setup.exe` installs to `%LOCALAPPDATA%\TheLastPiece` with no admin prompt, adds a Start menu entry, and registers `tlp://` links. Uninstalling from Windows Settings removes the link registration too.
 - The installed app checks GitHub Releases in the background. A new version downloads quietly and installs the next time the app opens, or straight away with "Restart to update". It never restarts while a download is running.
-- Releases are made by a tag like `v0.3.0`, only with the host's yes: pushed with git, or made on GitHub's "Draft a new release" page (CI then adds its files to that release). CI then builds, signs if set up, tests the installer and publishes the release, marked pre-release while we're testing; the app follows pre-releases for now. Nothing is published from ordinary pushes.
+- Releases are made by a tag like `v0.3.0`, only with the maintainer's yes: pushed with git, or made on GitHub's "Draft a new release" page (CI then adds its files to that release). CI then builds, signs if set up, tests the installer and publishes the release, marked pre-release while we're testing; the app follows pre-releases for now. Nothing is published from ordinary pushes.
 - The zip stays for anyone who'd rather not install.
 
 `Setup.exe` is about 104 MB, a little more than the 88 MB zip because Velopack compresses less tightly.
@@ -291,7 +291,7 @@ PROVEN on a Windows CI machine: silent install, `tlp://` registered to the insta
 
 ## Signing
 
-Without a signature Windows shows "Windows protected your PC" on first run. Every option below needs the host's own account and identity, and most cost money, so nothing has been signed up for. The CI already has a slot for Azure Artifact Signing: add three repository variables (`SIGN_ENDPOINT`, `SIGN_ACCOUNT`, `SIGN_PROFILE`) and three secrets (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`) and the next build is signed. mpv and Syncplay are left exactly as their projects ship them.
+Without a signature Windows shows "Windows protected your PC" on first run. Every option below needs the publisher's own account and identity, and most cost money, so nothing has been signed up for. The CI already has a slot for Azure Artifact Signing: add three repository variables (`SIGN_ENDPOINT`, `SIGN_ACCOUNT`, `SIGN_PROFILE`) and three secrets (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`) and the next build is signed. mpv and Syncplay are left exactly as their projects ship them.
 
 | Route | Cost | Who can use it | Warning goes away? |
 |---|---|---|---|
@@ -301,7 +301,7 @@ Without a signature Windows shows "Windows protected your PC" on first run. Ever
 | OV certificate | About $150 to $300 a year | Anyone, with ID check | Same as Azure. |
 | EV certificate | $400 or more a year | Companies mostly | Same as Azure since 2024; it no longer skips the warning. |
 
-Costs and rules are from the providers' pages in late 2026 (INFERRED that they hold when the host signs up).
+Costs and rules are from the providers' pages in late 2026 (INFERRED that they hold at sign-up time).
 
 ## Themes
 
@@ -407,7 +407,7 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 Settled: MIT licence; the plain Default look; the Neon logo; test releases on GitHub marked pre-release; unsigned for now with SignPath later; name and publisher "The Last Piece" (changeable in `Directory.Build.props`); the webhook post plus the admin page, no Discord bot.
 
 Open:
-1. **Where does the first real night run?** WSL on your PC or the Linux server.
+1. **Where does the first real night run?** WSL on a PC or a Linux server.
 2. **A domain for HTTPS?** Friends can start on `http://<ip>:8080`.
 3. **Who's the test friend?**
 

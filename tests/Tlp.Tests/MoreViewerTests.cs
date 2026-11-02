@@ -43,10 +43,10 @@ public class MoreViewerTests(HostFixture fx) : IClassFixture<HostFixture>
     public void Settings_save_and_load()
     {
         var path = Path.Combine(Directory.CreateTempSubdirectory("tlp-settings-").FullName, "s.json");
-        new ViewerSettings { Name = "the host", SourcePreference = SourcePreference.PreferShelf }.Save(path);
+        new ViewerSettings { Name = "Alex", SourcePreference = SourcePreference.PreferShelf }.Save(path);
         Assert.Contains("preferShelf", File.ReadAllText(path));
         var loaded = ViewerSettings.Load(path);
-        Assert.Equal("the host", loaded.Name);
+        Assert.Equal("Alex", loaded.Name);
         Assert.Equal(SourcePreference.PreferShelf, loaded.SourcePreference);
     }
 

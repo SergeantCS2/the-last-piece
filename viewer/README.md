@@ -8,7 +8,7 @@ Draft: nobody has run this on Windows yet. Tell the host anything that trips you
    - Windows may warn that the app is unrecognised, because it isn't signed yet. Click "More info", then "Run anyway".
 2. Open Settings in the app and set your name and your movie night folder.
 3. Click the movie night link the host sends, then "Open in The Last Piece". Or paste the link into the app and press Open.
-4. Press "Download all". Each file comes by torrent or from the host's copy, and the app checks it matches his.
+4. Press "Download all". Each file comes by torrent or from the host's copy, and the app checks it matches theirs.
 5. At showtime press "Join movie night". Syncplay opens with everything filled in, so just press "Run Syncplay" if it asks.
 
 Nothing else to install: mpv and Syncplay are inside the zip.

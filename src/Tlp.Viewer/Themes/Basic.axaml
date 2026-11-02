@@ -1,5 +1,5 @@
 <!--
-  The Default look: plain and ordinary on purpose (2026-11-02). System-style colours, one
+  The Default look: plain and ordinary on purpose. System-style colours, one
   font (Inter, bundled with Avalonia), a standard blue accent, no glow, no clock, no motion. It
   follows Windows light or dark mode and uses only the shared styles in Styles.axaml.
 -->

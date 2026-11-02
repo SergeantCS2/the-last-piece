@@ -44,7 +44,7 @@
     <Setter Property="Foreground" Value="{DynamicResource TlpMutedText}"/>
   </Style>
 
-  <!-- Header: the title alone (no app-name line above it, 2026-11-02). -->
+  <!-- Header: the title alone (no app-name line above it). -->
   <Style Selector="ContentControl.brand">
     <Setter Property="Template">
       <ControlTemplate>

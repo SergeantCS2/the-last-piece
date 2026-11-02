@@ -1,8 +1,8 @@
 # Logo
 
-The host picked **A, the piece** (a puzzle piece with a play button) and asked for more detail in the
-spirit of the cyberpunk and retro-terminal looks. He chose **Neon** as the logo and kept Terminal
-as an alternate that suits the Phosphor look. Both are our own drawings:
+We picked **A, the piece** (a puzzle piece with a play button) and drew it in more detail in the
+spirit of the cyberpunk and retro-terminal looks. **Neon** is the logo, with Terminal
+kept as an alternate that suits the Phosphor look. Both are our own drawings:
 
 - **Neon** (`a-neon.svg`): cut corners, a pink-to-violet edge with a cyan colour split, circuit
   traces, scanlines, hazard stripes and corner marks. The logo: the app icon, the host pages' tab icon and the
