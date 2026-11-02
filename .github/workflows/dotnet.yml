@@ -128,7 +128,8 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         run: |
           $base = ([xml](Get-Content src/Tlp.Viewer/Tlp.Viewer.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
-          $version = if ("${{ github.ref }}" -like "refs/tags/*") { "${{ github.ref_name }}".TrimStart("v") } else { "$base-ci.${{ github.run_number }}" }
+          $version = if ("${{ github.ref }}" -like "refs/tags/*") { "${{ github.ref_name }}".TrimStart('v', 'V', '.') } else { "$base-ci.${{ github.run_number }}" }
+          if ($version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "The tag '${{ github.ref_name }}' isn't a version like v0.3.0. Edit the release and change its tag to one." }
           "VERSION=$version" >> $env:GITHUB_ENV
           pwsh tools/make-installer.ps1 -Version $version
 
