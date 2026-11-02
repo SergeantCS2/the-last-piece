@@ -27,6 +27,9 @@ public static class NightPage
             a.button{display:inline-block;background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;margin:4px 8px 4px 0}
             a.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
             code{word-break:break-all;font-size:13px}
+            .kv{display:grid;grid-template-columns:5.5em 1fr auto;gap:8px;align-items:center;margin:6px 0}
+            .kv button{font:inherit;font-size:13px;padding:4px 10px;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent)}
+            ol{padding-left:20px;margin:0}li{margin:6px 0}
             </style></head><body><main>
             """);
         sb.Append($"<h1>{h(pack.Title)}</h1>");
@@ -62,7 +65,32 @@ public static class NightPage
             <h2>Join</h2><div class="card">
             Syncplay server <code>{h(pack.Syncplay.Host)}:{pack.Syncplay.Port}</code>, room <code>{h(pack.Syncplay.Room)}</code>.
             <div class="muted">The viewer app fills this in for you.</div></div>
-            </main></body></html>
+            <h2>On a phone</h2><div class="card">
+            <ol>
+            <li>Download each file above on your phone. Keep the name exactly as shown.</li>
+            <li>Open Synkplay (a Syncplay app for Android) and join with these:
+              <div class="kv"><span>Server</span><code>{h(pack.Syncplay.Host)}</code><button type="button" data-copy="{h(pack.Syncplay.Host)}">Copy</button></div>
+              <div class="kv"><span>Port</span><code>{pack.Syncplay.Port}</code><button type="button" data-copy="{pack.Syncplay.Port}">Copy</button></div>
+              <div class="kv"><span>Room</span><code>{h(pack.Syncplay.Room)}</code><button type="button" data-copy="{h(pack.Syncplay.Room)}">Copy</button></div>
+            """);
+        if (!string.IsNullOrEmpty(pack.Syncplay.Password))
+            sb.Append($"""
+              <div class="kv"><span>Password</span><code>{h(pack.Syncplay.Password)}</code><button type="button" data-copy="{h(pack.Syncplay.Password)}">Copy</button></div>
+            """);
+        sb.Append("""
+            </li>
+            <li>Pick the downloaded file in Synkplay. Play and pause then stay in step with everyone.</li>
+            </ol>
+            <div class="muted">Voice stays on Discord. Subtitles show as the file has them.</div></div>
+            </main>
+            <script>
+            document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+              try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; }
+              catch { b.textContent = 'Select and copy'; }
+              setTimeout(() => b.textContent = 'Copy', 1500);
+            }));
+            </script>
+            </body></html>
             """);
         return sb.ToString();
     }

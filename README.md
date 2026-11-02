@@ -228,6 +228,7 @@ Viewer app (Windows):
 - [ ] Tried by a person on a real Windows PC.
 
 Phone:
+- [x] The night page (the link opened on a phone) has an "On a phone" part: download the files, then the Synkplay server, port, room and password, each with a Copy button.
 - [ ] The host tests Synkplay on Android: connect to our server, open an ASS-heavy MKV from a shelf link, check sync and subtitles.
 
 ## Roadmap after the MVP
