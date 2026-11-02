@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/readme/hero.png" width="820" alt="The Last Piece viewer window in the Warm look, dark mode, with the queued episodes downloading">
+  <img src="docs/readme/hero.png" width="820" alt="The Last Piece viewer window in the Breach (cyberpunk) look, with the queued episodes downloading">
 </p>
 
 <p align="center">
