@@ -102,7 +102,7 @@ Updates download in the background and install the next time the app opens.
 ### Running in WSL on Windows
 
 Docker inside WSL 2 sits behind Windows, so friends reach Windows first and Windows has to pass
-the connection on. Two ways (INFERRED from Microsoft's WSL networking docs; not tried on your PC yet):
+the connection on. Two ways (from Microsoft's WSL networking docs; not yet tested on a real setup):
 
 - **Mirrored networking (Windows 11 22H2 or later), best.** WSL then shares Windows' own network,
   so ports 8080 and 8999 open on Windows directly and friends' real addresses reach the host,
@@ -133,7 +133,7 @@ Windows PC. The admin page's setup check warns when friends all show up as one i
 
 **Synkplay** (Android, iOS) can join the same server and room. Open the night link on the phone:
 its "On a phone" part has the downloads and the server, port, room and password, each with a
-Copy button. Use Synkplay's mpv engine for proper anime subtitles. Not tested yet.
+Copy button. Use Synkplay's mpv engine for proper anime subtitles. Phone support is experimental.
 
 ## Troubleshooting
 
