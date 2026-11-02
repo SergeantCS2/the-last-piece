@@ -21,11 +21,32 @@ public class DiagnosticsTests(HostFixture fx) : IClassFixture<HostFixture>
         Assert.Equal(state, Diagnostics.PublicLinkCheck(url, Plain).State);
 
     [Fact]
-    public void Wsl_address_gets_wsl_advice()
+    public void Wsl_inside_address_fails_with_windows_advice()
     {
         var check = Diagnostics.PublicLinkCheck("http://172.28.144.5:8080", InWsl);
+        Assert.Equal("fail", check.State);
+        Assert.Contains("WSL", check.Detail);
+        Assert.Contains("ipconfig", check.Fix);
+    }
+
+    [Fact]
+    public void Home_address_in_wsl_is_fine_for_a_test_at_home()
+    {
+        var check = Diagnostics.PublicLinkCheck("http://192.168.1.20:8080", InWsl);
         Assert.Equal("warn", check.State);
-        Assert.Contains("WSL", check.Fix);
+        Assert.Contains("home network", check.Detail);
+    }
+
+    [Theory]
+    [InlineData("mirrored", "ok")]
+    [InlineData("portproxy", "ok")]
+    [InlineData("", "warn")]
+    [InlineData(null, "warn")]
+    public void Wsl_networking_says_what_the_installer_set_up(string? mode, string state)
+    {
+        var check = Diagnostics.WslCheck(mode);
+        Assert.Equal(state, check.State);
+        Assert.False(string.IsNullOrEmpty(check.Fix));
     }
 
     [Theory]

@@ -47,8 +47,8 @@ details.health>summary{cursor:pointer;font-weight:600}
   <div class="muted">Host page: share files for movie night and keep the disk tidy.</div>
 
   <div id="login" class="card">
-    <label>Admin token<input id="token" type="password" autocomplete="current-password"></label>
-    <div class="muted">Printed in the host logs on first start and saved as admin-token.txt in the data folder.</div>
+    <label>Admin password<input id="token" type="password" autocomplete="current-password"></label>
+    <div class="muted">The installer printed it. It is also TLP_ADMIN_TOKEN in server/.env, or in the host logs on first start.</div>
     <p><button id="loginBtn">Sign in</button> <span id="loginErr" class="err"></span></p>
   </div>
 
@@ -126,7 +126,7 @@ async function api(method, path, body) {
     headers: { 'Authorization': 'Bearer ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (res.status === 401) { showLogin('Wrong token.'); throw new Error('unauthorized'); }
+  if (res.status === 401) { showLogin('Wrong password.'); throw new Error('unauthorized'); }
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
   if (!res.ok) throw new Error(data?.error || res.statusText);
@@ -152,14 +152,36 @@ async function runChecks() {
     $('checks').innerHTML = list.map(c => `<li><span class="dot ${esc(c.state)}" title="${esc(c.state)}"></span><div>
       <b>${esc(c.area)}: ${esc(c.name)}</b> ${esc(c.detail)}${c.fix ? `<div class="fix">${esc(c.fix)}</div>` : ''}</div></li>`).join('');
     $('checkDetails').open = bad.length + warn.length > 0;
+    browserCheck();
   } catch (e) { if (e.message !== 'unauthorized') $('checkSummary').textContent = 'Check failed: ' + e.message; }
 }
 $('checkBtn').onclick = runChecks;
+
+// From this browser, can the public link be opened? Run on the host PC this tests Windows
+// passing the port into WSL; run on a second PC it tests the whole way in. no-cors: only
+// "it answered" or "it didn't" is visible, which is all this needs.
+let publicUrl = '';
+async function browserCheck() {
+  if (!publicUrl) return;
+  const li = document.createElement('li');
+  const show = (state, text, fix) => { li.innerHTML = `<span class="dot ${state}" title="${state}"></span><div><b>Links: This browser reaches the public link</b> ${esc(text)}${fix ? `<div class="fix">${esc(fix)}</div>` : ''}</div>`; };
+  show('info', 'Checking…');
+  $('checks').appendChild(li);
+  const url = publicUrl.replace(/\/+$/, '') + '/healthz';
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 6000);
+  try {
+    await fetch(url, { mode: 'no-cors', cache: 'no-store', signal: ctl.signal });
+    show('ok', `${publicUrl} answered this browser.`, location.origin === new URL(publicUrl).origin ? 'This page is already on the public link. Open it on a second PC too, to be sure other PCs get in.' : '');
+  } catch {
+    show('warn', `${publicUrl} didn't answer this browser.`, 'Check the address is this PC\'s own network address and that the port is open. In WSL, run the installer\'s Windows network step. Then press Check again.');
+  } finally { clearTimeout(timer); }
+}
 
 async function refresh() {
   try {
     const [shelf, nights, settings, fetches] = await Promise.all([api('GET', '/shelf'), api('GET', '/nights'), api('GET', '/settings'), api('GET', '/fetch')]);
     discordOn = settings.discord;
+    publicUrl = settings.publicUrl || '';
     fetchOn = fetches.enabled;
     $('fetchOpt').classList.toggle('hidden', !fetchOn);
     renderFetches(fetches.items);

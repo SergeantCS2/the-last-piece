@@ -2,9 +2,9 @@ name: server
 
 on:
   push:
-    paths: ["server/**", "Directory.Build.props", "src/Tlp.Host/**", "src/Tlp.Core/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
+    paths: ["server/**", "install.sh", "uninstall.sh", "Directory.Build.props", "src/Tlp.Host/**", "src/Tlp.Core/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
   pull_request:
-    paths: ["server/**", "Directory.Build.props", "src/Tlp.Host/**", "src/Tlp.Core/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
+    paths: ["server/**", "install.sh", "uninstall.sh", "Directory.Build.props", "src/Tlp.Host/**", "src/Tlp.Core/**", "tools/smoketest.py", ".github/workflows/server-ci.yml"]
   workflow_dispatch:
 
 jobs:
@@ -46,3 +46,63 @@ jobs:
       - name: Server logs
         if: always()
         run: docker compose logs syncplay host
+
+  # The one-step installer and the uninstaller, the way a host would run them.
+  install-uninstall:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint the scripts
+        run: shellcheck -S warning install.sh uninstall.sh
+
+      - name: Install from a copy of the repo
+        run: |
+          cp -r "$GITHUB_WORKSPACE" "$HOME/tlp"
+          rm -rf "$HOME/tlp/.git"
+          ip="$(hostname -I | cut -d' ' -f1)"
+          bash "$HOME/tlp/install.sh" --yes --public-url "http://$ip:8080" --group "CI crew"
+          echo "TLP_IP=$ip" >> "$GITHUB_ENV"
+
+      - name: The host answers, Syncplay works, and the setup check is happy
+        run: |
+          cd "$HOME/tlp/server"
+          token="$(sed -n 's/^TLP_ADMIN_TOKEN=//p' .env)"
+          password="$(sed -n 's/^SYNCPLAY_PASSWORD=//p' .env)"
+          test -n "$token" && test "$password" != change-me
+          curl -fs "http://$TLP_IP:8080/healthz"
+          python3 "$GITHUB_WORKSPACE/tools/smoketest.py" --host "$TLP_IP" --password "$password" --room movienight --wait 60
+          head -c 100000 /dev/urandom > "shelf/Show - 01.mkv"
+          curl -fs -H "Authorization: Bearer $token" -H "Content-Type: application/json" \
+            -d '{"title":"CI night","items":[{"shelfPath":"Show - 01.mkv"}]}' "http://$TLP_IP:8080/api/admin/nights" > night.json
+          curl -fs -H "Authorization: Bearer $token" "http://$TLP_IP:8080/api/admin/diagnostics" | tee checks.json
+          python3 - <<'PY'
+          import json
+          checks = json.load(open("checks.json"))
+          bad = [c for c in checks if c["state"] == "fail"]
+          for c in bad: print("FAIL:", c["area"], c["name"], c["detail"])
+          assert not bad, "the setup check found problems on a fresh install"
+          PY
+
+      - name: Running it again keeps the passwords
+        run: |
+          before="$(sed -n 's/^SYNCPLAY_PASSWORD=//p' "$HOME/tlp/server/.env")"
+          bash "$HOME/tlp/install.sh" --yes
+          after="$(sed -n 's/^SYNCPLAY_PASSWORD=//p' "$HOME/tlp/server/.env")"
+          test "$before" = "$after"
+
+      - name: Uninstall removes it all
+        run: |
+          bash "$HOME/tlp/uninstall.sh" --yes --delete-shelf
+          test ! -e "$HOME/tlp"
+          if docker ps -a --format '{{.Names}}' | grep -q '^server-'; then docker ps -a; exit 1; fi
+          if docker volume ls --format '{{.Name}}' | grep -q '^server_'; then docker volume ls; exit 1; fi
+          if docker images --format '{{.Repository}}' | grep -q '^the-last-piece/'; then docker images; exit 1; fi
+          if curl -fs "http://$TLP_IP:8080/healthz"; then echo "the host still answers"; exit 1; fi
+
+      - name: The one-line install (piped from GitHub) gets as far as the settings
+        run: curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install.sh" | bash -s -- --yes --no-start --dir "$HOME/tlp-piped"
+
+      - name: Logs
+        if: failure()
+        run: cd "$HOME/tlp/server" 2>/dev/null && docker compose logs || true

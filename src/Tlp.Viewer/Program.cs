@@ -18,7 +18,7 @@ internal static class Program
     /// motion included (the self-test's own pictures can't show effects). For the README and
     /// for comparing looks.
     /// </summary>
-    public static (string Look, bool SettingsOpen, bool Dark)? Showcase { get; private set; }
+    public static (string Look, bool SettingsOpen, bool Dark, bool Welcome)? Showcase { get; private set; }
 
     public static SingleInstance? Instance { get; private set; }
 
@@ -46,7 +46,7 @@ internal static class Program
 
         if (args.Length >= 2 && args[0] == "--showcase")
         {
-            Showcase = (args[1], args.Skip(2).Contains("settings"), args.Skip(2).Contains("dark"));
+            Showcase = (args[1], args.Skip(2).Contains("settings"), args.Skip(2).Contains("dark"), args.Skip(2).Contains("welcome"));
             return BuildAvaloniaApp().StartWithClassicDesktopLifetime([]);
         }
 

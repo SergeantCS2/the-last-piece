@@ -237,7 +237,7 @@ admin.MapPost("/nights/{id}/playlist", async (string id, bool? force, NightStore
         : Results.Ok(new { message = "Syncplay isn't answering the room helper right now; it will keep trying." });
 });
 
-admin.MapGet("/settings", (DiscordAnnouncer discord) => Results.Ok(new { discord = discord.Configured, groupTorrents = opts.GroupTorrents, roomBot = opts.Syncplay.RoomBot }));
+admin.MapGet("/settings", (DiscordAnnouncer discord) => Results.Ok(new { discord = discord.Configured, groupTorrents = opts.GroupTorrents, roomBot = opts.Syncplay.RoomBot, publicUrl = opts.PublicBaseUrl }));
 
 admin.MapDelete("/nights/{id}", async (string id, NightStore store, ReadyBoard board) =>
 {

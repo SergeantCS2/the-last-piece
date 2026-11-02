@@ -32,6 +32,7 @@ services:
       Tlp__GroupTorrents: ${TLP_GROUP_TORRENTS:-true}
       Tlp__FetchEnabled: ${TLP_FETCH:-true}
       Tlp__FetchPort: 6890
+      Tlp__WslNetwork: ${TLP_WSL_NETWORK:-}
       # The room helper reaches Syncplay over the compose network.
       Tlp__Syncplay__BotHost: syncplay
       Tlp__Syncplay__RoomBot: ${TLP_ROOM_HELPER:-true}

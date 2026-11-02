@@ -4,6 +4,10 @@ public sealed class TlpOptions
 {
     public const string Section = "Tlp";
 
+    /// <summary>How Windows passes connections into WSL, as the installer set it up: "mirrored",
+    /// "portproxy", or empty (not set up, or not in WSL). Only shown on the setup check.</summary>
+    public string? WslNetwork { get; set; }
+
     /// <summary>Folder holding the files to share. Mounted read-write so cleanup can delete.</summary>
     public string ShelfDir { get; set; } = "/shelf";
 

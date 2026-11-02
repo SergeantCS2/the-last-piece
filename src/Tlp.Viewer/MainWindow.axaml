@@ -65,7 +65,11 @@
           <CheckBox x:Name="SeedBox" Content="Share finished torrents with the group while this app is open"/>
           <CheckBox x:Name="ShareBox" Content="Show the host my name and download progress (their &quot;who's ready&quot; list)"/>
           <CheckBox x:Name="MotionBox" Content="Animate the look (glow, glitch, flicker)"/>
-          <Button x:Name="SaveButton" Content="Save settings"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="SaveButton" Content="Save settings"/>
+            <Button x:Name="ReportButton" Content="Copy details for a bug report"/>
+            <Button x:Name="LogButton" Content="Open log folder"/>
+          </StackPanel>
         </StackPanel>
       </Expander>
       <Border x:Name="UpdateBar" Classes="card" Padding="10,6" IsVisible="False">
@@ -103,6 +107,36 @@
         </ScrollViewer>
       </HeaderedContentControl>
     </DockPanel>
+    <!-- First run: name, folder, look and the link, before anything else. Hidden once done. -->
+    <Panel x:Name="WelcomeLayer" IsVisible="False">
+      <Border Background="{DynamicResource TlpWindowBackground}" Opacity="0.94"/>
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <HeaderedContentControl Classes="panel" Header="Welcome" MaxWidth="560" Margin="24"
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="heading" TextWrapping="Wrap" Text="Let's get you ready for movie night"/>
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Three quick things. You can change any of them later in Settings."/>
+            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="1. Your name, as the others see it in the room"/>
+            <TextBox x:Name="WelcomeName" MaxLength="40"/>
+            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="2. Where to keep movie night files"/>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox x:Name="WelcomeFolder"/>
+              <Button x:Name="WelcomeBrowse" Grid.Column="1" Margin="6,0,0,0" Content="Browse"/>
+            </Grid>
+            <TextBlock x:Name="WelcomeSpace" Classes="muted small" TextWrapping="Wrap"/>
+            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="3. A look (pick one to preview it)"/>
+            <ComboBox x:Name="WelcomeTheme" HorizontalAlignment="Stretch"/>
+            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="Your movie night link, if you have one"/>
+            <TextBox x:Name="WelcomeLink" Watermark="Paste it here, or open it later"/>
+            <TextBlock Classes="muted small" TextWrapping="Wrap" Margin="0,6,0,0"
+                       Text="If Windows asks whether The Last Piece may use the network, choose Allow. That lets you swap pieces of files with the others, which makes downloads faster for everyone."/>
+            <TextBlock x:Name="WelcomeProblem" Classes="small" TextWrapping="Wrap" IsVisible="False"/>
+            <Button x:Name="WelcomeDone" Classes="accent" HorizontalAlignment="Right" Margin="0,6,0,0" Content="Get started"/>
+          </StackPanel>
+        </HeaderedContentControl>
+      </ScrollViewer>
+    </Panel>
     <ContentControl x:Name="Overlay" Classes="overlay" IsHitTestVisible="False" Focusable="False"/>
   </Panel>
 </Window>

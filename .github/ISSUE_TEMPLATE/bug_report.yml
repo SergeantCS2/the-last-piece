@@ -1,0 +1,46 @@
+name: Bug report
+description: Something didn't work while hosting or watching.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for testing. Screenshots and the app's details help most. Never paste passwords or your admin password.
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did it happen?
+      options:
+        - The Windows app (viewer)
+        - The host (install, host page, server)
+        - The player or sync during the night
+        - Installing or uninstalling
+        - Somewhere else
+    validations:
+      required: true
+  - type: input
+    id: step
+    attributes:
+      label: Test step, if you were following docs/testing.md
+      placeholder: "e.g. step 6"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: App details
+      description: In the app, Settings, "Copy details for a bug report", then paste here.
+      render: text
+  - type: textarea
+    id: host
+    attributes:
+      label: Host details (for host problems)
+      description: Which setup (WSL with mirrored networking, WSL with port forwarding, a Linux server), and any red or yellow lines from the host page's setup check. Attach host-log.txt if you have it.
+  - type: textarea
+    id: shots
+    attributes:
+      label: Screenshots
+      description: Drag images here.

@@ -20,6 +20,13 @@ dotnet build -c Release src/Tlp.Viewer
 xvfb-run -a dotnet src/Tlp.Viewer/bin/Release/net10.0/TheLastPiece.dll --self-test out/
 ```
 
+The installer scripts are plain bash; check them with `shellcheck install.sh uninstall.sh` and
+try them with `--dry-run`, or `--no-start` to skip Docker.
+
+The viewer writes a small log to `%APPDATA%\TheLastPiece\logs\app.log` (rolled over at 1 MB),
+and Settings has **Copy details for a bug report**, which copies the version, Windows version
+and the log's last lines, with no passwords or links.
+
 ## Layout
 
 | Path | What |
@@ -29,17 +36,23 @@ xvfb-run -a dotnet src/Tlp.Viewer/bin/Release/net10.0/TheLastPiece.dll --self-te
 | `src/Tlp.Viewer.Core` | Viewer logic: downloads, torrents, file checks, Syncplay launch |
 | `src/Tlp.Viewer` | Windows app (Avalonia), themes, installer hooks |
 | `viewer/` | Bundled mpv settings and keys |
-| `server/` | Docker Compose, Syncplay image, Caddy |
+| `install.sh`, `uninstall.sh` | Host installer and uninstaller (Linux and WSL) |
+| `server/` | Docker Compose, Syncplay image, Caddy, `windows-network.ps1` for WSL hosts |
 | `tools/` | Packaging, installer, Syncplay smoke test |
 
 ## CI
 
 Every push runs:
 - `dotnet`: tests on Linux; on Windows it builds the zip and installer, runs the real app's
-  self-test, joins a real Syncplay server, checks mpv loads our settings, and installs and
-  uninstalls `Setup.exe`.
+  self-test (including the first-run welcome), joins a real Syncplay server, checks mpv loads our
+  settings, installs `Setup.exe` (checking the Start menu shortcut), updates and uninstalls it
+  (checking nothing is left), and runs `windows-network.ps1` for real: port forwarding twice,
+  mirrored networking with and without an existing `.wslconfig`, and undo putting everything back.
 - `server`: builds the images, starts them with Compose, and checks a night's playlist reaches
-  Syncplay.
+  Syncplay. A second job runs shellcheck on the scripts, installs with `install.sh` on a fresh
+  runner, checks the host, the smoke test and the setup check, runs the installer again (settings
+  kept), uninstalls (no containers, volumes, images or folder left), and tries the piped
+  `curl | bash` install.
 
 ## Conventions
 
@@ -83,5 +96,5 @@ Without a signature Windows shows "Windows protected your PC" on first run. Ever
 
 Costs and rules are from the providers' pages in late 2026 (INFERRED that they hold at sign-up time).
 
-More detail on the design is in [docs/how-it-works.md](docs/how-it-works.md); the manual test
-run-through is [docs/testing.md](docs/testing.md).
+More detail on the design is in [docs/how-it-works.md](docs/how-it-works.md); the first-test
+run-through with two PCs is [docs/testing.md](docs/testing.md).

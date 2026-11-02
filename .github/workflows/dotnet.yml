@@ -5,9 +5,9 @@ on:
     # Pushing a tag like v0.3.0 also publishes a GitHub Release that installed apps update from.
     branches: ["**"]
     tags: ["v*"]
-    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "Directory.Build.props", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
+    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "server/windows-network.ps1", "Directory.Build.props", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
   pull_request:
-    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "Directory.Build.props", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
+    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "server/windows-network.ps1", "Directory.Build.props", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
   workflow_dispatch:
 
 jobs:
@@ -149,6 +149,10 @@ jobs:
           $cmd = (Get-ItemProperty "HKCU:\Software\Classes\tlp\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
           Write-Host "tlp:// opens: $cmd"
           if ($cmd -notlike "*TheLastPiece\current\TheLastPiece.exe*") { throw "the install hook didn't register tlp:// links" }
+          $startMenu = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
+          $links = @(Get-ChildItem $startMenu, ([Environment]::GetFolderPath("Desktop")) -Recurse -Filter *.lnk -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*Last Piece*" })
+          $links | ForEach-Object { Write-Host "shortcut: $($_.FullName)" }
+          if (-not ($links | Where-Object { $_.FullName -like "$startMenu*" })) { throw "the install made no Start menu entry" }
 
           # Update path, without publishing a release: a newer package goes in a local folder, the
           # installed app finds and downloads it the way it would from GitHub, and Velopack installs it.
@@ -177,7 +181,52 @@ jobs:
           Start-Sleep 3
           if (Test-Path "HKCU:\Software\Classes\tlp") { throw "uninstall left the tlp:// registration behind" }
           if (Test-Path (Join-Path $app "current/TheLastPiece.exe")) { throw "uninstall left the app behind" }
+          $left = @(Get-ChildItem $startMenu, ([Environment]::GetFolderPath("Desktop")) -Recurse -Filter *.lnk -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*Last Piece*" })
+          if ($left) { $left | ForEach-Object { Write-Host "left behind: $($_.FullName)" }; throw "uninstall left shortcuts behind" }
           Write-Host "Install and uninstall: ok"
+
+      - name: WSL network helper sets up and undoes cleanly
+        shell: pwsh
+        run: |
+          $ps = "server/windows-network.ps1"
+          $profileDir = Join-Path $env:RUNNER_TEMP "wslprofile"; New-Item -ItemType Directory $profileDir -Force | Out-Null
+          $result = Join-Path $env:RUNNER_TEMP "wslnet.txt"
+          function Run([string[]] $more) {
+            powershell -NoProfile -ExecutionPolicy Bypass -File $ps -UserProfile $profileDir -ResultFile $result @more
+            $text = Get-Content $result -Raw; Write-Host "-> $text"
+            if ($text -notlike "ok*") { throw "windows-network.ps1 $more failed: $text" }
+          }
+          function OurRules { @(Get-NetFirewallRule -Group "The Last Piece" -ErrorAction SilentlyContinue) }
+
+          # Port forwarding: firewall rules and forwards appear, and a second run doesn't double them.
+          Run @("-Mode", "PortProxy", "-WslAddress", "127.0.0.2")
+          Run @("-Mode", "PortProxy", "-WslAddress", "127.0.0.2")
+          if ((OurRules).Count -ne 4) { throw "expected 4 firewall rules, found $((OurRules).Count)" }
+          $proxy = netsh interface portproxy show v4tov4 | Out-String; Write-Host $proxy
+          foreach ($p in 8080, 8999, 6890) { if ($proxy -notmatch "\b$p\s+127\.0\.0\.2\s+$p\b") { throw "port $p isn't forwarded" } }
+          Run @("-Undo")
+          if ((OurRules).Count) { throw "undo left firewall rules" }
+          if ((netsh interface portproxy show v4tov4 | Out-String) -match "127\.0\.0\.2") { throw "undo left port forwards" }
+
+          # Mirrored: .wslconfig keeps what was there, gains the two settings, and comes back on undo.
+          $cfg = Join-Path $profileDir ".wslconfig"
+          Set-Content $cfg "[wsl2]`nmemory=4GB`nnetworkingMode=nat`n`n[experimental]`nautoMemoryReclaim=gradual"
+          $before = Get-Content $cfg -Raw
+          Run @("-Mode", "Mirrored")
+          $after = Get-Content $cfg -Raw; Write-Host $after
+          if ($after -notmatch "memory=4GB" -or $after -notmatch "autoMemoryReclaim=gradual") { throw ".wslconfig lost existing settings" }
+          if ($after -notmatch "networkingMode=mirrored" -or $after -match "networkingMode=nat") { throw ".wslconfig networkingMode not set" }
+          if ($after -notmatch "hostAddressLoopback=true") { throw ".wslconfig hostAddressLoopback not set" }
+          Run @("-Undo")
+          if ((Get-Content $cfg -Raw) -ne $before) { throw "undo didn't put .wslconfig back" }
+          if ((OurRules).Count) { throw "undo left firewall rules" }
+
+          # With no .wslconfig at first, undo removes the one it made.
+          Remove-Item $cfg
+          Run @("-Mode", "Mirrored")
+          Run @("-Undo")
+          if (Test-Path $cfg) { throw "undo left a .wslconfig it made" }
+          Write-Host "WSL network helper: ok"
 
       - uses: actions/upload-artifact@v4
         with:

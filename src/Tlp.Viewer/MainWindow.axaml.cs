@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Tlp.Core;
 using Tlp.Viewer.Core;
@@ -45,7 +46,20 @@ public partial class MainWindow : Window
         {
             if (ThemeBox.SelectedItem is string name && Avalonia.Application.Current is { } app) ThemeManager.Apply(app, name);
         };
-        BrowseButton.Click += async (_, _) => await BrowseAsync();
+        BrowseButton.Click += async (_, _) => await BrowseAsync(FolderBox);
+        WelcomeBrowse.Click += async (_, _) => { await BrowseAsync(WelcomeFolder); ShowFreeSpace(); };
+        WelcomeFolder.LostFocus += (_, _) => ShowFreeSpace();
+        WelcomeTheme.SelectionChanged += (_, _) =>
+        {
+            if (WelcomeTheme.SelectedItem is string name && Avalonia.Application.Current is { } app) ThemeManager.Apply(app, name);
+        };
+        WelcomeDone.Click += async (_, _) => await FinishWelcomeAsync();
+        ReportButton.Click += async (_, _) => await CopyReportAsync();
+        LogButton.Click += async (_, _) =>
+        {
+            Directory.CreateDirectory(AppLog.Folder);
+            await Launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(AppLog.Folder));
+        };
         Closing += async (_, _) => { _downloading?.Cancel(); if (_torrents is not null) await _torrents.DisposeAsync(); };
         _reportTimer = new DispatcherTimer(TimeSpan.FromSeconds(5), DispatcherPriority.Background, async (_, _) => await ReportIfDueAsync());
         _reportTimer.Start();
@@ -64,7 +78,14 @@ public partial class MainWindow : Window
             }
         };
 
-        if (!string.IsNullOrWhiteSpace(startupLink))
+        AppLog.Write($"Started version {AppUpdates.CurrentVersion} on {System.Runtime.InteropServices.RuntimeInformation.OSDescription}.");
+        var firstRun = !_settings.SetupDone && Program.SelfTestDir is null && Program.Showcase is null;
+        if (firstRun)
+        {
+            ShowWelcome(startupLink);
+            StatusText.Text = "Paste the link the host sent you, then press Open.";
+        }
+        else if (!string.IsNullOrWhiteSpace(startupLink))
         {
             LinkBox.Text = startupLink;
             Opened += async (_, _) => await LoadAsync(startupLink);
@@ -134,10 +155,136 @@ public partial class MainWindow : Window
         RefreshStatus();
     }
 
-    private async Task BrowseAsync()
+    private async Task BrowseAsync(TextBox target)
     {
         var picked = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Movie night folder", AllowMultiple = false });
-        if (picked.FirstOrDefault()?.TryGetLocalPath() is { } path) FolderBox.Text = path;
+        if (picked.FirstOrDefault()?.TryGetLocalPath() is { } path) target.Text = path;
+    }
+
+    internal bool WelcomeShown => WelcomeLayer.IsVisible;
+
+    /// <summary>The first-run welcome: name, folder, look and (optionally) the night's link.</summary>
+    internal void ShowWelcome(string? link = null)
+    {
+        WelcomeName.Text = _settings.Name;
+        WelcomeFolder.Text = _settings.MovieNightFolder;
+        WelcomeTheme.ItemsSource = ThemeManager.Available;
+        WelcomeTheme.SelectedItem = ThemeManager.Normalize(_settings.Theme);
+        WelcomeLink.Text = string.IsNullOrWhiteSpace(link) ? "" : link;
+        WelcomeProblem.IsVisible = false;
+        ShowFreeSpace();
+        WelcomeLayer.IsVisible = true;
+        WelcomeName.Focus();
+        AppLog.Write("First run: showing the welcome.");
+    }
+
+    private void ShowFreeSpace()
+    {
+        WelcomeSpace.Text = FreeSpaceText(WelcomeFolder.Text) ?? "";
+    }
+
+    /// <summary>"120 GB free on that drive", or why the folder won't work; null if it can't tell.</summary>
+    internal static string? FreeSpaceText(string? folder)
+    {
+        if (string.IsNullOrWhiteSpace(folder) || !Path.IsPathFullyQualified(folder.Trim())) return "Pick a full folder path, like C:\\Users\\you\\Videos\\Movie Night.";
+        try
+        {
+            var root = Path.GetPathRoot(folder.Trim());
+            if (root is null) return null;
+            var drive = new DriveInfo(root);
+            if (!drive.IsReady) return "That drive isn't available.";
+            var gb = drive.AvailableFreeSpace / 1024d / 1024 / 1024;
+            return gb < 5
+                ? $"Only {gb:0.0} GB free on that drive. One episode is often 1 to 2 GB."
+                : $"{gb:0} GB free on that drive.";
+        }
+        catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Checks the folder can be used, saves the choices and opens the link if one was given.</summary>
+    internal async Task<bool> FinishWelcomeAsync()
+    {
+        var folder = (WelcomeFolder.Text ?? "").Trim();
+        string? problem = null;
+        if (folder.Length == 0 || !Path.IsPathFullyQualified(folder)) problem = "Pick a full folder path for movie night files.";
+        else
+        {
+            try
+            {
+                Directory.CreateDirectory(folder);
+                var probe = Path.Combine(folder, $".tlp-check-{Guid.NewGuid():N}");
+                await File.WriteAllTextAsync(probe, "");
+                File.Delete(probe);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+            {
+                problem = $"The app can't save files in that folder ({ex.Message}). Pick another one.";
+            }
+        }
+        if (problem is not null)
+        {
+            WelcomeProblem.Text = problem;
+            WelcomeProblem.IsVisible = true;
+            AppLog.Write("Welcome: " + problem);
+            return false;
+        }
+        _settings = _settings with
+        {
+            Name = string.IsNullOrWhiteSpace(WelcomeName.Text) ? Environment.UserName : WelcomeName.Text.Trim(),
+            MovieNightFolder = folder,
+            Theme = WelcomeTheme.SelectedItem as string ?? ThemeManager.DefaultTheme,
+            SetupDone = true,
+        };
+        try { _settings.Save(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            WelcomeProblem.Text = "Couldn't save your settings: " + ex.Message;
+            WelcomeProblem.IsVisible = true;
+            return false;
+        }
+        AppLog.Write($"Welcome done: look {_settings.Theme}, folder {_settings.MovieNightFolder}.");
+        ShowSettings();
+        WelcomeLayer.IsVisible = false;
+        var link = WelcomeLink.Text?.Trim();
+        if (!string.IsNullOrEmpty(link))
+        {
+            LinkBox.Text = link;
+            await LoadAsync(link);
+        }
+        else
+        {
+            LinkBox.Focus();
+        }
+        return true;
+    }
+
+    /// <summary>Version, Windows, settings that matter and the last log lines, for a bug report.</summary>
+    internal string BugReportText()
+    {
+        var lines = new List<string>
+        {
+            $"{Tlp.Core.AppInfo.Name} {AppUpdates.CurrentVersion}",
+            System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+            $"Look: {_settings.Theme}; files from: {_settings.SourcePreference}; share progress: {_settings.ShareProgress}; seed: {_settings.SeedWhileOpen}",
+            _pack is null ? "No night open." : $"Night: {_pack.Title} ({_pack.Items.Count} files), room server {_pack.Syncplay.Host}:{_pack.Syncplay.Port}",
+            $"Status: {StatusText.Text}",
+            "",
+            "Recent log:",
+        };
+        lines.AddRange(AppLog.Tail(60));
+        return string.Join(Environment.NewLine, lines);
+    }
+
+    private async Task CopyReportAsync()
+    {
+        if (Clipboard is { } clipboard)
+        {
+            await clipboard.SetTextAsync(BugReportText());
+            StatusText.Text = "Details copied. Paste them into your bug report, with a screenshot if you can.";
+        }
     }
 
     private async Task LoadAsync(string? input)
@@ -149,6 +296,7 @@ public partial class MainWindow : Window
             return;
         }
         StatusText.Text = "Opening movie night…";
+        AppLog.Write($"Opening a night from {uri.Host}:{uri.Port}.");
         try
         {
             _pack = await new PackClient(Http).FetchAsync(uri);
@@ -156,6 +304,7 @@ public partial class MainWindow : Window
         catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or System.Text.Json.JsonException or TaskCanceledException)
         {
             StatusText.Text = "Couldn't open that movie night. " + NetCheck.ExplainLinkFailure(ex, uri);
+            AppLog.Write(StatusText.Text + $" ({ex.GetType().Name}: {ex.Message})");
             return;
         }
 
@@ -178,6 +327,7 @@ public partial class MainWindow : Window
             try { _settings.Save(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
         NightTitle.Text = pack.Title;
+        AppLog.Write($"Night \"{pack.Title}\": {pack.Items.Count} file(s), room server {pack.Syncplay.Host}:{pack.Syncplay.Port}.");
         NightInfo.Text = (pack.StartsAt is { } at ? $"Starts {at.ToLocalTime():dddd d MMM, h:mm tt}. " : "")
                          + $"{pack.Items.Count} file(s). Room \"{pack.Syncplay.Room}\".";
         _rows.Clear();
@@ -199,6 +349,11 @@ public partial class MainWindow : Window
         if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
         Activate();
         if (string.IsNullOrWhiteSpace(link)) return;
+        if (WelcomeLayer.IsVisible)
+        {
+            WelcomeLink.Text = link;
+            return;
+        }
         LinkBox.Text = link;
         if (_downloading is not null)
         {
@@ -241,6 +396,7 @@ public partial class MainWindow : Window
                 StatusText.Text = $"Getting {row.Name}…";
                 var result = await Task.Run(() => session.FetchAsync(row.Item, progress, _downloading.Token));
                 row.Apply(result);
+                AppLog.Write($"{row.Name}: {result.State}. {row.Status}");
                 if (result.State is not (FileState.SizeMatches or FileState.Verified)) failures++;
             }
             catch (OperationCanceledException)
@@ -251,6 +407,7 @@ public partial class MainWindow : Window
             {
                 failures++;
                 row.Fail("Failed: " + ex.Message);
+                AppLog.Write($"{row.Name}: failed ({ex.GetType().Name}: {ex.Message})");
             }
         }
         _downloading = null;
@@ -280,6 +437,7 @@ public partial class MainWindow : Window
             if (!ok)
             {
                 _joinWarnedAt = DateTime.UtcNow;
+                AppLog.Write($"Join: room server {sp.Host}:{sp.Port} didn't answer.");
                 StatusText.Text = $"Can't reach the room server at {sp.Host}:{sp.Port}. The host may not have started it yet, or the port isn't open on their router. Press Join again to try anyway.";
                 return;
             }
@@ -289,11 +447,13 @@ public partial class MainWindow : Window
         {
             SyncplayLauncher.Launch(_pack, _settings.MovieNightFolder, _settings.Name, SyncplayPath, MpvPath, _settings.ChatStyle,
                 bundled: _settings.SyncplayPath is null, player: new PlayerOptions(_settings.MaxVolume, _settings.Tracks));
+            AppLog.Write($"Join: started Syncplay for room server {sp.Host}:{sp.Port}.");
             StatusText.Text = "Syncplay is starting with the player. Press Enter in the player to chat; voice stays on Discord.";
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             StatusText.Text = "Couldn't start Syncplay: " + ex.Message;
+            AppLog.Write(StatusText.Text);
         }
     }
 

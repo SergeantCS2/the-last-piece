@@ -54,6 +54,8 @@ public sealed record ViewerSettings
     public bool Motion { get; set; } = true;
     /// <summary>The group name from the last night opened, so the title stays put between nights.</summary>
     public string? GroupName { get; set; }
+    /// <summary>The first-run welcome was finished (name, folder, look). Until then the app shows it on start.</summary>
+    public bool SetupDone { get; set; }
 
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TheLastPiece", "settings.json");

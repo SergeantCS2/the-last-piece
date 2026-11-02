@@ -44,12 +44,21 @@ internal static class SelfTest
         var name = ThemeManager.Apply(Avalonia.Application.Current!, look);
         window.ThemeBox.SelectedItem = name;
         if (dark) Avalonia.Application.Current!.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
+        if (Program.Showcase?.Welcome == true) window.ShowWelcome();
         if (settingsOpen && window.FindControl<Expander>("SettingsExpander") is { } settings)
         {
             settings.IsExpanded = true;
             window.Height = 1080;
         }
         window.Position = new PixelPoint(0, 0);
+    }
+
+    private static void SaveWindowPicture(MainWindow window, string path)
+    {
+        var size = new PixelSize((int)window.Bounds.Width, (int)window.Bounds.Height);
+        using var bitmap = new RenderTargetBitmap(size);
+        bitmap.Render(window);
+        bitmap.Save(path);
     }
 
     public static async Task<int> RunAsync(MainWindow window, string dir)
@@ -97,6 +106,25 @@ internal static class SelfTest
             if (window.Brand.Content as string != MainWindow.DefaultTitle) throw new InvalidDataException("the title didn't go back to the default");
             log.Add("title: ok");
 
+            // First run: the welcome shows, refuses a folder it can't use, and hides once done.
+            var welcomeTemp = Directory.CreateTempSubdirectory("tlp-welcome-").FullName;
+            window.ShowWelcome("https://movies.example.com/n/abc");
+            if (!window.WelcomeShown) throw new InvalidDataException("the welcome didn't show");
+            if (window.WelcomeLink.Text != "https://movies.example.com/n/abc") throw new InvalidDataException("the welcome lost the link it was opened with");
+            await Task.Delay(200);
+            Dispatcher.UIThread.RunJobs();
+            SaveWindowPicture(window, Path.Combine(dir, "welcome.png"));
+            window.WelcomeFolder.Text = "not a full path";
+            if (await window.FinishWelcomeAsync() || !window.WelcomeShown) throw new InvalidDataException("the welcome accepted a folder it can't use");
+            window.WelcomeFolder.Text = Path.Combine(welcomeTemp, "Movie Night");
+            window.WelcomeName.Text = "Self-test";
+            window.WelcomeLink.Text = "";
+            if (!await window.FinishWelcomeAsync() || window.WelcomeShown) throw new InvalidDataException("the welcome didn't finish");
+            if (!Directory.Exists(Path.Combine(welcomeTemp, "Movie Night"))) throw new InvalidDataException("the welcome didn't make the folder");
+            if (!ViewerSettings.Load().SetupDone) throw new InvalidDataException("the welcome didn't save that setup is done");
+            if (!window.BugReportText().Contains(AppUpdates.CurrentVersion)) throw new InvalidDataException("the bug report details lack the version");
+            log.Add("welcome: ok");
+
             window.Rows[0].Status = "Downloading (the group torrent) · 600 MB of 1.30 GB · 9.8 MB/s";
             window.Rows[0].Percent = 45;
             log.Add("window: ok");
@@ -115,9 +143,7 @@ internal static class SelfTest
             await Task.Delay(300);
             Dispatcher.UIThread.RunJobs();
             var size = new PixelSize((int)window.Bounds.Width, (int)window.Bounds.Height);
-            using var bitmap = new RenderTargetBitmap(size);
-            bitmap.Render(window);
-            bitmap.Save(Path.Combine(dir, "viewer.png"));
+            SaveWindowPicture(window, Path.Combine(dir, "viewer.png"));
             log.Add("screenshot: ok");
 
             // Two pictures per theme, for choosing between the drafts: the window as it opens, and

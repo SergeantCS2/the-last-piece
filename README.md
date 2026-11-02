@@ -66,7 +66,7 @@ You need Windows 10 or 11 (64-bit) and a movie night link from your host.
 
 1. **Install.** Download `TheLastPiece-win-Setup.exe` from the [latest release](https://github.com/SergeantCS2/the-last-piece/releases) and run it. It installs for you only, with no admin prompt. The app isn't code-signed yet, so Windows may say it protected your PC: choose **More info**, then **Run anyway**.
    - Rather not install? The release also has a portable zip. Unzip it anywhere and run `TheLastPiece.exe`.
-2. **Settings.** Set your name (what others see in the room) and the folder for movie night files.
+2. **Welcome.** The first time it opens, the app asks for your name (what others see in the room), the folder for movie night files and a look. Paste your link there too. If Windows asks whether the app may use the network, choose **Allow**, so you can share pieces with the others.
 3. **Open the night.** Click the link and choose **Open in The Last Piece**, or paste the link into the app and press **Open**.
 4. **Download all.** Each file arrives by torrent or from the host, then gets checked.
 5. **Join.** At showtime press **Join movie night**. The player opens straight into the room.
@@ -88,19 +88,17 @@ Already use VLC or your own Syncplay? That works too: the night page lists the f
 
 ## Hosting a movie night
 
-The host runs the host app and a Syncplay server. The quickest way is Docker with Compose, on a Linux server or in WSL on Windows:
+The host runs the host app and a Syncplay server in Docker, on a Linux server or in WSL on Windows. One command sets it all up:
 
 ```bash
-git clone https://github.com/SergeantCS2/the-last-piece
-cd the-last-piece/server
-cp .env.example .env        # set SYNCPLAY_PASSWORD and TLP_PUBLIC_URL at least
-mkdir -p shelf              # put episodes here
-sudo chown 1654 shelf       # lets the host app clean up old episodes
-docker compose up -d --build
-docker compose logs host | grep -i token    # the admin token for your first sign-in
+curl -fsSL https://raw.githubusercontent.com/SergeantCS2/the-last-piece/main/install.sh | bash
 ```
 
-Open `http://<your server>:8080` and sign in with the token. The page starts with a **setup check** that marks each part green, yellow or red and says what to fix. Then:
+The installer checks for git, curl and Docker and offers to install what's missing. It asks for the address viewers use and the folder with your episodes, makes the passwords, and starts the host. In WSL it also offers to open Windows to the other PCs (firewall rules plus mirrored networking or port forwarding, with one admin prompt). Run it again any time to update; your settings are kept. To remove everything, run `bash ~/the-last-piece/uninstall.sh` (it keeps your episodes unless you say otherwise).
+
+Prefer to do it by hand? See [Docker by hand](docs/setup.md#docker-by-hand).
+
+Open `http://<your server>:8080` and sign in with the admin password the installer printed. The page starts with a **setup check** that marks each part green, yellow or red and says what to fix. Then:
 
 1. Put episodes in the shelf folder, or paste a magnet link or a release page into the admin page. **Get to my server** downloads a public torrent onto your shelf first, so viewers get it from you.
 2. **New movie night**: pick the files, a title and a start time.
@@ -167,18 +165,20 @@ Motion pauses when the window isn't active, and a box in Settings turns it off. 
 | Problem | Try |
 |---|---|
 | Viewers can't connect to the room | Port 8999 must be forwarded. The host's setup check shows whether Syncplay is answering. |
+| Hosting in WSL and other PCs can't reach it | Run the installer again and say yes to the Windows step. The setup check's **Windows to WSL** line says whether it was done. |
 | Downloads only come from the host | Normal when only one person has the file. Sharing kicks in once two people download at once. |
 | Viewers all show up as one inside address | Docker or WSL is hiding their real addresses. See [Running in WSL](docs/setup.md#running-in-wsl-on-windows). |
 | Old episodes aren't cleaned up | The shelf folder must be writable by user 1654 (`sudo chown 1654 shelf`). |
+| Something else in the app | Settings, **Copy details for a bug report**, and paste it into an issue. **Open log folder** shows the app's log. |
 
-More in the [setup guide](docs/setup.md#troubleshooting). Still stuck? [Open an issue](https://github.com/SergeantCS2/the-last-piece/issues) with a screenshot.
+More in the [setup guide](docs/setup.md#troubleshooting). Still stuck? [Open a bug report](https://github.com/SergeantCS2/the-last-piece/issues/new?template=bug_report.yml) with a screenshot.
 
 ## Documentation
 
 - [Setup guide](docs/setup.md): hosting in detail, the viewer app, phones.
 - [How it works](docs/how-it-works.md): file sharing, peer to peer, the player and the design choices.
 - [Options considered](docs/options.md): the alternatives and why they weren't picked.
-- [Manual test checklist](docs/testing.md): a run-through before a real night.
+- [First test](docs/testing.md): a step-by-step run-through with two PCs at home, before a real night.
 - [Roadmap](docs/roadmap.md): what's planned.
 - [Contributing](CONTRIBUTING.md): building, testing, releases and signing.
 

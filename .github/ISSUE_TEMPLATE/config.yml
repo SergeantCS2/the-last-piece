@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: First test guide
+    url: https://github.com/SergeantCS2/the-last-piece/blob/main/docs/testing.md
+    about: Step-by-step test with two PCs, and fixes for common problems.

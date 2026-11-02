@@ -54,6 +54,7 @@ public sealed class Diagnostics(
         }
 
         checks.Add(PublicLinkCheck(o.PublicBaseUrl, env));
+        if (env.Wsl) checks.Add(WslCheck(o.WslNetwork));
         checks.Add(await PublicLinkAnswersAsync(o.PublicBaseUrl, ct));
 
         var syncplayHost = o.Syncplay.PublicHost ?? (Uri.TryCreate(o.PublicBaseUrl, UriKind.Absolute, out var u) ? u.Host : "localhost");
@@ -97,6 +98,24 @@ public sealed class Diagnostics(
         }
     }
 
+    /// <summary>
+    /// In WSL, other PCs reach the host only if Windows passes ports 8080 and 8999 on and its
+    /// firewall lets them in. The host can't see Windows' settings from in here, so this says what
+    /// the installer set up and how to confirm it from a second PC.
+    /// </summary>
+    public static DiagCheck WslCheck(string? mode) => mode?.Trim().ToLowerInvariant() switch
+    {
+        "mirrored" => new("Links", "Windows to WSL", "ok",
+            "The installer set up WSL's mirrored networking and the Windows Firewall rules, so other PCs reach this host at the Windows PC's own address.",
+            "To confirm, open the public link's /healthz page on a second PC, or open a night there."),
+        "portproxy" => new("Links", "Windows to WSL", "ok",
+            "The installer set up Windows port forwarding into WSL and the Windows Firewall rules. Every viewer will look like the Windows PC to the host, so viewers can't swap pieces with each other; downloads still work.",
+            "WSL's address can change after a restart: re-run server/windows-network.ps1 (or the installer) if a second PC stops connecting."),
+        _ => new("Links", "Windows to WSL", "warn",
+            "This host runs in WSL. Other PCs can reach it only after Windows passes ports 8080 and 8999 into WSL and Windows Firewall lets them in.",
+            "Run the installer again and say yes to the Windows network step, or run server/windows-network.ps1 in Windows PowerShell as administrator."),
+    };
+
     /// <summary>Checks the public link looks like something a friend elsewhere can open. No network.</summary>
     public static DiagCheck PublicLinkCheck(string publicBaseUrl, HostEnvironment env)
     {
@@ -120,10 +139,16 @@ public sealed class Diagnostics(
                 return new(area, name, "fail", $"{shown} only works on this machine.", "Set it to your public IP or domain.");
             if (kind == AddressKind.Private)
             {
+                var b = ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4().GetAddressBytes() : ip.GetAddressBytes();
+                if ((env.Wsl || env.Docker) && b.Length == 4 && b[0] == 172 && b[1] >= 16 && b[1] <= 31)
+                    return new(area, name, "fail", $"{shown} looks like an address inside {(env.Wsl ? "WSL" : "Docker")}, which other PCs can't reach.",
+                        env.Wsl
+                            ? "Use the Windows PC's own network address instead (in Windows, run ipconfig and take the IPv4 Address, like 192.168.1.20). Re-running the installer sets this for you."
+                            : "Use this machine's own network address or your public IP or domain instead.");
                 var fix = env.Wsl
-                    ? "That looks like a home or WSL address. Friends need your public IP, with the port forwarded on the router and from Windows into WSL."
-                    : "That's a home network address. Friends outside need your public IP, with the port forwarded on the router.";
-                return new(area, name, "warn", $"{shown} only works inside your home network.", fix);
+                    ? "Fine for testing with PCs at home, once Windows passes the ports into WSL. Friends elsewhere need your public IP or a domain, with the ports forwarded on the router."
+                    : "Fine for testing with PCs at home. Friends elsewhere need your public IP or a domain, with the ports forwarded on the router.";
+                return new(area, name, "warn", $"{shown} works for PCs on your home network only.", fix);
             }
         }
         return new(area, name, "ok", $"{shown}.");
