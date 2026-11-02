@@ -242,23 +242,20 @@
       </Animation>
     </Style.Animations>
   </Style>
-  <!-- The side: retro stripes and a tape counter. -->
+  <!-- The side: a tape counter on a dark backing, so it reads over the sun. -->
   <Style Selector="ContentControl.side">
     <Setter Property="Template">
       <ControlTemplate>
-        <StackPanel Margin="0,0,8,0" Spacing="6" HorizontalAlignment="Right">
-          <StackPanel Spacing="3" HorizontalAlignment="Right">
-            <StackPanel.RenderTransform><SkewTransform AngleX="-20"/></StackPanel.RenderTransform>
-            <Rectangle Width="120" Height="5" Fill="#FFD319"/>
-            <Rectangle Width="120" Height="5" Fill="#FF7A3C"/>
-            <Rectangle Width="120" Height="5" Fill="#FF3FD2"/>
-            <Rectangle Width="120" Height="5" Fill="#9B3CFF"/>
+        <Border Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Top" Background="#C0160629" BorderBrush="#802DE2E6" BorderThickness="1"
+                CornerRadius="8" Padding="12,6,12,7">
+          <StackPanel Spacing="1">
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <TextBlock Text="▶ PLAY" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="13" LetterSpacing="2" Foreground="#2DE2E6" VerticalAlignment="Center"/>
+              <d:Clock Format="HH:mm" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="20" Foreground="#FFFFFF" Effect="{StaticResource OrPinkGlow}"/>
+            </StackPanel>
+            <d:Clock Format="ddd dd MMM" Upper="True" FontFamily="{DynamicResource TlpHeadFont}" FontSize="11" LetterSpacing="2" Foreground="#FF9AE6" HorizontalAlignment="Right"/>
           </StackPanel>
-          <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-            <TextBlock Text="▶ PLAY" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="13" LetterSpacing="2" Foreground="#2DE2E6" VerticalAlignment="Center"/>
-            <d:Clock Format="HH:mm" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="20" Foreground="#FFFFFF" Effect="{StaticResource OrPinkGlow}"/>
-          </StackPanel>
-        </StackPanel>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
