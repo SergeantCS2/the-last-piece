@@ -70,10 +70,11 @@ foreach ($extra in "installer", "updater.bat", "mpv-register.bat", "mpv-unregist
 }
 New-Item -ItemType Directory -Force (Join-Path $stage "mpv/portable_config") | Out-Null
 Copy-Item (Join-Path $root "viewer/mpv.conf") (Join-Path $stage "mpv/portable_config/mpv.conf")
+Copy-Item (Join-Path $root "viewer/input.conf") (Join-Path $stage "mpv/portable_config/input.conf")
 
 # 4. Notices.
 @"
-The Last Piece viewer $((Get-Item (Join-Path $stage 'TheLastPiece.exe')).VersionInfo.ProductVersion)
+$((Get-Item (Join-Path $stage 'TheLastPiece.exe')).VersionInfo.ProductName) viewer $((Get-Item (Join-Path $stage 'TheLastPiece.exe')).VersionInfo.ProductVersion)
 
 Bundled third-party software, unmodified:
 - Syncplay $($sp.Tag) ($($sp.Name)), Apache License 2.0, https://github.com/Syncplay/syncplay

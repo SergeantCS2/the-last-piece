@@ -29,6 +29,12 @@ if (-not (Get-Command vpk -ErrorAction SilentlyContinue)) {
 }
 $env:DOTNET_ROLL_FORWARD = "Major"
 
+# Name and publisher come from Directory.Build.props, like the rest of the app.
+$props = ([xml](Get-Content (Join-Path $root "Directory.Build.props"))).Project.PropertyGroup
+$appName = ($props.AppDisplayName | Where-Object { $_ } | Select-Object -First 1)
+$publisher = ($props.AppPublisher | Where-Object { $_ } | Select-Object -First 1)
+if (-not $appName -or -not $publisher) { throw "Directory.Build.props needs AppDisplayName and AppPublisher" }
+
 $outDir = Join-Path $root $Out
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
@@ -38,8 +44,8 @@ $vpkArgs = @(
     "--packVersion", $Version,
     "--packDir", $stage,
     "--mainExe", "TheLastPiece.exe",
-    "--packTitle", "The Last Piece",
-    "--packAuthors", "The Last Piece",
+    "--packTitle", $appName,
+    "--packAuthors", $publisher,
     "--outputDir", $outDir
 )
 

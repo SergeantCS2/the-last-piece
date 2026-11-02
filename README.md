@@ -198,12 +198,20 @@ Phone:
 
 ## Roadmap after the MVP
 
-**Phase 2: polish, after the first real night**
-- Theme drafts to pick from (see [Themes](#themes)).
-- Discord bot (a real bot, beyond the webhook post), if wanted:
-  - Shows the "who's ready" board in Discord.
-  - Bridges Discord text into the on-screen chat.
-- Signing, once the host picks a route. Until then Windows SmartScreen warns on the unsigned `Setup.exe` ("More info, Run anyway").
+**v1 draft (what we're building toward now)**
+- [x] Everything in the MVP list above.
+- [x] Subtitle and audio switching: menus in the player (S and A, or right-click), VLC's V and B keys, and a default choice in Settings. PROVEN in tests; INFERRED in the real player until CI's mpv check and a person confirm it.
+- [x] Volume up to 130, 200 or 300% (Settings, "Loudest volume"). Mouse wheel and arrow keys change volume rather than seeking, so a stray key doesn't move the whole room.
+- [x] App name and publisher in one place (`Directory.Build.props`).
+- [ ] Theme drafts for the host to pick from, then the chosen one finished (see [Themes](#themes)).
+- [ ] Logo.
+- [ ] Polished README: centred logo and name, a one-line tagline, links to Quick start, Setup guide, Contributing and Roadmap, build status badges, and a large framed screenshot of the app, with more screenshots further down. Real screenshots, taken once the theme is picked.
+- [ ] Setup guide and contributing guide, for those README links.
+- [ ] Licence file (the host leans MIT).
+- [ ] First person-tested night (the checklist below).
+
+**Later**
+- Signing, once the host picks a route (SignPath when the project is public and settled). Until then Windows SmartScreen warns on the unsigned `Setup.exe` ("More info, Run anyway").
 - Smaller download (see [Download size](#download-size)).
 
 **Phase 3: going public**
@@ -333,10 +341,11 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 
 ## Open decisions
 
-1. **Where does the first real night run?** WSL on your PC or the Linux server. Both are supported; this decides which gets tried first.
-2. **A domain for HTTPS?** Friends can start on `http://<ip>:8080`. A domain gives HTTPS and a nicer link.
-3. **Who's the test friend?** One person runs the zip on Windows before a real night.
-4. **License** for the public release. MIT or Apache-2.0 is the usual choice. SignPath's free signing needs one of these.
-5. **Signing route** (see [Signing](#signing)): Store, Azure, SignPath, or unsigned for now.
-6. **Name on the installer.** It says "The Last Piece" as both app and publisher. A different publisher name, or your own, can go there.
-7. **Discord bot.** Worth building beyond the webhook post, or is the admin page enough?
+Settled: unsigned for now with SignPath later; name and publisher "The Last Piece" (changeable in `Directory.Build.props`); the webhook post plus the admin page, no Discord bot.
+
+Open:
+1. **Where does the first real night run?** WSL on your PC or the Linux server.
+2. **A domain for HTTPS?** Friends can start on `http://<ip>:8080`.
+3. **Who's the test friend?**
+4. **Licence.** MIT is the likely pick. It isn't in the repo yet because, once published, a licence can't be taken back for that code.
+5. **Theme drafts.** Pick one once the drafts are ready.

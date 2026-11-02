@@ -26,7 +26,7 @@ public sealed class DiscordAnnouncer(HttpClient http, IOptions<TlpOptions> optio
         var lines = new List<string> { $"**{night.Title}**" };
         // Discord shows <t:…:F> in each reader's own time zone.
         if (night.StartsAt is { } at) lines.Add($"Starts <t:{at.ToUnixTimeSeconds()}:F> (<t:{at.ToUnixTimeSeconds()}:R>)");
-        lines.Add($"{night.Items.Count} file(s). Open this in The Last Piece to download and join:");
+        lines.Add($"{night.Items.Count} file(s). Open this in {Tlp.Core.AppInfo.Name} to download and join:");
         lines.Add(view.ShareUrl);
         return string.Join("\n", lines);
     }

@@ -26,6 +26,7 @@ public partial class MainWindow : Window
     public MainWindow(string? startupLink)
     {
         InitializeComponent();
+        Title = Tlp.Core.AppInfo.Name;
         ItemsList.ItemsSource = _rows;
         ShowSettings();
 
@@ -75,11 +76,21 @@ public partial class MainWindow : Window
         ChatBox.SelectedIndex = _settings.ChatStyle == "Scrolling" ? 1 : 0;
         SeedBox.IsChecked = _settings.SeedWhileOpen;
         ShareBox.IsChecked = _settings.ShareProgress;
+        TracksBox.SelectedIndex = (int)_settings.Tracks;
+        VolumeBox.ItemsSource = PlayerOptions.VolumeChoices.Select(v => $"{v}%").ToList();
+        VolumeBox.SelectedIndex = Math.Max(0, PlayerOptions.VolumeChoices.ToList().IndexOf(
+            PlayerOptions.VolumeChoices.LastOrDefault(v => v <= _settings.MaxVolume, PlayerOptions.VolumeChoices[0])));
+        PlayerKeys.Text = PlayerHelp(_settings.MaxVolume);
         ThemeBox.ItemsSource = ThemeManager.Available;
         ThemeBox.SelectedItem = ThemeManager.Available.Contains(_settings.Theme) ? _settings.Theme : ThemeManager.DefaultTheme;
         // Only one look so far; the choice appears once there are more.
         ThemeLabel.IsVisible = ThemeBox.IsVisible = ThemeManager.Available.Count > 1;
     }
+
+    /// <summary>The keys from the bundled mpv's input.conf, in a line people can read before joining.</summary>
+    private static string PlayerHelp(int maxVolume) =>
+        $"In the player: right-click for the menu, S picks subtitles, A picks audio, V and B cycle them like VLC. " +
+        $"Scroll or Ctrl+Up/Down for volume, up to {Math.Clamp(maxVolume, 100, 300)}%. Enter to chat.";
 
     private void SaveSettings()
     {
@@ -91,9 +102,12 @@ public partial class MainWindow : Window
             ChatStyle = ChatBox.SelectedIndex == 1 ? "Scrolling" : "Chatroom",
             SeedWhileOpen = SeedBox.IsChecked == true,
             ShareProgress = ShareBox.IsChecked == true,
+            Tracks = (TrackChoice)Math.Clamp(TracksBox.SelectedIndex, 0, 2),
+            MaxVolume = PlayerOptions.VolumeChoices[Math.Clamp(VolumeBox.SelectedIndex, 0, PlayerOptions.VolumeChoices.Count - 1)],
             Theme = ThemeBox.SelectedItem as string ?? ThemeManager.DefaultTheme,
         };
         _settings.Save();
+        PlayerKeys.Text = PlayerHelp(_settings.MaxVolume);
         if (Avalonia.Application.Current is { } app) ThemeManager.Apply(app, _settings.Theme);
         _reportDirty = true;
         StatusText.Text = "Settings saved.";
@@ -223,7 +237,7 @@ public partial class MainWindow : Window
         try
         {
             SyncplayLauncher.Launch(_pack, _settings.MovieNightFolder, _settings.Name, SyncplayPath, MpvPath, _settings.ChatStyle,
-                bundled: _settings.SyncplayPath is null);
+                bundled: _settings.SyncplayPath is null, player: new PlayerOptions(_settings.MaxVolume, _settings.Tracks));
             StatusText.Text = "Syncplay is starting with the player. Press Enter in the player to chat; voice stays on Discord.";
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or System.ComponentModel.Win32Exception)

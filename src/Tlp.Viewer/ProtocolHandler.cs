@@ -13,7 +13,7 @@ public static class ProtocolHandler
         try
         {
             using var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\tlp");
-            key.SetValue("", "URL:The Last Piece movie night");
+            key.SetValue("", $"URL:{Tlp.Core.AppInfo.Name} movie night");
             key.SetValue("URL Protocol", "");
             using var cmd = key.CreateSubKey(@"shell\open\command");
             cmd.SetValue("", $"\"{exe}\" \"%1\"");

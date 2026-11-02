@@ -2,6 +2,7 @@
 # Build from the repo root:  docker build -f src/Tlp.Host/Dockerfile -t the-last-piece/host .
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+COPY Directory.Build.props ./
 COPY src/Tlp.Core/Tlp.Core.csproj src/Tlp.Core/
 COPY src/Tlp.Host/Tlp.Host.csproj src/Tlp.Host/
 RUN dotnet restore src/Tlp.Host/Tlp.Host.csproj

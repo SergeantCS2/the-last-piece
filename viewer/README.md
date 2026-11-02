@@ -25,5 +25,7 @@ That still works. Copy the file names from the night page, put the files in your
 
 - Pause, seek, play: everyone follows.
 - Your volume, window size, subtitles and audio track are yours alone.
+- Subtitles: press **S** for a menu of subtitle tracks, **A** for audio tracks, or right-click for the full menu. **V** and **B** step through them like VLC.
+- Volume: mouse wheel, arrow keys or Ctrl+Up/Down, up to 300% (set the limit in the app's Settings). Very high volume can distort loud scenes.
 - Press **Enter** in the player to type a chat message; it shows on everyone's screen.
 - Voice stays on Discord.

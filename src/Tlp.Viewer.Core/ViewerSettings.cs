@@ -14,23 +14,42 @@ public enum SourcePreference
     [JsonStringEnumMemberName("preferShelf")] PreferShelf,
 }
 
+/// <summary>Which audio and subtitle tracks the player picks when a file opens. Anyone can still switch in the player.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<TrackChoice>))]
+public enum TrackChoice
+{
+    /// <summary>Original audio (Japanese for anime) with full English subtitles.</summary>
+    [JsonStringEnumMemberName("original")] Original,
+    /// <summary>English audio, with only the signs-and-songs subtitle track when the file has one.</summary>
+    [JsonStringEnumMemberName("englishDub")] EnglishDub,
+    /// <summary>Original audio, subtitles off.</summary>
+    [JsonStringEnumMemberName("noSubtitles")] NoSubtitles,
+}
+
+// Properties use set, not init: the JSON source generator fills init-only properties through an
+// object initializer, so a setting missing from an older settings.json became false/0/null
+// instead of keeping its default here.
 public sealed record ViewerSettings
 {
-    public string Name { get; init; } = Environment.UserName;
-    public string MovieNightFolder { get; init; } =
+    public string Name { get; set; } = Environment.UserName;
+    public string MovieNightFolder { get; set; } =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Movie Night");
     /// <summary>Syncplay.exe; defaults to the copy bundled next to the viewer.</summary>
-    public string? SyncplayPath { get; init; }
+    public string? SyncplayPath { get; set; }
     /// <summary>mpv.exe; defaults to the copy bundled next to the viewer.</summary>
-    public string? MpvPath { get; init; }
-    public SourcePreference SourcePreference { get; init; } = SourcePreference.Auto;
+    public string? MpvPath { get; set; }
+    public SourcePreference SourcePreference { get; set; } = SourcePreference.Auto;
     /// <summary>Keep sharing finished torrents with the group while the app is open.</summary>
-    public bool SeedWhileOpen { get; init; } = true;
-    public string ChatStyle { get; init; } = "Chatroom";
+    public bool SeedWhileOpen { get; set; } = true;
+    public string ChatStyle { get; set; } = "Chatroom";
     /// <summary>Tell the night's host your name and how far your downloads have got (shown on their "who's ready" list).</summary>
-    public bool ShareProgress { get; init; } = true;
+    public bool ShareProgress { get; set; } = true;
+    /// <summary>Highest volume the player allows, in percent (100 to 300). Above 100 is amplified.</summary>
+    public int MaxVolume { get; set; } = PlayerOptions.DefaultMaxVolume;
+    /// <summary>Audio and subtitle tracks picked when a file opens.</summary>
+    public TrackChoice Tracks { get; set; } = TrackChoice.Original;
     /// <summary>Name of the app's look (a file in the viewer's Themes folder).</summary>
-    public string Theme { get; init; } = "Default";
+    public string Theme { get; set; } = "Default";
 
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TheLastPiece", "settings.json");

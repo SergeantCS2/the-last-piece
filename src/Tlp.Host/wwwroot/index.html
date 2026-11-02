@@ -35,7 +35,7 @@ code{word-break:break-all}
 </head>
 <body>
 <main>
-  <h1>The Last Piece</h1>
+  <h1 id="appName">The Last Piece</h1>
   <div class="muted">Host page: share files for movie night and keep the disk tidy.</div>
 
   <div id="login" class="card">
@@ -81,6 +81,13 @@ code{word-break:break-all}
   </div>
 </main>
 <script>
+// The app's name lives in Directory.Build.props; the host serves it.
+fetch('/api/app').then(r => r.ok ? r.json() : null).then(a => {
+  if (!a || !a.name) return;
+  document.getElementById('appName').textContent = a.name;
+  document.title = a.name + ' host';
+}).catch(() => {});
+
 const $ = id => document.getElementById(id);
 let token = '';
 try { token = localStorage.getItem('tlp-admin') || ''; } catch {}

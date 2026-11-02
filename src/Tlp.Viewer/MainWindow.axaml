@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:Tlp.Viewer"
         x:Class="Tlp.Viewer.MainWindow"
-        Title="The Last Piece"
         Width="760" Height="640" MinWidth="520" MinHeight="460">
   <DockPanel Margin="16">
     <StackPanel DockPanel.Dock="Top" Spacing="8">
@@ -18,7 +17,7 @@
     <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,8,0,0">
       <Expander Header="Settings">
         <StackPanel Spacing="8">
-          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" >
+          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
             <TextBlock Text="Your name" VerticalAlignment="Center"/>
             <TextBox x:Name="NameBox" Grid.Column="1" Margin="0,0,0,6"/>
             <TextBlock Grid.Row="1" Text="Movie night folder" VerticalAlignment="Center"/>
@@ -33,13 +32,23 @@
               <ComboBoxItem Content="The host's copy first"/>
             </ComboBox>
             <TextBlock Grid.Row="3" Text="On-screen chat" VerticalAlignment="Center"/>
-            <ComboBox x:Name="ChatBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
+            <ComboBox x:Name="ChatBox" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6" HorizontalAlignment="Stretch">
               <ComboBoxItem Content="Chatroom (stacked, fades out)"/>
               <ComboBoxItem Content="Scrolling (flies across the screen)"/>
             </ComboBox>
-            <TextBlock x:Name="ThemeLabel" Grid.Row="4" Text="Look" VerticalAlignment="Center" Margin="0,6,0,0"/>
-            <ComboBox x:Name="ThemeBox" Grid.Row="4" Grid.Column="1" Margin="0,6,0,0" HorizontalAlignment="Stretch"/>
+            <TextBlock Grid.Row="4" Text="Audio and subtitles" VerticalAlignment="Center"/>
+            <ComboBox x:Name="TracksBox" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6" HorizontalAlignment="Stretch">
+              <ComboBoxItem Content="Original audio, English subtitles"/>
+              <ComboBoxItem Content="English dub (signs and songs subtitles only)"/>
+              <ComboBoxItem Content="Original audio, no subtitles"/>
+            </ComboBox>
+            <TextBlock Grid.Row="5" Text="Loudest volume" VerticalAlignment="Center"/>
+            <ComboBox x:Name="VolumeBox" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch"/>
+            <TextBlock x:Name="ThemeLabel" Grid.Row="6" Text="Look" VerticalAlignment="Center" Margin="0,6,0,0"/>
+            <ComboBox x:Name="ThemeBox" Grid.Row="6" Grid.Column="1" Margin="0,6,0,0" HorizontalAlignment="Stretch"/>
           </Grid>
+          <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"
+                     Text="These apply the next time you join. You can always switch tracks in the player."/>
           <CheckBox x:Name="SeedBox" Content="Share finished torrents with the group while this app is open"/>
           <CheckBox x:Name="ShareBox" Content="Show the host my name and download progress (their &quot;who's ready&quot; list)"/>
           <Button x:Name="SaveButton" Content="Save settings"/>
@@ -51,6 +60,7 @@
           <Button x:Name="UpdateButton" Grid.Column="1" Margin="8,0,0,0" Content="Restart to update"/>
         </Grid>
       </Border>
+      <TextBlock x:Name="PlayerKeys" Classes="muted" FontSize="12" TextWrapping="Wrap"/>
       <Grid ColumnDefinitions="*,Auto,Auto">
         <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap"/>
         <Button x:Name="DownloadButton" Grid.Column="1" Margin="8,0,0,0" Content="Download all" IsEnabled="False"/>

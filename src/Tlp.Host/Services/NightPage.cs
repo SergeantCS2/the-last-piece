@@ -33,8 +33,8 @@ public static class NightPage
             sb.Append($"<p class=\"muted\">Starts <time datetime=\"{at:O}\">{at:ddd d MMM, HH:mm} (UTC{at:zzz})</time></p>");
 
         sb.Append($"""
-            <div class="card"><strong>Easiest:</strong> open this in The Last Piece viewer app. It downloads everything and joins the room for you.<br>
-            <a class="button" href="{h(ViewerLinks.ForPack(packUrl))}">Open in The Last Piece</a>
+            <div class="card"><strong>Easiest:</strong> open this in {h(AppInfo.Name)} viewer app. It downloads everything and joins the room for you.<br>
+            <a class="button" href="{h(ViewerLinks.ForPack(packUrl))}">Open in {h(AppInfo.Name)}</a>
             <div class="muted">No app yet? Ask the host for the Windows viewer zip. Or download below and join with Syncplay yourself.</div></div>
             """);
 

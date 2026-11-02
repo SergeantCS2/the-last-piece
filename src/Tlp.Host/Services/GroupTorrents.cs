@@ -78,7 +78,7 @@ public sealed class GroupTorrents : BackgroundService
         var dict = BEncodedDictionary.Decode<BEncodedDictionary>(bare);
         dict["announce"] = new BEncodedString(announceUrl);
         dict["url-list"] = new BEncodedList { new BEncodedString(webSeedUrl) };
-        dict["created by"] = new BEncodedString("The Last Piece");
+        dict["created by"] = new BEncodedString(Tlp.Core.AppInfo.Name);
         return dict.Encode();
     }
 

@@ -85,7 +85,48 @@ public class SyncplayLauncherTests
     {
         var args = SyncplayLauncher.Arguments(Pack, "Jo", @"C:\tlp\mpv\mpv.exe", @"C:\MN\a.mkv");
         Assert.Equal(["--host", "sync.example.com:8999", "--name", "Jo", "--room", "movienight",
-            "--player-path", @"C:\tlp\mpv\mpv.exe", "--no-store", "--password", "pw", @"C:\MN\a.mkv"], args);
+            "--player-path", @"C:\tlp\mpv\mpv.exe", "--no-store", "--password", "pw", @"C:\MN\a.mkv",
+            "--", "--volume-max=300"], args);
+    }
+
+    [Fact]
+    public void Player_choices_become_mpv_options_after_the_separator()
+    {
+        var dub = SyncplayLauncher.Arguments(Pack, "Jo", "mpv.exe", "a.mkv", new PlayerOptions(200, TrackChoice.EnglishDub));
+        var mpv = dub.SkipWhile(a => a != "--").Skip(1).ToList();
+        Assert.Equal(["--volume-max=200", "--alang=en,eng,enUS,en-US,jpn,ja", "--slang=en,eng,enUS,en-US",
+            "--subs-with-matching-audio=forced"], mpv);
+        Assert.Equal("a.mkv", dub[dub.ToList().IndexOf("--") - 1]);
+
+        Assert.Equal(["--volume-max=130", "--sid=no"], new PlayerOptions(130, TrackChoice.NoSubtitles).MpvArguments());
+        // Out-of-range values are clamped to what the Settings box offers.
+        Assert.Equal("--volume-max=300", new PlayerOptions(5000).MpvArguments()[0]);
+        Assert.Equal("--volume-max=100", new PlayerOptions(10).MpvArguments()[0]);
+        // Syncplay 1.7.6 reads value[0], so no option may have an empty value.
+        foreach (var t in Enum.GetValues<TrackChoice>())
+            Assert.All(new PlayerOptions(300, t).MpvArguments(), a => Assert.Matches("^--[a-z-]+=.+$", a));
+    }
+
+    [Fact]
+    public void Old_settings_files_get_the_new_player_defaults()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"tlp-settings-{Guid.NewGuid():N}.json");
+        File.WriteAllText(path, """{ "name": "Jo", "chatStyle": "Scrolling" }""");
+        try
+        {
+            var s = ViewerSettings.Load(path);
+            Assert.Equal(300, s.MaxVolume);
+            Assert.Equal(TrackChoice.Original, s.Tracks);
+            // Older settings than these fields keep the defaults, not false or null.
+            Assert.True(s.ShareProgress);
+            Assert.True(s.SeedWhileOpen);
+            Assert.Equal("Default", s.Theme);
+            Assert.Equal("Scrolling", s.ChatStyle);
+            (s with { Tracks = TrackChoice.EnglishDub, MaxVolume = 200 }).Save(path);
+            Assert.Contains("\"englishDub\"", File.ReadAllText(path));
+            Assert.Equal(TrackChoice.EnglishDub, ViewerSettings.Load(path).Tracks);
+        }
+        finally { File.Delete(path); }
     }
 }
 

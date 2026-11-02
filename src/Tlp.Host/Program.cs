@@ -44,6 +44,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapGet("/healthz", () => Results.Ok(new { ok = true }));
+app.MapGet("/api/app", () => Results.Ok(new { name = Tlp.Core.AppInfo.Name, publisher = Tlp.Core.AppInfo.Publisher }));
 
 // ---------- Viewer-facing: everything is keyed by the night's secret token ----------
 

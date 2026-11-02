@@ -1,0 +1,11 @@
+<Project>
+  <!-- The app's name and publisher, in one place. Change them here and everything follows:
+       window titles, the admin page, the night page, Discord posts, the tlp:// link
+       description, the installer and the release names. -->
+  <PropertyGroup>
+    <AppDisplayName>The Last Piece</AppDisplayName>
+    <AppPublisher>The Last Piece</AppPublisher>
+    <Product>$(AppDisplayName)</Product>
+    <Company>$(AppPublisher)</Company>
+  </PropertyGroup>
+</Project>

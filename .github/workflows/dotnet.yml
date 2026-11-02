@@ -5,9 +5,9 @@ on:
     # Pushing a tag like v0.3.0 also publishes a GitHub Release that installed apps update from.
     branches: ["**"]
     tags: ["v*"]
-    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
+    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "Directory.Build.props", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
   pull_request:
-    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
+    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "Directory.Build.props", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
   workflow_dispatch:
 
 jobs:
@@ -60,7 +60,7 @@ jobs:
         shell: pwsh
         run: |
           Expand-Archive dist/TheLastPiece-win-x64.zip -DestinationPath check
-          foreach ($p in "TheLastPiece/TheLastPiece.exe","TheLastPiece/mpv/mpv.exe","TheLastPiece/mpv/portable_config/mpv.conf","TheLastPiece/syncplay/Syncplay.exe") {
+          foreach ($p in "TheLastPiece/TheLastPiece.exe","TheLastPiece/mpv/mpv.exe","TheLastPiece/mpv/portable_config/mpv.conf","TheLastPiece/mpv/portable_config/input.conf","TheLastPiece/syncplay/Syncplay.exe") {
             if (-not (Test-Path "check/$p")) { throw "missing $p" }
           }
           & check/TheLastPiece/mpv/mpv.exe --version
@@ -68,15 +68,29 @@ jobs:
           if (-not (Test-Path "check/TheLastPiece/syncplay/lib/libsync.zip")) { Write-Warning "syncplay/lib/libsync.zip not found; the portable settings file may not be read" }
           Get-ChildItem check/TheLastPiece/syncplay | Select-Object Name, Length | Format-Table -AutoSize
 
+      - name: Bundled mpv reads our settings and keys without errors
+        shell: pwsh
+        run: |
+          $app = Resolve-Path check/TheLastPiece
+          # A 10 minute silent test file for mpv to open (made with Python's standard library).
+          python -c "import wave; w=wave.open('selftest.wav','wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(8000); w.writeframes(bytes(2*8000*600)); w.close()"
+          if (-not (Test-Path selftest.wav)) { throw "could not make the test file" }
+          $p = Start-Process "$app/mpv/mpv.exe" -ArgumentList "--vo=null","--ao=null","--volume-max=300","--volume=250","--length=2","--log-file=$PWD/mpv-check.log","$PWD/selftest.wav" -PassThru -WindowStyle Hidden
+          if (-not $p.WaitForExit(60000)) { $p.Kill(); throw "mpv didn't finish a 2 second play" }
+          $log = Get-Content mpv-check.log
+          ($log | Select-String -SimpleMatch "mpv v" | Select-Object -First 1).Line
+          $bad = $log | Select-String -Pattern "(input\.conf|mpv\.conf|\[input\]|option).*(error|unknown|not found|invalid|failed)" 
+          if ($bad) { $bad | ForEach-Object { $_.Line }; throw "mpv complained about our mpv.conf or input.conf" }
+          if (-not ($log | Select-String -SimpleMatch "select.lua")) { throw "this mpv build has no select.lua, so the S and A menus won't work" }
+          if (-not ($log | Select-String -SimpleMatch "input.conf")) { throw "mpv didn't load our input.conf" }
+          Write-Host "mpv settings and keys: ok"
+
       - name: Self-test the real exe (window, pack, torrent, Syncplay join)
         shell: pwsh
         run: |
           $app = Resolve-Path check/TheLastPiece
           # CI only: no screen or speakers for mpv.
           Add-Content "$app/mpv/portable_config/mpv.conf" "`nvo=null`nao=null"
-          # A 10 minute silent test file for mpv to open (made with Python's standard library).
-          python -c "import wave; w=wave.open('selftest.wav','wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(8000); w.writeframes(bytes(2*8000*600)); w.close()"
-          if (-not (Test-Path selftest.wav)) { throw "could not make the test file" }
           # Syncplay's own server from the same download.
           $server = Get-ChildItem -Recurse -File "$app/syncplay" -Filter syncplayServer.exe | Select-Object -First 1
           if (-not $server) { throw "syncplayServer.exe isn't in the Syncplay download" }
@@ -91,6 +105,10 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "self-test exited with $($p.ExitCode)" }
           # Syncplay was started without its connect window; it should now be in the room with the file.
           python tools/smoketest.py --host 127.0.0.1 --port 8999 --password ci-pw --room ci --expect-user selftest --expect-file --wait 90
+          # The app's player choices reach mpv through Syncplay.
+          $mpvCmd = (Get-CimInstance Win32_Process -Filter "Name='mpv.exe'" | Select-Object -First 1).CommandLine
+          Write-Host "mpv started as: $mpvCmd"
+          if ($mpvCmd -notlike "*volume-max=300*") { throw "mpv wasn't given the app's volume setting" }
           Copy-Item "$app/syncplay/syncplay.ini" selftest-out/ -ErrorAction SilentlyContinue
           Get-Process Syncplay, mpv -ErrorAction SilentlyContinue | Stop-Process -Force
           Stop-Process -Id $srv.Id -Force
@@ -143,8 +161,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: pwsh
         run: |
+          $name = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.AppDisplayName | Where-Object { $_ } | Select-Object -First 1
           vpk upload github --repoUrl "https://github.com/${{ github.repository }}" --token "${{ secrets.GITHUB_TOKEN }}" `
-            --outputDir dist/installer --tag "${{ github.ref_name }}" --releaseName "The Last Piece $env:VERSION" --publish
+            --outputDir dist/installer --tag "${{ github.ref_name }}" --releaseName "$name $env:VERSION" --publish
 
       - name: Self-test output (window picture and log)
         if: always()
