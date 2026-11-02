@@ -90,9 +90,34 @@ class Viewer:
             pass
 
 
-async def run(host: str, port: int, password: str | None, room: str) -> None:
+async def wait_until_ready(host: str, port: int, password: str | None, room: str, seconds: float) -> None:
+    """Retry a full Hello round-trip until the server answers.
+
+    An open port isn't enough: Docker's port proxy accepts connections before
+    the server inside the container is listening, then drops them.
+    """
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + seconds
+    while True:
+        try:
+            probe = await Viewer.connect(host, port, "probe")
+            await probe.hello(room, password)
+            await probe.wait_for("Hello", timeout=2.0)
+            await probe.close()
+            return
+        except (OSError, ConnectionError, asyncio.TimeoutError, json.JSONDecodeError):
+            if loop.time() >= deadline:
+                raise
+            await asyncio.sleep(1.0)
+
+
+async def run(host: str, port: int, password: str | None, room: str, wait: float) -> None:
     def ok(msg: str) -> None:
         print(f"PASS  {msg}")
+
+    if wait > 0:
+        await wait_until_ready(host, port, password, room, wait)
+        ok("server is answering")
 
     # 1. Wrong password is rejected (only meaningful when the server has one).
     if password:
@@ -145,10 +170,12 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=8999)
     parser.add_argument("--password", default=None)
     parser.add_argument("--room", default="smoketest-temp")
+    parser.add_argument("--wait", type=float, default=30.0,
+                        help="seconds to wait for the server to answer before testing (0 = don't wait)")
     args = parser.parse_args()
 
     try:
-        asyncio.run(run(args.host, args.port, args.password, args.room))
+        asyncio.run(run(args.host, args.port, args.password, args.room, args.wait))
     except Exception as exc:  # noqa: BLE001 - report any failure plainly
         print(f"FAIL  {type(exc).__name__}: {exc}")
         return 1
