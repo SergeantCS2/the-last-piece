@@ -95,10 +95,41 @@ In the player:
 
 Updates download in the background and install the next time the app opens.
 
+### Running in WSL on Windows
+
+Docker inside WSL 2 sits behind Windows, so friends reach Windows first and Windows has to pass
+the connection on. Two ways (INFERRED from Microsoft's WSL networking docs; not tried on your PC yet):
+
+- **Mirrored networking (Windows 11 22H2 or later), best.** WSL then shares Windows' own network,
+  so ports 8080 and 8999 open on Windows directly and friends' real addresses reach the host,
+  which friend-to-friend sharing needs. Put this in `%UserProfile%\.wslconfig`, then run
+  `wsl --shutdown` and start WSL again:
+
+  ```ini
+  [wsl2]
+  networkingMode=mirrored
+  ```
+
+- **Port proxy, works anywhere.** In an admin PowerShell on Windows, with the WSL address from
+  `wsl hostname -I`:
+
+  ```powershell
+  netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=<WSL address>
+  netsh interface portproxy add v4tov4 listenport=8999 listenaddress=0.0.0.0 connectport=8999 connectaddress=<WSL address>
+  ```
+
+  Every friend then looks like the same Windows address to the host, so friends can't share
+  pieces with each other. Downloads still work from your copy. The WSL address can change after a
+  restart.
+
+Either way, Windows Firewall has to let 8080 and 8999 in, and the router forwards them to the
+Windows PC. The admin page's setup check warns when friends all show up as one inside address.
+
 ## 3. Phones
 
-**Synkplay** (Android, iOS) can join the same server and room: use the server address, room and
-password from the night page, with the mpv engine for proper anime subtitles. Not tested yet.
+**Synkplay** (Android, iOS) can join the same server and room. Open the night link on the phone:
+its "On a phone" part has the downloads and the server, port, room and password, each with a
+Copy button. Use Synkplay's mpv engine for proper anime subtitles. Not tested yet.
 
 ## Troubleshooting
 
@@ -106,5 +137,7 @@ password from the night page, with the mpv engine for proper anime subtitles. No
 |---|---|
 | Friends can't connect to Syncplay | Port 8999 forwarded? Run the smoke test above from outside your network. |
 | Downloads only come from the host | Normal when only one person has the file. Group torrents need two people downloading at once, or a friend who finished. |
+| The setup check says friends show up as an inside address | Docker or WSL is hiding their real addresses, so they can't share pieces. See "Running in WSL on Windows", or on a Linux server run the host with `network_mode: host`. |
+| The app says it can't reach the room server | Port 8999 isn't reachable: Syncplay isn't running, or the port isn't forwarded. The host's setup check shows which. |
 | Cleanup doesn't delete anything | The shelf folder must be writable by user 1654 (`sudo chown 1654 shelf`). |
 | "Who's ready" shows nobody in the room | `TLP_ROOM_HELPER` must be on, and Syncplay must not run with `--isolate-rooms`. |
