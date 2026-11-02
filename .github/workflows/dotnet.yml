@@ -132,7 +132,7 @@ jobs:
           "VERSION=$version" >> $env:GITHUB_ENV
           pwsh tools/make-installer.ps1 -Version $version
 
-      - name: Install, check and uninstall with the real Setup.exe
+      - name: Install, update, check and uninstall with the real Setup.exe
         shell: pwsh
         run: |
           $setup = Get-ChildItem dist/installer -Filter *Setup.exe | Select-Object -First 1
@@ -149,6 +149,29 @@ jobs:
           $cmd = (Get-ItemProperty "HKCU:\Software\Classes\tlp\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
           Write-Host "tlp:// opens: $cmd"
           if ($cmd -notlike "*TheLastPiece\current\TheLastPiece.exe*") { throw "the install hook didn't register tlp:// links" }
+
+          # Update path, without publishing a release: a newer package goes in a local folder, the
+          # installed app finds and downloads it the way it would from GitHub, and Velopack installs it.
+          if ($env:VERSION -notmatch '^(\d+)\.(\d+)\.(\d+)') { throw "can't read version $env:VERSION" }
+          $v2 = "$($Matches[1]).$($Matches[2]).$([int]$Matches[3] + 1)-updatetest.${{ github.run_number }}"
+          pwsh tools/make-installer.ps1 -Version $v2 -Out dist/update-feed
+          $feed = (Resolve-Path dist/update-feed).Path
+          $log = Join-Path $env:RUNNER_TEMP "update-test.txt"
+          $p = Start-Process (Join-Path $app "current/TheLastPiece.exe") -ArgumentList "--update-from", $feed, $log -PassThru
+          if (-not $p.WaitForExit(180000)) { throw "the update check didn't finish in 3 minutes" }
+          Get-Content $log -ErrorAction SilentlyContinue
+          if ($p.ExitCode -ne 0) { throw "the installed app didn't find or download the update (exit $($p.ExitCode))" }
+          $deadline = (Get-Date).AddMinutes(3)
+          do {
+            Start-Sleep 3
+            $ver = (Select-Xml -Path (Join-Path $app "current/sq.version") -XPath "//*[local-name()='version']" -ErrorAction SilentlyContinue).Node.InnerText
+          } until ($ver -eq $v2 -or (Get-Date) -gt $deadline)
+          Get-Process TheLastPiece -ErrorAction SilentlyContinue | Stop-Process -Force
+          if ($ver -ne $v2) { Get-ChildItem $app -Recurse -Depth 1 | Select-Object FullName | Format-Table -AutoSize; throw "installed version is '$ver', expected $v2 after the update" }
+          if (-not (Test-Path (Join-Path $app "current/mpv/mpv.exe"))) { throw "the update lost the bundled mpv" }
+          $cmd = (Get-ItemProperty "HKCU:\Software\Classes\tlp\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
+          if ($cmd -notlike "*TheLastPiece\current\TheLastPiece.exe*") { throw "tlp:// links weren't registered after the update" }
+          Write-Host "Update from $env:VERSION to ${v2}: ok"
           $u = Start-Process (Join-Path $app "Update.exe") -ArgumentList "uninstall","--silent" -PassThru
           if (-not $u.WaitForExit(120000)) { throw "uninstall didn't finish" }
           Start-Sleep 3

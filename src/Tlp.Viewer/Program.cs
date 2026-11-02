@@ -41,6 +41,9 @@ internal static class Program
             return BuildAvaloniaApp().StartWithClassicDesktopLifetime([]);
         }
 
+        if (args.Length >= 3 && args[0] == "--update-from")
+            return AppUpdates.TestUpdateFromAsync(args[1], args[2]).GetAwaiter().GetResult();
+
         if (args.Length >= 2 && args[0] == "--showcase")
         {
             Showcase = (args[1], args.Skip(2).Contains("settings"), args.Skip(2).Contains("dark"));
