@@ -282,7 +282,7 @@ Already removed: mpv's installer and updater scripts. For comparison, one 1080p 
 CI builds a Velopack installer (MIT) next to the zip, in the `TheLastPiece-installer` artifact:
 - `TheLastPiece-win-Setup.exe` installs to `%LOCALAPPDATA%\TheLastPiece` with no admin prompt, adds a Start menu entry, and registers `tlp://` links. Uninstalling from Windows Settings removes the link registration too.
 - The installed app checks GitHub Releases in the background. A new version downloads quietly and installs the next time the app opens, or straight away with "Restart to update". It never restarts while a download is running.
-- Releases are made by pushing a tag like `v0.3.0`, only with the host's yes. CI then builds, signs if set up, tests the installer and publishes the release, marked pre-release while we're testing; the app follows pre-releases for now. Nothing is published from ordinary pushes.
+- Releases are made by a tag like `v0.3.0`, only with the host's yes: pushed with git, or made on GitHub's "Draft a new release" page (CI then adds its files to that release). CI then builds, signs if set up, tests the installer and publishes the release, marked pre-release while we're testing; the app follows pre-releases for now. Nothing is published from ordinary pushes.
 - The zip stays for anyone who'd rather not install.
 
 `Setup.exe` is about 104 MB, a little more than the 88 MB zip because Velopack compresses less tightly.
