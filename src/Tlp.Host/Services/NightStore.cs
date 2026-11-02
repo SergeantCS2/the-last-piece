@@ -64,6 +64,32 @@ public sealed class NightStore
         _pins = copy;
     });
 
+    /// <summary>
+    /// Rewrites night items: <paramref name="change"/> returns a new item, or null to leave it.
+    /// Returns the shelf paths of the items that changed.
+    /// </summary>
+    public async Task<IReadOnlyList<string>> UpdateItemsAsync(Func<NightItem, NightItem?> change)
+    {
+        var changed = new List<string>();
+        await MutateAsync(() =>
+        {
+            _nights = _nights.Select(n =>
+            {
+                var touched = false;
+                var items = n.Items.Select(i =>
+                {
+                    var next = change(i);
+                    if (next is null) return i;
+                    touched = true;
+                    if (next.ShelfPath is not null) changed.Add(next.ShelfPath);
+                    return next;
+                }).ToList();
+                return touched ? n with { Items = items } : n;
+            }).ToList();
+        });
+        return changed.Distinct(StringComparer.Ordinal).ToList();
+    }
+
     private async Task MutateAsync(Action change)
     {
         await _lock.WaitAsync();

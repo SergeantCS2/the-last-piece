@@ -73,8 +73,17 @@ details.health>summary{cursor:pointer;font-weight:600}
       <div id="found"></div>
       <h3>Picked for this night</h3>
       <table><tbody id="picked"><tr><td class="muted">Tick shelf files below or add magnets above.</td></tr></tbody></table>
+      <p id="fetchOpt" class="hidden"><label style="display:flex;gap:.5em;align-items:center;font-weight:normal">
+        <input id="fetchToServer" type="checkbox" checked style="width:auto">
+        Also download magnets to my server, so friends get them from me instead of the public swarm</label></p>
       <p><button id="createBtn">Create night and get link</button> <span id="createErr" class="err"></span></p>
       <div id="created"></div>
+    </section>
+
+    <section class="card hidden" id="fetchCard">
+      <h2>Downloads to your server</h2>
+      <p class="muted">Magnets your server is downloading onto the shelf. When one finishes, nights that use it switch to your copy by themselves.</p>
+      <table><tbody id="fetches"></tbody></table>
     </section>
 
     <section class="card">
@@ -148,14 +157,40 @@ $('checkBtn').onclick = runChecks;
 
 async function refresh() {
   try {
-    const [shelf, nights, settings] = await Promise.all([api('GET', '/shelf'), api('GET', '/nights'), api('GET', '/settings')]);
+    const [shelf, nights, settings, fetches] = await Promise.all([api('GET', '/shelf'), api('GET', '/nights'), api('GET', '/settings'), api('GET', '/fetch')]);
     discordOn = settings.discord;
+    fetchOn = fetches.enabled;
+    $('fetchOpt').classList.toggle('hidden', !fetchOn);
+    renderFetches(fetches.items);
     roomBotOn = settings.roomBot;
     showApp();
     if (!checksRan) { checksRan = true; runChecks(); }
     renderShelf(shelf);
     renderNights(nights);
   } catch (e) { if (e.message !== 'unauthorized') showLogin(e.message); }
+}
+
+let fetchOn = false, fetchTimer = null;
+const fetchWords = { queued: 'Waiting', finding: 'Finding people sharing it', downloading: 'Downloading', moving: 'Moving to the shelf', done: 'On your shelf', failed: 'Failed' };
+function renderFetches(items) {
+  $('fetchCard').classList.toggle('hidden', !items.length);
+  $('fetches').innerHTML = items.map(f => `<tr>
+    <td class="path">${esc(f.name || f.id)}<div class="muted">${esc(fetchWords[f.state] || f.state)}${
+      f.state === 'downloading' ? ` · ${f.percent}%${f.size ? ' of ' + gb(f.size) : ''} · ${gb(f.rate)}/s · ${f.peers} peer(s)` : ''}${
+      f.state === 'done' ? ' · ' + esc(f.shelfPaths.join(', ')) : ''}</div>
+      ${f.state === 'downloading' ? `<div class="bar"><div style="width:${f.percent}%"></div></div>` : ''}
+      ${f.error ? `<div class="err">${esc(f.error)}</div>` : ''}</td>
+    <td style="width:1%"><button class="ghost" data-unfetch="${esc(f.id)}">${f.state === 'done' || f.state === 'failed' ? 'Clear' : 'Cancel'}</button></td></tr>`).join('');
+  const active = items.some(f => !['done', 'failed'].includes(f.state));
+  clearTimeout(fetchTimer);
+  if (active) fetchTimer = setTimeout(async () => {
+    try {
+      const r = await api('GET', '/fetch');
+      const wasActive = items.filter(f => !['done', 'failed'].includes(f.state)).length;
+      const nowActive = r.items.filter(f => !['done', 'failed'].includes(f.state)).length;
+      if (nowActive < wasActive) refresh(); else renderFetches(r.items);
+    } catch { }
+  }, 3000);
 }
 
 function renderShelf(s) {
@@ -251,6 +286,17 @@ document.addEventListener('click', async e => {
   }
   if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = 'Copied'; } catch { prompt('Copy this link', t.dataset.copy); } }
   if (t.dataset.unpick) { picked.splice(+t.dataset.unpick, 1); renderPicked(); refresh(); }
+  if (t.dataset.fetchmagnet) {
+    t.disabled = true; t.textContent = 'Starting…';
+    try { await api('POST', '/fetch', { magnet: t.dataset.fetchmagnet }); t.textContent = 'Downloading'; refresh(); }
+    catch (err) { t.disabled = false; t.textContent = 'Get to my server'; $('found').insertAdjacentHTML('beforeend', `<p class="err">${esc(err.message)}</p>`); }
+  }
+  if (t.dataset.unfetch) {
+    const f = t.closest('tr').querySelector('.path').firstChild.textContent;
+    if (t.textContent === 'Cancel' && !confirm(`Stop downloading ${f}? What's downloaded so far is deleted.`)) return;
+    await api('DELETE', '/fetch/' + encodeURIComponent(t.dataset.unfetch));
+    refresh();
+  }
   if (t.dataset.addmagnet) {
     const m = JSON.parse(t.dataset.addmagnet);
     picked.push({ magnet: m.uri, fileName: m.name || '' });
@@ -276,7 +322,8 @@ $('findBtn').onclick = async () => {
     const torrents = links.filter(l => l.kind === 'torrent');
     $('found').innerHTML = (magnets.length ? '<table>' + magnets.map(m => `
       <tr><td class="path">${esc(m.name || '(no name in magnet)')}</td>
-      <td><button class="ghost" data-addmagnet='${esc(JSON.stringify(m))}'>Add</button></td></tr>`).join('') + '</table>'
+      <td class="row" style="flex-wrap:nowrap"><button class="ghost" data-addmagnet='${esc(JSON.stringify(m))}'>Add</button>
+        ${fetchOn ? `<button class="ghost" data-fetchmagnet="${esc(m.uri)}">Get to my server</button>` : ''}</td></tr>`).join('') + '</table>'
       : '<p class="muted">No magnet links on that page.</p>') +
       (torrents.length ? `<p class="muted">Also found ${torrents.length} .torrent file link(s); .torrent support comes with the group torrent feature.</p>` : '');
   } catch (err) { $('found').innerHTML = `<p class="err">${esc(err.message)}</p>`; }
@@ -287,7 +334,7 @@ $('createBtn').onclick = async () => {
   for (const p of picked) if (p.magnet && !p.fileName) { $('createErr').textContent = 'A magnet has no file name; remove it or add a magnet that names its file.'; return; }
   try {
     const startsAt = $('startsAt').value ? new Date($('startsAt').value).toISOString() : null;
-    const n = await api('POST', '/nights', { title: $('title').value, startsAt, room: $('room').value || null, items: picked });
+    const n = await api('POST', '/nights', { title: $('title').value, startsAt, room: $('room').value || null, items: picked, fetchToServer: fetchOn && $('fetchToServer').checked });
     picked.length = 0; renderPicked();
     $('created').innerHTML = `<div class="card">Send this to your friends:<br><code>${esc(n.shareUrl)}</code>
       <p><button class="ghost" data-copy="${esc(n.shareUrl)}">Copy link</button></p></div>`;

@@ -52,6 +52,7 @@ option is in `src/Tlp.Host/TlpOptions.cs`.
 |---|---|---|
 | 8999/TCP | Syncplay | Forward it on your router. If your domain is on Cloudflare, that record must be DNS-only (grey cloud). |
 | 8080/TCP | Host app | Fine for a first test. |
+| 6890/TCP+UDP | Get to my server | Optional. Forwarding it makes the server's own torrent downloads faster. |
 | 80, 443/TCP | Host app over HTTPS | `docker compose --profile https up -d` with `TLP_DOMAIN` set and `TLP_BEHIND_PROXY=true`. |
 
 Check Syncplay from anywhere with Python 3:
@@ -62,7 +63,10 @@ python3 tools/smoketest.py --host <your address> --password '<password>' --room 
 
 ### A movie night
 
-1. Put the episodes in the shelf folder (or paste magnets or a release page in the admin page).
+1. Put the episodes in the shelf folder, or paste magnets or a release page in the admin page.
+   With **Get to my server** (or the tick box under the picked files), your server downloads the
+   magnet itself. Once it's on your shelf, the night hands friends your copy and your private
+   group torrent instead of the public swarm. Progress shows under **Downloads to your server**.
 2. **New movie night**: pick the files, a title and a start time.
 3. Copy the link, or press **Post to Discord** if you set a webhook.
 4. Before the start, open **Who's ready** to see who has the files and who's in the room.

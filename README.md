@@ -54,7 +54,7 @@
 - **Host knows who's ready.** The host keeps a quiet helper in Syncplay that fills each night's room playlist (so everyone moves to the next episode together) and shows, per friend, what's downloaded and who's in the room.
 - **Proper installer with auto-update.** `Setup.exe` installs per user with no admin prompt, registers movie night links, and updates itself from GitHub Releases. Signing slots into CI once the host picks a route (see [Signing](#signing)).
 - **Status:**
-  - 77 automated tests on Linux, including a group torrent between the real host app and two friends.
+  - 106 automated tests on Linux, including a group torrent between the real host app and two friends.
   - The room helper filled a real Syncplay 1.7.6 room's playlist, here and in CI.
   - The host runs in Docker.
   - On every push, GitHub Actions builds the Windows zip and runs the real `TheLastPiece.exe` on a Windows machine. It opens the window, downloads a test torrent, and starts the bundled Syncplay and mpv, which must join a real Syncplay server with the file open (see CI for the latest result).
@@ -130,6 +130,8 @@ One link per night. The host app turns it into a page with an "Open in The Last 
 | **Group torrent** (built in) | The host has the file on the shelf. Made automatically. | About one copy's worth, shared out: friends swap pieces, the host's shelf fills the gaps. |
 | **Public magnet** (built in) | The episode came from a public torrent. The host pastes the magnet, or pastes the page and the host app finds it. | None: friends download from the public swarm. |
 | **Host's copy** (plain download) | Fallback, or for anyone who prefers it. | One copy per friend. |
+
+**Get to my server.** The host can have the host download a public magnet onto its own shelf first ("Get to my server" next to a found magnet, or the tick box when creating a night). When it finishes, every night that lists that magnet switches to the host's copy by itself, so friends get it from his server: the group torrent (his own private "magnet") plus the plain download, with the public magnet left as a last resort. Half-downloaded files stay out of the shelf until they're complete, it resumes after a restart, and it stops sharing with the public swarm once done. PROVEN in a test with a real torrent transfer through the host app; INFERRED for public swarms and the host's network.
 
 - **Picking a source.** Each friend chooses in settings:
   - Best available (default): group torrent, then the host's copy, then the public magnet.
@@ -366,6 +368,7 @@ Optional settings in `server/.env`:
 - `TLP_DISCORD_WEBHOOK`: a Discord channel webhook (channel settings, Integrations, Webhooks). Adds a "Post to Discord" button to each night. Nothing is posted until you press it.
 - `TLP_BEHIND_PROXY=true`: set this when using the Caddy HTTPS profile, so the group torrent sees friends' real addresses.
 - `TLP_GROUP_TORRENTS=false`: turns group torrents off; friends then download from the host's copy or a magnet.
+- `TLP_FETCH=false`: turns off "Get to my server" (the host downloading public magnets onto its shelf). `TLP_FETCH_PORT` changes its torrent port (6890 by default).
 - `TLP_ROOM_HELPER=false`: turns off the room helper (room playlists and the in-room part of "who's ready").
 
 Checking the Syncplay server: `python3 tools/smoketest.py --password '<password>' --room movienight`.
@@ -388,7 +391,7 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 | `src/Tlp.Host` | Host app: API, admin page (`wwwroot`), cleanup, hashing, Dockerfile |
 | `src/Tlp.Viewer.Core` | Viewer logic: pack client, downloads, torrent, verify, Syncplay launch |
 | `src/Tlp.Viewer` | Windows app window (Avalonia), themes, installer hooks and updates |
-| `tests/Tlp.Tests` | 77 tests, including a group torrent through the real host app and a fake Syncplay server |
+| `tests/Tlp.Tests` | 106 tests, including a group torrent, a server-side magnet download through the real host app and a fake Syncplay server |
 | `server/` | Compose file, Syncplay image, Caddy |
 | `viewer/mpv.conf` | VLC look for the bundled mpv |
 | `tools/` | Syncplay smoke test, viewer zip packager, installer builder |

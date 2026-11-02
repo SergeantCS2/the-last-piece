@@ -37,6 +37,15 @@ public sealed class TlpOptions
     /// <summary>Your group's name, shown as the big title in friends' viewer apps. Empty shows "Movie night".</summary>
     public string? GroupName { get; set; }
 
+    /// <summary>Lets the host download public magnets onto its own shelf ("Get to my server").</summary>
+    public bool FetchEnabled { get; set; } = true;
+
+    /// <summary>Port the host's own torrent downloads listen on; 0 picks one. Forwarding it helps speed but isn't needed.</summary>
+    public int FetchPort { get; set; }
+
+    /// <summary>Find peers through DHT, local discovery and router port mapping. Tests turn this off.</summary>
+    public bool FetchPublicNetwork { get; set; } = true;
+
     /// <summary>Optional Discord webhook URL; the admin page can post a night's link there.</summary>
     public string? DiscordWebhookUrl { get; set; }
 

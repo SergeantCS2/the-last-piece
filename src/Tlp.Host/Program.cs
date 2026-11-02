@@ -23,6 +23,8 @@ builder.Services.AddSingleton<RoomBot>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<RoomBot>());
 builder.Services.AddHttpClient<DiscordAnnouncer>();
 builder.Services.AddSingleton<Diagnostics>();
+builder.Services.AddSingleton<ShelfFetcher>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<ShelfFetcher>());
 builder.Services.ConfigureHttpJsonOptions(o =>
 {
     o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
@@ -159,7 +161,7 @@ admin.MapPost("/cleanup", (CleanupService cleanup) => Results.Ok(cleanup.Run()))
 
 admin.MapGet("/nights", (NightStore store) => Results.Ok(store.Nights.Select(n => NightView.From(n, opts))));
 
-admin.MapPost("/nights", async (CreateNightRequest req, NightStore store, Shelf shelf, HashCache hashes, GroupTorrents torrents) =>
+admin.MapPost("/nights", async (CreateNightRequest req, NightStore store, Shelf shelf, HashCache hashes, GroupTorrents torrents, ShelfFetcher fetcher) =>
 {
     if (string.IsNullOrWhiteSpace(req.Title)) return Results.BadRequest(new { error = "Title is required." });
     if (req.Items is null || req.Items.Count == 0) return Results.BadRequest(new { error = "Add at least one file or magnet." });
@@ -190,6 +192,13 @@ admin.MapPost("/nights", async (CreateNightRequest req, NightStore store, Shelf 
 
     var room = string.IsNullOrWhiteSpace(req.Room) ? opts.Syncplay.DefaultRoom : req.Room.Trim();
     var night = await store.AddAsync(req.Title.Trim(), req.StartsAt, room, items);
+    if (req.FetchToServer == true && opts.FetchEnabled)
+    {
+        // The host downloads these itself; when done, the night switches to the host's copy.
+        foreach (var item in items.Where(x => x.ShelfPath is null && x.Magnet is not null))
+            await fetcher.AddAsync(item.Magnet!);
+        night = store.Nights.First(n => n.Id == night.Id);
+    }
     return Results.Ok(NightView.From(night, opts));
 });
 
@@ -236,6 +245,15 @@ admin.MapDelete("/nights/{id}", async (string id, NightStore store, ReadyBoard b
     return await store.RemoveAsync(id) ? Results.NoContent() : Results.NotFound();
 });
 
+admin.MapGet("/fetch", (ShelfFetcher fetcher) => Results.Ok(new { enabled = opts.FetchEnabled, items = fetcher.List() }));
+admin.MapPost("/fetch", async (FetchRequest req, ShelfFetcher fetcher) =>
+{
+    try { return Results.Ok(await fetcher.AddAsync(req.Magnet ?? "")); }
+    catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
+    catch (InvalidOperationException ex) { return Results.BadRequest(new { error = ex.Message }); }
+});
+admin.MapDelete("/fetch/{id}", async (string id, ShelfFetcher fetcher) => await fetcher.RemoveAsync(id) ? Results.NoContent() : Results.NotFound());
+
 admin.MapPost("/magnets/from-page", async (FromPageRequest req, PageFetcher fetcher, CancellationToken ct) =>
 {
     if (MagnetInfo.TryParse(req.Url, out var direct) && direct is not null)
@@ -257,7 +275,8 @@ app.Run();
 
 public sealed record PinRequest(string Path, bool Pinned);
 public sealed record FromPageRequest(string Url);
-public sealed record CreateNightRequest(string Title, DateTimeOffset? StartsAt, string? Room, IReadOnlyList<CreateNightItem> Items);
+public sealed record CreateNightRequest(string Title, DateTimeOffset? StartsAt, string? Room, IReadOnlyList<CreateNightItem> Items, bool? FetchToServer = null);
+public sealed record FetchRequest(string? Magnet);
 public sealed record CreateNightItem(string? ShelfPath, string? Magnet, string? FileName);
 
 public partial class Program;

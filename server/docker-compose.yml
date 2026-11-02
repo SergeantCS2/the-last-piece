@@ -15,6 +15,10 @@ services:
     restart: unless-stopped
     ports:
       - "${TLP_HTTP_PORT:-8080}:8080"
+      # Torrent port for "Get to my server" downloads. Forwarding it on the router makes them
+      # faster but isn't needed.
+      - "${TLP_FETCH_PORT:-6890}:6890/tcp"
+      - "${TLP_FETCH_PORT:-6890}:6890/udp"
     environment:
       Tlp__PublicBaseUrl: ${TLP_PUBLIC_URL:-http://localhost:8080}
       Tlp__AdminToken: ${TLP_ADMIN_TOKEN:-}
@@ -26,6 +30,8 @@ services:
       Tlp__GroupName: ${TLP_GROUP_NAME:-}
       Tlp__BehindProxy: ${TLP_BEHIND_PROXY:-false}
       Tlp__GroupTorrents: ${TLP_GROUP_TORRENTS:-true}
+      Tlp__FetchEnabled: ${TLP_FETCH:-true}
+      Tlp__FetchPort: 6890
       # The room helper reaches Syncplay over the compose network.
       Tlp__Syncplay__BotHost: syncplay
       Tlp__Syncplay__RoomBot: ${TLP_ROOM_HELPER:-true}
