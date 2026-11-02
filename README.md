@@ -66,7 +66,7 @@ Bandwidth if friends stream from the shelf live: a typical 1080p 24-minute episo
 | `server/docker-compose.yml` | Server, plus the optional shelf (`--profile shelf`) | **PROVEN**: both started here |
 | `server/Caddyfile` | Shelf: file browsing, shared login, byte-range requests for seeking | **PROVEN**: 401 without login, 200 with, 206 on range requests |
 | `tools/smoketest.py` | Fake two viewers: wrong password, join, pause sync, chat | **PROVEN**: passes against the container |
-| `.github/workflows/server-ci.yml` | Builds the image and runs the smoke test on every push | **UNKNOWN**: first run happens on this push |
+| `.github/workflows/server-ci.yml` | Builds the image and runs the smoke test on every push | **PROVEN**: green on GitHub Actions |
 | `viewer/README.md`, `syncplay.ini.example`, `mpv.conf` | Setup guide and starter config for friends | **INFERRED**: keys match Syncplay 1.7.6 source, not tried on a real client |
 | `docs/options.md` | Survey of every option and why | Sources linked |
 
