@@ -20,7 +20,7 @@ Remote movie and anime night that looks as good as watching alone, without Disco
 - **Status:**
   - Host and viewer logic are tested on Linux, including a real torrent download between two peers (47 automated tests).
   - The host runs in Docker.
-  - The Windows app and the zip with mpv and Syncplay build in GitHub Actions but **have not been run on a Windows PC yet**.
+  - The Windows zip with mpv and Syncplay builds in GitHub Actions, but **nobody has run it on a Windows PC yet**.
 
 ![Viewer app preview](docs/viewer-preview.png)
 
@@ -164,7 +164,7 @@ Viewer app (Windows):
 - [x] Downloads each file by torrent or from the host, with progress and resume, then verifies. PROVEN on Linux.
 - [x] Settings: your name, movie night folder, source preference, chat style, seed while open.
 - [x] Join: writes Syncplay's per-folder `.syncplay` config and opens the bundled Syncplay with the server, room, password, name, mpv and the first episode. PROVEN that the command line and config are what Syncplay 1.7.6's source expects; INFERRED that it all works together on Windows.
-- [x] Zip with `TheLastPiece.exe`, portable mpv with our `mpv.conf`, and portable Syncplay, built by GitHub Actions. See CI for the current state.
+- [x] Zip with `TheLastPiece.exe`, portable mpv with our `mpv.conf`, and portable Syncplay, built by GitHub Actions. PROVEN that it builds (about 120 MB) and that the bundled mpv starts on a Windows runner. Download it from the latest `dotnet` run under Actions.
 - [ ] Tried on a real Windows PC.
 - [ ] Single instance: clicking a second link while the app is open currently opens a second window.
 
