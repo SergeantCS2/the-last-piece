@@ -247,7 +247,7 @@ Phone:
 - [x] Swap in the picked logo and look (app icon, host pages' tab icon and header, README).
 - [ ] Screenshots of the player and host pages further down (needs a browser and mpv on a real machine; INFERRED until then).
 - [x] [Setup guide](docs/setup.md) and [contributing guide](CONTRIBUTING.md), for those README links.
-- [ ] Licence file (the host leans MIT).
+- [x] MIT licence (2026-11-02).
 - [ ] First person-tested night (the checklist below).
 
 **Later**
@@ -282,7 +282,7 @@ Already removed: mpv's installer and updater scripts. For comparison, one 1080p 
 CI builds a Velopack installer (MIT) next to the zip, in the `TheLastPiece-installer` artifact:
 - `TheLastPiece-win-Setup.exe` installs to `%LOCALAPPDATA%\TheLastPiece` with no admin prompt, adds a Start menu entry, and registers `tlp://` links. Uninstalling from Windows Settings removes the link registration too.
 - The installed app checks GitHub Releases in the background. A new version downloads quietly and installs the next time the app opens, or straight away with "Restart to update". It never restarts while a download is running.
-- Releases are made by pushing a tag like `v0.3.0`. CI then builds, signs if set up, tests the installer and publishes the release. Nothing is published from ordinary pushes, and only the host pushes tags.
+- Releases are made by pushing a tag like `v0.3.0`, only with the host's yes. CI then builds, signs if set up, tests the installer and publishes the release, marked pre-release while we're testing; the app follows pre-releases for now. Nothing is published from ordinary pushes.
 - The zip stays for anyone who'd rather not install.
 
 `Setup.exe` is about 104 MB, a little more than the 88 MB zip because Velopack compresses less tightly.
@@ -404,12 +404,14 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 
 ## Open decisions
 
-Settled: unsigned for now with SignPath later; name and publisher "The Last Piece" (changeable in `Directory.Build.props`); the webhook post plus the admin page, no Discord bot.
+Settled: MIT licence; the plain Default look; the Neon logo; test releases on GitHub marked pre-release; unsigned for now with SignPath later; name and publisher "The Last Piece" (changeable in `Directory.Build.props`); the webhook post plus the admin page, no Discord bot.
 
 Open:
 1. **Where does the first real night run?** WSL on your PC or the Linux server.
 2. **A domain for HTTPS?** Friends can start on `http://<ip>:8080`.
 3. **Who's the test friend?**
-4. **Licence.** MIT is the likely pick. It isn't in the repo yet because, once published, a licence can't be taken back for that code.
-5. **Looks.** Which of the four ship, and which is the default.
-6. **Logo.** One of the three concepts in `docs/logo`, or a new direction.
+
+
+## Licence
+
+MIT, see [LICENSE](LICENSE). The viewer bundles Syncplay, mpv, fonts and libraries under their own licences, listed in `THIRD-PARTY-NOTICES.txt` next to the app.

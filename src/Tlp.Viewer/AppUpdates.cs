@@ -16,7 +16,7 @@ public static class AppUpdates
     private static UpdateInfo? _ready;
 
     /// <summary>Where updates come from: GitHub Releases, or a local folder for the CI update test.</summary>
-    private static IUpdateSource Source { get; set; } = new GithubSource(ReleasesRepo, null, false);
+    private static IUpdateSource Source { get; set; } = new GithubSource(ReleasesRepo, null, prerelease: true);
 
     /// <summary>The last error from a check, for the update test's log. Normal use ignores it.</summary>
     public static Exception? LastError { get; private set; }

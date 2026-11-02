@@ -75,6 +75,7 @@ Copy-Item (Join-Path $root "viewer/input.conf") (Join-Path $stage "mpv/portable_
 # 4. Notices.
 New-Item -ItemType Directory -Force (Join-Path $stage "licenses/fonts") | Out-Null
 Copy-Item (Join-Path $root "src/Tlp.Viewer/Assets/Fonts/licenses/*.txt") (Join-Path $stage "licenses/fonts")
+Copy-Item (Join-Path $root "LICENSE") (Join-Path $stage "LICENSE.txt")
 @"
 $((Get-Item (Join-Path $stage 'TheLastPiece.exe')).VersionInfo.ProductName) viewer $((Get-Item (Join-Path $stage 'TheLastPiece.exe')).VersionInfo.ProductVersion)
 

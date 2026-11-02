@@ -190,7 +190,7 @@ jobs:
         run: |
           $name = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.AppDisplayName | Where-Object { $_ } | Select-Object -First 1
           vpk upload github --repoUrl "https://github.com/${{ github.repository }}" --token "${{ secrets.GITHUB_TOKEN }}" `
-            --outputDir dist/installer --tag "${{ github.ref_name }}" --releaseName "$name $env:VERSION" --publish
+            --outputDir dist/installer --tag "${{ github.ref_name }}" --releaseName "$name $env:VERSION" --publish --pre
 
       - name: Self-test output (window picture and log)
         if: always()
