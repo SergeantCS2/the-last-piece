@@ -69,16 +69,16 @@ jobs:
           $app = Resolve-Path check/TheLastPiece
           # CI only: no screen or speakers for mpv.
           Add-Content "$app/mpv/portable_config/mpv.conf" "`nvo=null`nao=null"
-          # A short test video, made by the bundled mpv itself.
-          & "$app/mpv/mpv.exe" "av://lavfi:testsrc=duration=600:size=320x240:rate=5" --o="$PWD/selftest.mkv" --of=matroska --ovc=mpeg4 --length=5 --really-quiet
-          if (-not (Test-Path selftest.mkv)) { throw "could not make the test video" }
+          # A 10 minute silent test file for mpv to open (made with Python's standard library).
+          python -c "import wave; w=wave.open('selftest.wav','wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(8000); w.writeframes(bytes(2*8000*600)); w.close()"
+          if (-not (Test-Path selftest.wav)) { throw "could not make the test file" }
           # Syncplay's own server from the same download.
           $server = Get-ChildItem -Recurse -File "$app/syncplay" -Filter syncplayServer.exe | Select-Object -First 1
           if (-not $server) { throw "syncplayServer.exe isn't in the Syncplay download" }
           $srv = Start-Process $server.FullName -ArgumentList "--port","8999","--password","ci-pw" -PassThru -WindowStyle Hidden
           python tools/smoketest.py --host 127.0.0.1 --port 8999 --password ci-pw --room warmup --wait 60
           $env:TLP_SELFTEST_SYNCPLAY = "127.0.0.1:8999:ci-pw"
-          $env:TLP_SELFTEST_MEDIA = "$PWD/selftest.mkv"
+          $env:TLP_SELFTEST_MEDIA = "$PWD/selftest.wav"
           # WaitForExit on the app only; -Wait would also wait for the Syncplay it starts.
           $p = Start-Process "$app/TheLastPiece.exe" -ArgumentList "--self-test","$PWD/selftest-out" -PassThru
           if (-not $p.WaitForExit(180000)) { $p.Kill(); throw "self-test didn't finish in 3 minutes" }

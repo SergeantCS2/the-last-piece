@@ -89,9 +89,9 @@ internal static class SelfTest
     private static string LaunchSyncplay(string server, string? media, string temp)
     {
         var parts = server.Split(':', 3);
-        if (media is null || !File.Exists(media)) throw new FileNotFoundException("TLP_SELFTEST_MEDIA must point at a video file", media);
+        if (media is null || !File.Exists(media)) throw new FileNotFoundException("TLP_SELFTEST_MEDIA must point at a media file", media);
         var folder = Directory.CreateDirectory(Path.Combine(temp, "night")).FullName;
-        const string name = "selftest.mkv";
+        var name = "selftest" + Path.GetExtension(media);
         File.Copy(media, Path.Combine(folder, name), overwrite: true);
         var pack = new Pack
         {
