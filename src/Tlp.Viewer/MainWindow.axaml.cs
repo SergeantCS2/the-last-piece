@@ -37,6 +37,20 @@ public partial class MainWindow : Window
         Closing += async (_, _) => { _downloading?.Cancel(); if (_torrents is not null) await _torrents.DisposeAsync(); };
         _reportTimer = new DispatcherTimer(TimeSpan.FromSeconds(5), DispatcherPriority.Background, async (_, _) => await ReportIfDueAsync());
         _reportTimer.Start();
+        UpdateButton.Click += (_, _) =>
+        {
+            if (_downloading is not null) { UpdateText.Text = "Wait for downloads to finish, then restart to update."; return; }
+            AppUpdates.RestartNow();
+        };
+        Opened += async (_, _) =>
+        {
+            if (Program.SelfTestDir is not null) return;
+            if (await AppUpdates.DownloadInBackgroundAsync() is { } version)
+            {
+                UpdateText.Text = $"Version {version} is ready. It installs next time you open the app, or now if you restart.";
+                UpdateBar.IsVisible = true;
+            }
+        };
 
         if (!string.IsNullOrWhiteSpace(startupLink))
         {
@@ -235,7 +249,7 @@ public partial class MainWindow : Window
             var report = new ViewerReport
             {
                 Name = _settings.Name,
-                App = typeof(MainWindow).Assembly.GetName().Version?.ToString(3),
+                App = AppUpdates.CurrentVersion,
                 Files = _rows.Select(r => r.Shared).ToList(),
             };
             await StatusReporter.SendAsync(Http, _pack, report);

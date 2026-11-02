@@ -2,9 +2,12 @@ name: dotnet
 
 on:
   push:
-    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
+    # Pushing a tag like v0.3.0 also publishes a GitHub Release that installed apps update from.
+    branches: ["**"]
+    tags: ["v*"]
+    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
   pull_request:
-    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
+    paths: ["src/**", "tests/**", "viewer/**", "tools/package-viewer.ps1", "tools/make-installer.ps1", "TheLastPiece.sln", ".github/workflows/dotnet.yml"]
   workflow_dispatch:
 
 jobs:
@@ -41,6 +44,8 @@ jobs:
 
   viewer-zip:
     runs-on: windows-latest
+    permissions:
+      contents: write   # only used on a v* tag, to publish the release
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -89,6 +94,57 @@ jobs:
           Copy-Item "$app/syncplay/syncplay.ini" selftest-out/ -ErrorAction SilentlyContinue
           Get-Process Syncplay, mpv -ErrorAction SilentlyContinue | Stop-Process -Force
           Stop-Process -Id $srv.Id -Force
+
+      - name: Installer (signed when signing is set up)
+        shell: pwsh
+        env:
+          SIGN_ENDPOINT: ${{ vars.SIGN_ENDPOINT }}
+          SIGN_ACCOUNT: ${{ vars.SIGN_ACCOUNT }}
+          SIGN_PROFILE: ${{ vars.SIGN_PROFILE }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        run: |
+          $base = ([xml](Get-Content src/Tlp.Viewer/Tlp.Viewer.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          $version = if ("${{ github.ref }}" -like "refs/tags/v*") { "${{ github.ref_name }}".TrimStart("v") } else { "$base-ci.${{ github.run_number }}" }
+          "VERSION=$version" >> $env:GITHUB_ENV
+          pwsh tools/make-installer.ps1 -Version $version
+
+      - name: Install, check and uninstall with the real Setup.exe
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem dist/installer -Filter *Setup.exe | Select-Object -First 1
+          if (-not $setup) { throw "no Setup.exe was made" }
+          $p = Start-Process $setup.FullName -ArgumentList "--silent" -PassThru
+          if (-not $p.WaitForExit(180000)) { throw "Setup.exe didn't finish in 3 minutes" }
+          Start-Sleep 5
+          Get-Process TheLastPiece -ErrorAction SilentlyContinue | Stop-Process -Force
+          $app = Join-Path $env:LOCALAPPDATA "TheLastPiece"
+          Get-ChildItem $app | Select-Object Name | Format-Table -AutoSize
+          foreach ($f in "current/TheLastPiece.exe", "current/mpv/mpv.exe", "current/syncplay/Syncplay.exe", "Update.exe") {
+            if (-not (Test-Path (Join-Path $app $f))) { throw "installed copy is missing $f" }
+          }
+          $cmd = (Get-ItemProperty "HKCU:\Software\Classes\tlp\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
+          Write-Host "tlp:// opens: $cmd"
+          if ($cmd -notlike "*TheLastPiece\current\TheLastPiece.exe*") { throw "the install hook didn't register tlp:// links" }
+          $u = Start-Process (Join-Path $app "Update.exe") -ArgumentList "uninstall","--silent" -PassThru
+          if (-not $u.WaitForExit(120000)) { throw "uninstall didn't finish" }
+          Start-Sleep 3
+          if (Test-Path "HKCU:\Software\Classes\tlp") { throw "uninstall left the tlp:// registration behind" }
+          if (Test-Path (Join-Path $app "current/TheLastPiece.exe")) { throw "uninstall left the app behind" }
+          Write-Host "Install and uninstall: ok"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TheLastPiece-installer
+          path: dist/installer/
+
+      - name: Publish the GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          vpk upload github --repoUrl "https://github.com/${{ github.repository }}" --token "${{ secrets.GITHUB_TOKEN }}" `
+            --outputDir dist/installer --tag "${{ github.ref_name }}" --releaseName "The Last Piece $env:VERSION" --publish
 
       - name: Self-test output (window picture and log)
         if: always()

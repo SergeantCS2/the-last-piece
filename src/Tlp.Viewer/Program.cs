@@ -1,5 +1,6 @@
 using Avalonia;
 using Tlp.Viewer.Core;
+using Velopack;
 
 namespace Tlp.Viewer;
 
@@ -16,6 +17,16 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        // Must run first: when the installer or updater starts the app with its own arguments,
+        // this runs the matching hook and exits. Otherwise it does nothing.
+        var velopack = VelopackApp.Build();
+        if (OperatingSystem.IsWindows())
+            velopack = velopack
+                .OnAfterInstallFastCallback(_ => ProtocolHandler.EnsureRegistered())
+                .OnAfterUpdateFastCallback(_ => ProtocolHandler.EnsureRegistered())
+                .OnBeforeUninstallFastCallback(_ => ProtocolHandler.Unregister());
+        velopack.Run();
+
         if (args.Length >= 2 && args[0] == "--self-test")
         {
             SelfTestDir = args[1];

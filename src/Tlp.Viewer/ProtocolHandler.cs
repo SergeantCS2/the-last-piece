@@ -23,4 +23,22 @@ public static class ProtocolHandler
             // Not fatal: friends can still paste the link.
         }
     }
+
+    /// <summary>Removes tlp:// on uninstall, but only if it still points at this copy of the app.</summary>
+    public static void Unregister()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        try
+        {
+            using var cmd = Registry.CurrentUser.OpenSubKey(@"Software\Classes\tlp\shell\open\command");
+            var current = cmd?.GetValue("") as string;
+            var exe = Environment.ProcessPath;
+            if (current is null || exe is null || !current.Contains(exe, StringComparison.OrdinalIgnoreCase)) return;
+            cmd!.Dispose();
+            Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\tlp", throwOnMissingSubKey: false);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+        }
+    }
 }

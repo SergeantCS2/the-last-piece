@@ -9,7 +9,7 @@
     <RootNamespace>Tlp.Viewer</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- Trimming drops unused framework code: about 42 MB of the zip down to about 18 MB.
          Only takes effect on publish. MonoTorrent and Mono.Nat are kept whole because they
@@ -23,6 +23,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.22" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +35,7 @@
     <TrimmerRootAssembly Include="MonoTorrent.PortForwarding" />
     <TrimmerRootAssembly Include="MonoTorrent.Trackers" />
     <TrimmerRootAssembly Include="Mono.Nat" />
+    <TrimmerRootAssembly Include="Velopack" />
   </ItemGroup>
 
   <ItemGroup>

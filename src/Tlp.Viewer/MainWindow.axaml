@@ -45,6 +45,12 @@
           <Button x:Name="SaveButton" Content="Save settings"/>
         </StackPanel>
       </Expander>
+      <Border x:Name="UpdateBar" Classes="card" Padding="10,6" IsVisible="False">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock x:Name="UpdateText" VerticalAlignment="Center" TextWrapping="Wrap"/>
+          <Button x:Name="UpdateButton" Grid.Column="1" Margin="8,0,0,0" Content="Restart to update"/>
+        </Grid>
+      </Border>
       <Grid ColumnDefinitions="*,Auto,Auto">
         <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap"/>
         <Button x:Name="DownloadButton" Grid.Column="1" Margin="8,0,0,0" Content="Download all" IsEnabled="False"/>
