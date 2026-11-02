@@ -73,6 +73,8 @@ Copy-Item (Join-Path $root "viewer/mpv.conf") (Join-Path $stage "mpv/portable_co
 Copy-Item (Join-Path $root "viewer/input.conf") (Join-Path $stage "mpv/portable_config/input.conf")
 
 # 4. Notices.
+New-Item -ItemType Directory -Force (Join-Path $stage "licenses/fonts") | Out-Null
+Copy-Item (Join-Path $root "src/Tlp.Viewer/Assets/Fonts/licenses/*.txt") (Join-Path $stage "licenses/fonts")
 @"
 $((Get-Item (Join-Path $stage 'TheLastPiece.exe')).VersionInfo.ProductName) viewer $((Get-Item (Join-Path $stage 'TheLastPiece.exe')).VersionInfo.ProductVersion)
 
@@ -86,6 +88,9 @@ Libraries built into TheLastPiece.exe:
 - SkiaSharp and HarfBuzzSharp, MIT License, with Skia (BSD 3-Clause) and HarfBuzz (MIT-style), https://github.com/mono/SkiaSharp
 - MonoTorrent, MIT License, https://github.com/alanmcgovern/monotorrent
 - Velopack (installer and updates), MIT License, https://github.com/velopack/velopack
+
+Fonts used by the app's looks, SIL Open Font License 1.1 (licence texts in licenses/fonts):
+Nunito, Cinzel, Lora, JetBrains Mono, Orbitron, Rajdhani, Audiowide, VT323.
 "@ | Set-Content (Join-Path $stage "THIRD-PARTY-NOTICES.txt")
 
 New-Item -ItemType Directory -Force (Join-Path $root $Out) | Out-Null

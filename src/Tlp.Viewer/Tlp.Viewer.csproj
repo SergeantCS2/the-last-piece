@@ -39,6 +39,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Theme fonts, SIL Open Font License (licenses next to them). -->
+    <AvaloniaResource Include="Assets\Fonts\*.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Tlp.Viewer.Core\Tlp.Viewer.Core.csproj" />
   </ItemGroup>
 

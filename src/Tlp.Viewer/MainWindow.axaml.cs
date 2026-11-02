@@ -34,6 +34,11 @@ public partial class MainWindow : Window
         DownloadButton.Click += async (_, _) => await DownloadAllAsync();
         JoinButton.Click += (_, _) => Join();
         SaveButton.Click += (_, _) => SaveSettings();
+        // Picking a look previews it straight away; Save settings keeps it.
+        ThemeBox.SelectionChanged += (_, _) =>
+        {
+            if (ThemeBox.SelectedItem is string name && Avalonia.Application.Current is { } app) ThemeManager.Apply(app, name);
+        };
         BrowseButton.Click += async (_, _) => await BrowseAsync();
         Closing += async (_, _) => { _downloading?.Cancel(); if (_torrents is not null) await _torrents.DisposeAsync(); };
         _reportTimer = new DispatcherTimer(TimeSpan.FromSeconds(5), DispatcherPriority.Background, async (_, _) => await ReportIfDueAsync());

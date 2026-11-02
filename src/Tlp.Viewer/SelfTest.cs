@@ -48,7 +48,7 @@ internal static class SelfTest
             foreach (var name in ThemeManager.Available)
             {
                 ThemeManager.Apply(Avalonia.Application.Current!, name);
-                foreach (var key in new[] { "TlpWindowBackground", "TlpSurface", "TlpBorder", "TlpText", "TlpMutedText", "TlpAccent", "TlpAccentText", "TlpProgress", "TlpTitleFont", "TlpBodyFont", "TlpTitleSize", "TlpCorner" })
+                foreach (var key in new[] { "TlpWindowBackground", "TlpSurface", "TlpBorder", "TlpText", "TlpMutedText", "TlpAccent", "TlpAccentText", "TlpProgress", "TlpTitleFont", "TlpBodyFont", "TlpTitleSize", "TlpCorner", "TlpInput", "TlpTitleForeground", "TlpTitleSpacing", "TlpBodySize", "TlpHeadingSize", "TlpSmallSize", "TlpVariant" })
                     if (!window.TryFindResource(key, window.ActualThemeVariant, out _)) throw new InvalidDataException($"theme {name} has no {key}");
             }
             ThemeManager.Apply(Avalonia.Application.Current!, ThemeManager.DefaultTheme);
@@ -77,6 +77,28 @@ internal static class SelfTest
             bitmap.Render(window);
             bitmap.Save(Path.Combine(dir, "viewer.png"));
             log.Add("screenshot: ok");
+
+            // One picture per theme, for choosing between the drafts.
+            var settings = window.FindControl<Expander>("SettingsExpander");
+            if (settings is not null) settings.IsExpanded = true;
+            var oldHeight = window.Height;
+            window.Height = 1040;
+            foreach (var name in ThemeManager.Available)
+            {
+                ThemeManager.Apply(Avalonia.Application.Current!, name);
+                window.ThemeBox.SelectedItem = name;
+                await Task.Delay(100);
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                using var themed = new RenderTargetBitmap(new PixelSize((int)window.Bounds.Width, (int)window.Bounds.Height));
+                themed.Render(window);
+                themed.Save(Path.Combine(dir, $"theme-{name.Replace(' ', '-').ToLowerInvariant()}.png"));
+            }
+            if (settings is not null) settings.IsExpanded = false;
+            window.ThemeBox.SelectedItem = ThemeManager.DefaultTheme;
+            window.Height = oldHeight;
+            ThemeManager.Apply(Avalonia.Application.Current!, ThemeManager.DefaultTheme);
+            log.Add("theme pictures: ok");
 
             log.Add("PASS");
             return 0;

@@ -8,11 +8,22 @@
     <Setter Property="Background" Value="{DynamicResource TlpWindowBackground}"/>
     <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
     <Setter Property="FontFamily" Value="{DynamicResource TlpBodyFont}"/>
+    <Setter Property="FontSize" Value="{DynamicResource TlpBodySize}"/>
   </Style>
   <Style Selector="TextBlock.title">
     <Setter Property="FontFamily" Value="{DynamicResource TlpTitleFont}"/>
     <Setter Property="FontSize" Value="{DynamicResource TlpTitleSize}"/>
     <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpTitleForeground}"/>
+    <Setter Property="LetterSpacing" Value="{DynamicResource TlpTitleSpacing}"/>
+    <Setter Property="Effect" Value="{DynamicResource TlpTitleEffect}"/>
+  </Style>
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="{DynamicResource TlpHeadingSize}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="TextBlock.small">
+    <Setter Property="FontSize" Value="{DynamicResource TlpSmallSize}"/>
   </Style>
   <Style Selector="TextBlock.muted">
     <Setter Property="Foreground" Value="{DynamicResource TlpMutedText}"/>
@@ -25,6 +36,36 @@
   </Style>
   <Style Selector="ProgressBar">
     <Setter Property="Foreground" Value="{DynamicResource TlpProgress}"/>
+  </Style>
+  <Style Selector="TextBox, ComboBox">
+    <Setter Property="Background" Value="{DynamicResource TlpInput}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
+  </Style>
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource TlpInput}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
+  </Style>
+  <Style Selector="Expander">
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="Background" Value="{DynamicResource TlpSurface}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
+  </Style>
+  <Style Selector="Expander /template/ ToggleButton#ExpanderHeader">
+    <Setter Property="Background" Value="{DynamicResource TlpSurface}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
+  </Style>
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
+  </Style>
+  <Style Selector="CheckBox /template/ ContentPresenter#ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
   </Style>
   <Style Selector="Button.accent">
     <Setter Property="Background" Value="{DynamicResource TlpAccent}"/>

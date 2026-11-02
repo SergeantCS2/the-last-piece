@@ -13,6 +13,13 @@ public static class ThemeManager
     private static readonly (string Name, Func<ResourceDictionary> Make)[] Themes =
     [
         (DefaultTheme, () => new Themes.DefaultTheme()),
+        // Drafts for the host to pick from. The one he picks gets finished; the rest come out.
+        ("Sakura", () => new Themes.SakuraTheme()),
+        ("Marquee", () => new Themes.MarqueeTheme()),
+        ("Console", () => new Themes.ConsoleTheme()),
+        ("Neon City", () => new Themes.NeonCityTheme()),
+        ("Outrun", () => new Themes.OutrunTheme()),
+        ("Green Screen", () => new Themes.GreenScreenTheme()),
     ];
 
     public static readonly IReadOnlyList<string> Available = Themes.Select(t => t.Name).ToList();

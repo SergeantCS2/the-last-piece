@@ -16,6 +16,8 @@
       <SolidColorBrush x:Key="TlpAccent" Color="#C0392B"/>
       <SolidColorBrush x:Key="TlpAccentText" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="TlpProgress" Color="#C0392B"/>
+      <SolidColorBrush x:Key="TlpInput" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="TlpTitleForeground" Color="#1A1A1A"/>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="TlpWindowBackground" Color="#121212"/>
@@ -26,11 +28,18 @@
       <SolidColorBrush x:Key="TlpAccent" Color="#E74C3C"/>
       <SolidColorBrush x:Key="TlpAccentText" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="TlpProgress" Color="#E74C3C"/>
+      <SolidColorBrush x:Key="TlpInput" Color="#262626"/>
+      <SolidColorBrush x:Key="TlpTitleForeground" Color="#EEEEEE"/>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
   <FontFamily x:Key="TlpBodyFont">fonts:Inter#Inter, $Default</FontFamily>
   <FontFamily x:Key="TlpTitleFont">fonts:Inter#Inter, $Default</FontFamily>
   <x:Double x:Key="TlpTitleSize">24</x:Double>
+  <x:Double x:Key="TlpTitleSpacing">0</x:Double>
+  <x:Double x:Key="TlpHeadingSize">18</x:Double>
+  <x:Double x:Key="TlpSmallSize">12</x:Double>
+  <x:Double x:Key="TlpBodySize">14</x:Double>
+  <!-- Optional: <DropShadowEffect x:Key="TlpTitleEffect" .../> gives the title a glow. -->
   <CornerRadius x:Key="TlpCorner">8</CornerRadius>
   <!-- Light, Dark or Default (follow Windows). A theme with fixed colours picks one. -->
   <x:String x:Key="TlpVariant">Default</x:String>

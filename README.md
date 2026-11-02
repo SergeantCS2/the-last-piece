@@ -267,7 +267,11 @@ Costs and rules are from the providers' pages in late 2026 (INFERRED that they h
 
 Every colour, font, size and corner in the viewer app comes from one theme file (`src/Tlp.Viewer/Themes/Default.axaml`), with light and dark variants. A theme picker appears in Settings as soon as there's more than one theme. The app's self-test checks each theme defines every setting.
 
-Planned drafts for the host to choose from once the core is tested: anime, movie and fantasy, tech, cyberpunk, synthwave, and a retro green terminal look inspired by 1950s-future computer terminals. The drafts use our own colours and fonts, with no artwork, logos or names from any game or film.
+Six drafts are in the app now for the host to pick from (Settings, "Look"; picking one previews it). Sakura (anime), Marquee (movie and fantasy), Console (tech), Neon City (cyberpunk), Outrun (synthwave) and Green Screen (a retro terminal inspired by 1950s-future computer terminals). They use our own colours and freely licensed fonts, with no artwork, logos or names from any game or film. Once one is picked it gets finished (hover and focus states, the admin page, the player's on-screen look) and the rest come out.
+
+![Theme drafts](docs/themes/all-drafts.png)
+
+*Rendered by the app's self-test on Linux. Single pictures are in `docs/themes`.*
 
 ## First test checklist
 

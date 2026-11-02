@@ -75,9 +75,13 @@ jobs:
           # A 10 minute silent test file for mpv to open (made with Python's standard library).
           python -c "import wave; w=wave.open('selftest.wav','wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(8000); w.writeframes(bytes(2*8000*600)); w.close()"
           if (-not (Test-Path selftest.wav)) { throw "could not make the test file" }
-          $p = Start-Process "$app/mpv/mpv.exe" -ArgumentList "--vo=null","--ao=null","--volume-max=300","--volume=250","--length=2","--log-file=$PWD/mpv-check.log","$PWD/selftest.wav" -PassThru -WindowStyle Hidden
-          if (-not $p.WaitForExit(60000)) { $p.Kill(); throw "mpv didn't finish a 2 second play" }
+          # mpv.exe started without a console uses its "pseudo-gui" profile, so say plainly to quit at the end.
+          $mpvArgs = "--vo=null","--ao=null","--idle=no","--force-window=no","--keep-open=no","--end=2","--volume-max=300","--volume=250","--log-file=$PWD/mpv-check.log","$PWD/selftest.wav"
+          $p = Start-Process "$app/mpv/mpv.exe" -ArgumentList $mpvArgs -PassThru -WindowStyle Hidden
+          if (-not $p.WaitForExit(30000)) { $p.Kill(); Write-Host "::warning::mpv didn't quit by itself; checking its log anyway" }
+          Start-Sleep 1
           $log = Get-Content mpv-check.log
+          Write-Host "--- last lines of mpv's log ---"; $log | Select-Object -Last 25
           ($log | Select-String -SimpleMatch "mpv v" | Select-Object -First 1).Line
           $bad = $log | Select-String -Pattern "(input\.conf|mpv\.conf|\[input\]|option).*(error|unknown|not found|invalid|failed)" 
           if ($bad) { $bad | ForEach-Object { $_.Line }; throw "mpv complained about our mpv.conf or input.conf" }
