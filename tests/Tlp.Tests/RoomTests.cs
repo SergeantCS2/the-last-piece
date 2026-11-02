@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Tlp.Core;
 using Tlp.Host;
 using Tlp.Host.Services;
+using Tlp.Viewer.Core;
 
 namespace Tlp.Tests;
 
@@ -324,5 +325,31 @@ public class RoomTests
         Assert.Equal("dave", dave["name"]!.GetValue<string>());
         Assert.Equal(42, dave["files"]![0]!["percent"]!.GetValue<int>());
         Assert.Equal(HttpStatusCode.Unauthorized, (await anon.GetAsync($"/api/admin/nights/{id}/status")).StatusCode);
+    }
+}
+
+public class ReporterTests
+{
+    private static readonly PackItem Item = new() { FileName = "a.mkv", Sources = [] };
+
+    [Theory]
+    [InlineData(FileState.Missing, 0.0, false, ViewerFileState.Missing)]
+    [InlineData(FileState.Partial, 0.4, false, ViewerFileState.Downloading)]
+    [InlineData(FileState.SizeMatches, 1.0, true, ViewerFileState.Checking)]
+    [InlineData(FileState.Verified, 1.0, false, ViewerFileState.Ready)]
+    [InlineData(FileState.HashMismatch, 1.0, false, ViewerFileState.Failed)]
+    public void File_states_map_to_what_the_host_shows(FileState state, double fraction, bool checking, ViewerFileState expected)
+    {
+        var r = StatusReporter.FileReport(new ItemStatus(Item, state, "", fraction, checking));
+        Assert.Equal(expected, r.State);
+        Assert.Equal((int)Math.Round(fraction * 100), r.Percent);
+    }
+
+    [Fact]
+    public async Task Reporting_never_throws_when_the_host_is_unreachable()
+    {
+        var pack = new Pack { Title = "t", Syncplay = new SyncplayInfo { Host = "h", Room = "r" }, Items = [Item], StatusUri = "http://127.0.0.1:1/n/x/status" };
+        Assert.False(await StatusReporter.SendAsync(new HttpClient(), pack, new ViewerReport { Name = "n", Files = [] }));
+        Assert.False(await StatusReporter.SendAsync(new HttpClient(), pack with { StatusUri = "file:///etc/passwd" }, new ViewerReport { Name = "n", Files = [] }));
     }
 }

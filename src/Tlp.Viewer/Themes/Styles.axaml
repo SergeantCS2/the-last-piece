@@ -1,0 +1,38 @@
+<!--
+  How the app's parts use the theme keys. Themes change the keys (Themes/Default.axaml),
+  not this file, so every theme gets the same layout.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource TlpWindowBackground}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
+    <Setter Property="FontFamily" Value="{DynamicResource TlpBodyFont}"/>
+  </Style>
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontFamily" Value="{DynamicResource TlpTitleFont}"/>
+    <Setter Property="FontSize" Value="{DynamicResource TlpTitleSize}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource TlpMutedText}"/>
+  </Style>
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource TlpSurface}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
+  </Style>
+  <Style Selector="ProgressBar">
+    <Setter Property="Foreground" Value="{DynamicResource TlpProgress}"/>
+  </Style>
+  <Style Selector="Button.accent">
+    <Setter Property="Background" Value="{DynamicResource TlpAccent}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpAccentText}"/>
+  </Style>
+  <Style Selector="Button.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource TlpAccent}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpAccentText}"/>
+    <Setter Property="Opacity" Value="0.9"/>
+  </Style>
+</Styles>

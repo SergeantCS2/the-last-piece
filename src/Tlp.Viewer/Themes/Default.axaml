@@ -1,0 +1,37 @@
+<!--
+  The default look. Every colour, font and corner the app uses comes from these keys, so a new
+  theme is a copy of this file with different values (see Themes/README.md). Nothing in
+  MainWindow.axaml sets a colour directly.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:Class="Tlp.Viewer.Themes.DefaultTheme">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="TlpWindowBackground" Color="#FAFAFA"/>
+      <SolidColorBrush x:Key="TlpSurface" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="TlpBorder" Color="#DDDDDD"/>
+      <SolidColorBrush x:Key="TlpText" Color="#1A1A1A"/>
+      <SolidColorBrush x:Key="TlpMutedText" Color="#666666"/>
+      <SolidColorBrush x:Key="TlpAccent" Color="#C0392B"/>
+      <SolidColorBrush x:Key="TlpAccentText" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="TlpProgress" Color="#C0392B"/>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="TlpWindowBackground" Color="#121212"/>
+      <SolidColorBrush x:Key="TlpSurface" Color="#1E1E1E"/>
+      <SolidColorBrush x:Key="TlpBorder" Color="#333333"/>
+      <SolidColorBrush x:Key="TlpText" Color="#EEEEEE"/>
+      <SolidColorBrush x:Key="TlpMutedText" Color="#999999"/>
+      <SolidColorBrush x:Key="TlpAccent" Color="#E74C3C"/>
+      <SolidColorBrush x:Key="TlpAccentText" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="TlpProgress" Color="#E74C3C"/>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  <FontFamily x:Key="TlpBodyFont">fonts:Inter#Inter, $Default</FontFamily>
+  <FontFamily x:Key="TlpTitleFont">fonts:Inter#Inter, $Default</FontFamily>
+  <x:Double x:Key="TlpTitleSize">24</x:Double>
+  <CornerRadius x:Key="TlpCorner">8</CornerRadius>
+  <!-- Light, Dark or Default (follow Windows). A theme with fixed colours picks one. -->
+  <x:String x:Key="TlpVariant">Default</x:String>
+</ResourceDictionary>

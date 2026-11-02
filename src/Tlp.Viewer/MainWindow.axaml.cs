@@ -16,6 +16,10 @@ public partial class MainWindow : Window
     private TorrentDownloader? _torrents;
     private Pack? _pack;
     private CancellationTokenSource? _downloading;
+    private readonly DispatcherTimer _reportTimer;
+    private bool _reportDirty;
+    private DateTime _lastReport = DateTime.MinValue;
+    private bool _reporting;
 
     public MainWindow() : this(null) { }
 
@@ -31,6 +35,8 @@ public partial class MainWindow : Window
         SaveButton.Click += (_, _) => SaveSettings();
         BrowseButton.Click += async (_, _) => await BrowseAsync();
         Closing += async (_, _) => { _downloading?.Cancel(); if (_torrents is not null) await _torrents.DisposeAsync(); };
+        _reportTimer = new DispatcherTimer(TimeSpan.FromSeconds(5), DispatcherPriority.Background, async (_, _) => await ReportIfDueAsync());
+        _reportTimer.Start();
 
         if (!string.IsNullOrWhiteSpace(startupLink))
         {
@@ -54,6 +60,11 @@ public partial class MainWindow : Window
         SourceBox.SelectedIndex = (int)_settings.SourcePreference;
         ChatBox.SelectedIndex = _settings.ChatStyle == "Scrolling" ? 1 : 0;
         SeedBox.IsChecked = _settings.SeedWhileOpen;
+        ShareBox.IsChecked = _settings.ShareProgress;
+        ThemeBox.ItemsSource = ThemeManager.Available;
+        ThemeBox.SelectedItem = ThemeManager.Available.Contains(_settings.Theme) ? _settings.Theme : ThemeManager.DefaultTheme;
+        // Only one look so far; the choice appears once there are more.
+        ThemeLabel.IsVisible = ThemeBox.IsVisible = ThemeManager.Available.Count > 1;
     }
 
     private void SaveSettings()
@@ -65,8 +76,12 @@ public partial class MainWindow : Window
             SourcePreference = (SourcePreference)Math.Max(0, SourceBox.SelectedIndex),
             ChatStyle = ChatBox.SelectedIndex == 1 ? "Scrolling" : "Chatroom",
             SeedWhileOpen = SeedBox.IsChecked == true,
+            ShareProgress = ShareBox.IsChecked == true,
+            Theme = ThemeBox.SelectedItem as string ?? ThemeManager.DefaultTheme,
         };
         _settings.Save();
+        if (Avalonia.Application.Current is { } app) ThemeManager.Apply(app, _settings.Theme);
+        _reportDirty = true;
         StatusText.Text = "Settings saved.";
         RefreshStatus();
     }
@@ -106,8 +121,14 @@ public partial class MainWindow : Window
         NightInfo.Text = (pack.StartsAt is { } at ? $"Starts {at.ToLocalTime():dddd d MMM, h:mm tt}. " : "")
                          + $"{pack.Items.Count} file(s). Room \"{pack.Syncplay.Room}\".";
         _rows.Clear();
-        foreach (var item in pack.Items) _rows.Add(new ItemRow(item));
+        foreach (var item in pack.Items)
+        {
+            var row = new ItemRow(item);
+            row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ItemRow.Shared)) _reportDirty = true; };
+            _rows.Add(row);
+        }
         RefreshStatus();
+        _reportDirty = true;
     }
 
     internal IList<ItemRow> Rows => _rows;
@@ -169,7 +190,7 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 failures++;
-                row.Status = "Failed: " + ex.Message;
+                row.Fail("Failed: " + ex.Message);
             }
         }
         _downloading = null;
@@ -194,6 +215,34 @@ public partial class MainWindow : Window
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             StatusText.Text = "Couldn't start Syncplay: " + ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Tells the host how downloads are going: soon after something changes (at most every 5 s
+    /// while downloading) and once a minute otherwise, so the host's list shows the app is open.
+    /// </summary>
+    private async Task ReportIfDueAsync()
+    {
+        if (_pack is null || !_settings.ShareProgress || _reporting) return;
+        var due = _reportDirty || DateTime.UtcNow - _lastReport > TimeSpan.FromMinutes(1);
+        if (!due) return;
+        _reporting = true;
+        _reportDirty = false;
+        _lastReport = DateTime.UtcNow;
+        try
+        {
+            var report = new ViewerReport
+            {
+                Name = _settings.Name,
+                App = typeof(MainWindow).Assembly.GetName().Version?.ToString(3),
+                Files = _rows.Select(r => r.Shared).ToList(),
+            };
+            await StatusReporter.SendAsync(Http, _pack, report);
+        }
+        finally
+        {
+            _reporting = false;
         }
     }
 }

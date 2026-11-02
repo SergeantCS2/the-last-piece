@@ -2,7 +2,8 @@ using Tlp.Core;
 
 namespace Tlp.Viewer.Core;
 
-public sealed record ItemStatus(PackItem Item, FileState State, string Message, double Fraction);
+/// <param name="Checking">True while the finished file is being compared with the host's copy.</param>
+public sealed record ItemStatus(PackItem Item, FileState State, string Message, double Fraction, bool Checking = false);
 
 /// <summary>Gets every file for a movie night into the folder, by the best available route, and checks it.</summary>
 public sealed class NightSession(Pack pack, ViewerSettings settings, HttpDownloader http, TorrentDownloader torrents)
@@ -89,7 +90,7 @@ public sealed class NightSession(Pack pack, ViewerSettings settings, HttpDownloa
             if (!done) throw new IOException(string.Join(" ", problems));
         }
 
-        progress?.Report(new ItemStatus(item, FileState.SizeMatches, "Checking it's the same file as everyone else…", 1));
+        progress?.Report(new ItemStatus(item, FileState.SizeMatches, "Checking it's the same file as everyone else…", 1, Checking: true));
         var verified = await FileCheck.FullAsync(Folder, item, null, ct);
         return new ItemStatus(item, verified, Describe(verified), 1);
     }

@@ -7,7 +7,11 @@ namespace Tlp.Viewer;
 
 public partial class App : Application
 {
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+        ThemeManager.Apply(this, Tlp.Viewer.Core.ViewerSettings.Load().Theme);
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {

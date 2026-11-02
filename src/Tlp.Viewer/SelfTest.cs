@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using System.Net;
 using System.Net.Sockets;
 using Avalonia;
@@ -42,6 +43,16 @@ internal static class SelfTest
             PackClient.Validate(pack);
             if (pack.Items[0].Sources[0].Kind != PackSourceKind.Torrent) throw new InvalidDataException("enum names didn't survive trimming");
             log.Add("pack json: ok");
+
+            // Every theme must define every key the styles use, or that part of the window loses its colour.
+            foreach (var name in ThemeManager.Available)
+            {
+                ThemeManager.Apply(Avalonia.Application.Current!, name);
+                foreach (var key in new[] { "TlpWindowBackground", "TlpSurface", "TlpBorder", "TlpText", "TlpMutedText", "TlpAccent", "TlpAccentText", "TlpProgress", "TlpTitleFont", "TlpBodyFont", "TlpTitleSize", "TlpCorner" })
+                    if (!window.TryFindResource(key, window.ActualThemeVariant, out _)) throw new InvalidDataException($"theme {name} has no {key}");
+            }
+            ThemeManager.Apply(Avalonia.Application.Current!, ThemeManager.DefaultTheme);
+            log.Add($"themes: ok ({string.Join(", ", ThemeManager.Available)})");
 
             window.ShowPack(pack);
             window.Rows[0].Status = "Downloading (the group torrent) · 600 MB of 1.30 GB · 9.8 MB/s";

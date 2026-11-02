@@ -6,19 +6,19 @@
         Width="760" Height="640" MinWidth="520" MinHeight="460">
   <DockPanel Margin="16">
     <StackPanel DockPanel.Dock="Top" Spacing="8">
-      <TextBlock Text="Movie night" FontSize="24" FontWeight="SemiBold"/>
+      <TextBlock Text="Movie night" Classes="title"/>
       <Grid ColumnDefinitions="*,Auto">
         <TextBox x:Name="LinkBox" Watermark="Paste the movie night link from the host"/>
         <Button x:Name="LoadButton" Grid.Column="1" Margin="8,0,0,0" Content="Open"/>
       </Grid>
       <TextBlock x:Name="NightTitle" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
-      <TextBlock x:Name="NightInfo" Opacity="0.7" TextWrapping="Wrap"/>
+      <TextBlock x:Name="NightInfo" Classes="muted" TextWrapping="Wrap"/>
     </StackPanel>
 
     <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,8,0,0">
       <Expander Header="Settings">
         <StackPanel Spacing="8">
-          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto" >
+          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" >
             <TextBlock Text="Your name" VerticalAlignment="Center"/>
             <TextBox x:Name="NameBox" Grid.Column="1" Margin="0,0,0,6"/>
             <TextBlock Grid.Row="1" Text="Movie night folder" VerticalAlignment="Center"/>
@@ -37,13 +37,16 @@
               <ComboBoxItem Content="Chatroom (stacked, fades out)"/>
               <ComboBoxItem Content="Scrolling (flies across the screen)"/>
             </ComboBox>
+            <TextBlock x:Name="ThemeLabel" Grid.Row="4" Text="Look" VerticalAlignment="Center" Margin="0,6,0,0"/>
+            <ComboBox x:Name="ThemeBox" Grid.Row="4" Grid.Column="1" Margin="0,6,0,0" HorizontalAlignment="Stretch"/>
           </Grid>
           <CheckBox x:Name="SeedBox" Content="Share finished torrents with the group while this app is open"/>
+          <CheckBox x:Name="ShareBox" Content="Show the host my name and download progress (their &quot;who's ready&quot; list)"/>
           <Button x:Name="SaveButton" Content="Save settings"/>
         </StackPanel>
       </Expander>
       <Grid ColumnDefinitions="*,Auto,Auto">
-        <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap" Opacity="0.8"/>
+        <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap"/>
         <Button x:Name="DownloadButton" Grid.Column="1" Margin="8,0,0,0" Content="Download all" IsEnabled="False"/>
         <Button x:Name="JoinButton" Grid.Column="2" Margin="8,0,0,0" Content="Join movie night" IsEnabled="False" Classes="accent"/>
       </Grid>
@@ -53,10 +56,10 @@
       <ItemsControl x:Name="ItemsList">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="local:ItemRow">
-            <Border Margin="0,0,0,8" Padding="12" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+            <Border Margin="0,0,0,8" Padding="12" Classes="card">
               <StackPanel Spacing="4">
                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                <TextBlock Text="{Binding Detail}" Opacity="0.6" FontSize="12"/>
+                <TextBlock Text="{Binding Detail}" Classes="muted" FontSize="12"/>
                 <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100" Height="6"/>
                 <TextBlock Text="{Binding Status}" FontSize="12" TextWrapping="Wrap"/>
               </StackPanel>

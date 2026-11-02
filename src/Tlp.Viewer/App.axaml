@@ -4,5 +4,6 @@
              RequestedThemeVariant="Default">
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://TheLastPiece/Themes/Styles.axaml"/>
   </Application.Styles>
 </Application>

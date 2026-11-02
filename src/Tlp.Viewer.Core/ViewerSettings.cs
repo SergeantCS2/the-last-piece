@@ -27,6 +27,10 @@ public sealed record ViewerSettings
     /// <summary>Keep sharing finished torrents with the group while the app is open.</summary>
     public bool SeedWhileOpen { get; init; } = true;
     public string ChatStyle { get; init; } = "Chatroom";
+    /// <summary>Tell the night's host your name and how far your downloads have got (shown on their "who's ready" list).</summary>
+    public bool ShareProgress { get; init; } = true;
+    /// <summary>Name of the app's look (a file in the viewer's Themes folder).</summary>
+    public string Theme { get; init; } = "Default";
 
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TheLastPiece", "settings.json");

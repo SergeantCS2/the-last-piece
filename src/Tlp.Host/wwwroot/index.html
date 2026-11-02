@@ -29,6 +29,8 @@ td.num{white-space:nowrap}
 .err{color:var(--accent)}
 code{word-break:break-all}
 .hidden{display:none}
+.pill{display:inline-block;padding:0 8px;border-radius:10px;font-size:12px;border:1px solid var(--line)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
 </style>
 </head>
 <body>
@@ -113,6 +115,7 @@ async function refresh() {
   try {
     const [shelf, nights, settings] = await Promise.all([api('GET', '/shelf'), api('GET', '/nights'), api('GET', '/settings')]);
     discordOn = settings.discord;
+    roomBotOn = settings.roomBot;
     showApp();
     renderShelf(shelf);
     renderNights(nights);
@@ -146,7 +149,7 @@ function renderPicked() {
     : '<tr><td class="muted">Tick shelf files below or add magnets above.</td></tr>';
 }
 
-let discordOn = false;
+let discordOn = false, roomBotOn = false;
 function renderNights(list) {
   $('nights').innerHTML = list.length ? list.slice().reverse().map(n => `
     <div class="card">
@@ -154,9 +157,38 @@ function renderNights(list) {
       <div>Share link: <code>${esc(n.shareUrl)}</code></div>
       <p class="row"><button class="ghost" data-copy="${esc(n.shareUrl)}" style="flex:0 0 auto">Copy link</button>
         ${discordOn ? `<button class="ghost" data-discord="${esc(n.id)}" style="flex:0 0 auto">Post to Discord</button>` : ''}
+        <button class="ghost" data-status="${esc(n.id)}" style="flex:0 0 auto">Who's ready</button>
         <button class="ghost" data-delnight="${esc(n.id)}" style="flex:0 0 auto">Delete night</button></p>
+      <div id="status-${esc(n.id)}" class="${openStatus.has(n.id) ? '' : 'hidden'}"></div>
     </div>`).join('') : '<div class="muted">No movie nights yet.</div>';
+  for (const id of openStatus) loadStatus(id);
 }
+
+// "Who's ready": download progress from each viewer app, and who's in the Syncplay room.
+const openStatus = new Set();
+async function loadStatus(id) {
+  const box = $('status-' + id);
+  if (!box || !openStatus.has(id)) return;
+  let st;
+  try { st = await api('GET', '/nights/' + id + '/status'); }
+  catch (err) { box.innerHTML = `<p class="err">${esc(err.message)}</p>`; return; }
+  const helper = !roomBotOn ? 'Room helper is off, so the room list and playlist aren\'t managed.'
+    : st.helperConnected ? `Room checked ${st.checkedAt ? new Date(st.checkedAt).toLocaleTimeString() : ''}.`
+    : `Can't reach Syncplay${st.helperError ? ': ' + esc(st.helperError) : ''}.`;
+  const rows = st.people.map(p => {
+    const files = p.readyCount == null ? '<span class="muted">no report (own Syncplay, or reporting off)</span>'
+      : p.files.map(f => `<div class="muted">${esc(f.fileName)}: ${f.state === 'downloading' ? f.percent + '%' : esc(f.state)}</div>`).join('');
+    const ready = p.readyCount != null && p.readyCount === p.total ? '<span class="pill ok">all files</span>'
+      : p.readyCount != null ? `<span class="pill">${p.readyCount} of ${p.total}</span>` : '';
+    const room = p.inRoom ? `<span class="pill ok">in room</span>${p.playing ? ' <span class="muted">' + esc(p.playing) + '</span>' : ''}`
+      : p.appOpen ? '<span class="pill">app open</span>' : '<span class="muted">away</span>';
+    return `<tr><td><strong>${esc(p.name)}</strong>${p.app ? ' <span class="muted">v' + esc(p.app) + '</span>' : ''}</td><td>${ready}${files}</td><td>${room}</td></tr>`;
+  }).join('');
+  box.innerHTML = `<table>${rows || '<tr><td class="muted">Nobody has opened the link in the app yet.</td></tr>'}</table>
+    <p class="muted">${helper} Room playlist: ${st.playlist.length} episode(s), filled automatically when the room is empty.</p>
+    ${roomBotOn ? `<p class="row"><button class="ghost" data-playlist="${esc(id)}" style="flex:0 0 auto">Fill room playlist now</button><span id="pl-${esc(id)}" class="muted"></span></p>` : ''}`;
+}
+setInterval(() => { for (const id of openStatus) loadStatus(id); }, 10000);
 
 document.addEventListener('click', async e => {
   const t = e.target;
@@ -167,6 +199,19 @@ document.addEventListener('click', async e => {
     t.disabled = true;
     try { await api('POST', '/nights/' + t.dataset.discord + '/announce'); t.textContent = 'Posted'; }
     catch (err) { t.textContent = 'Failed: ' + err.message; t.disabled = false; }
+  }
+  if (t.dataset.status) {
+    const id = t.dataset.status, box = $('status-' + id);
+    if (openStatus.has(id)) { openStatus.delete(id); box.classList.add('hidden'); }
+    else { openStatus.add(id); box.classList.remove('hidden'); box.innerHTML = '<p class="muted">Loading…</p>'; loadStatus(id); }
+  }
+  if (t.dataset.playlist) {
+    const id = t.dataset.playlist, out = $('pl-' + id);
+    out.textContent = 'Working…';
+    let r = await api('POST', '/nights/' + id + '/playlist');
+    if (/people are in room/.test(r.message) && confirm(r.message + '\n\nDo it anyway? Everyone in the room is paused once.'))
+      r = await api('POST', '/nights/' + id + '/playlist?force=true');
+    out.textContent = r.message;
   }
   if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = 'Copied'; } catch { prompt('Copy this link', t.dataset.copy); } }
   if (t.dataset.unpick) { picked.splice(+t.dataset.unpick, 1); renderPicked(); refresh(); }
