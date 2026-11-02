@@ -23,7 +23,7 @@ docker compose logs host | grep -i token
 ```
 
 The last line prints the admin token for the first sign-in (it's also saved as
-`admin-token.txt` in the data volume). Open `http://<this machine>:8080` and sign in.
+`admin-token.txt` in the data volume). Open `http://<this machine>:8080` and sign in. The page opens with a setup check that flags anything friends would trip over (a localhost or home-only address, Syncplay not answering, missing files), with what to do about each.
 
 Settings in `server/.env` that matter on day one:
 
