@@ -348,6 +348,8 @@ docker compose logs host | grep -i token    # first admin login, if TLP_ADMIN_TO
 
 Then open `http://<host>:8080`, log in with the token, and create a movie night.
 
+The page opens with a **setup check**: the public link, Syncplay, folders, free space, group torrents and tonight's files, each green, yellow or red with what to do about it. It runs again with "Check again". It can't see your router from inside, so the last word on reachability is "Heard from a friend's app", which turns green once a friend's app reports in.
+
 Ports friends need to reach:
 
 | Port | What | Notes |

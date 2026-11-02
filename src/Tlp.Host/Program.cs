@@ -22,6 +22,7 @@ builder.Services.AddSingleton<ReadyBoard>();
 builder.Services.AddSingleton<RoomBot>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<RoomBot>());
 builder.Services.AddHttpClient<DiscordAnnouncer>();
+builder.Services.AddSingleton<Diagnostics>();
 builder.Services.ConfigureHttpJsonOptions(o =>
 {
     o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
@@ -67,9 +68,11 @@ app.MapGet("/n/{token}/files/{index:int}/group.torrent", (string token, int inde
     return Results.File(bytes, "application/x-bittorrent", Path.GetFileNameWithoutExtension(night.Items[index].FileName) + ".torrent");
 });
 
-app.MapGet("/n/{token}/announce", (HttpContext ctx, string token, NightStore store, GroupTorrents torrents) =>
+app.MapGet("/n/{token}/announce", (HttpContext ctx, string token, NightStore store, GroupTorrents torrents, Diagnostics diag) =>
 {
-    var body = store.FindByToken(token) is null
+    var known = store.FindByToken(token) is not null;
+    if (known) diag.RecordPeer(ctx.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+    var body = !known
         ? GroupTorrents.Failure("Unknown movie night link.")
         : torrents.Announce(ctx.Request.QueryString.Value?.TrimStart('?') ?? "", ctx.Connection.RemoteIpAddress ?? IPAddress.Loopback);
     return Results.Bytes(body, "text/plain");
@@ -151,6 +154,7 @@ admin.MapPost("/shelf/pin", async (PinRequest req, Shelf shelf, NightStore store
 admin.MapDelete("/shelf", (string path, Shelf shelf) => shelf.Delete(path) ? Results.NoContent() : Results.NotFound());
 
 admin.MapGet("/cleanup", (CleanupService cleanup) => Results.Ok(cleanup.Plan()));
+admin.MapGet("/diagnostics", async (Diagnostics diag, CancellationToken ct) => Results.Ok(await diag.RunAsync(ct)));
 admin.MapPost("/cleanup", (CleanupService cleanup) => Results.Ok(cleanup.Run()));
 
 admin.MapGet("/nights", (NightStore store) => Results.Ok(store.Nights.Select(n => NightView.From(n, opts))));

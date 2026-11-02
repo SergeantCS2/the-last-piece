@@ -61,6 +61,9 @@ public sealed class GroupTorrents : BackgroundService
 
     public bool Enabled => _enabled;
 
+    /// <summary>How many shelf files have a group torrent ready.</summary>
+    public int Count => _torrents.Count;
+
     /// <summary>The bare .torrent (no tracker, no web seed) if made; otherwise queues it and returns null.</summary>
     public byte[]? Get(string shelfPath)
     {
