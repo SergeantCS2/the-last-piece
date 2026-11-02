@@ -150,6 +150,11 @@ jobs:
           $cmd = (Get-ItemProperty "HKCU:\Software\Classes\tlp\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
           Write-Host "tlp:// opens: $cmd"
           if ($cmd -notlike "*TheLastPiece\current\TheLastPiece.exe*") { throw "the install hook didn't register tlp:// links" }
+          # A normal (not silent) install starts the app once, which gives the Apps list entry its full name.
+          $first = Start-Process (Join-Path $app "current/TheLastPiece.exe") -PassThru
+          Start-Sleep 10
+          $first | Stop-Process -Force -ErrorAction SilentlyContinue
+          Get-Process TheLastPiece -ErrorAction SilentlyContinue | Stop-Process -Force
           $entry = Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\TheLastPiece" -ErrorAction SilentlyContinue
           Write-Host "Apps list: '$($entry.DisplayName)', icon $($entry.DisplayIcon)"
           if ($entry.DisplayName -ne "The Last Piece: Watch Together") { throw "the Apps list entry isn't named 'The Last Piece: Watch Together'" }

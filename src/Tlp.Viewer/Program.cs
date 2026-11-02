@@ -34,6 +34,9 @@ internal static class Program
                 .OnAfterUpdateFastCallback(_ => { ProtocolHandler.EnsureRegistered(); ProtocolHandler.EnsureFullName(); })
                 .OnBeforeUninstallFastCallback(_ => ProtocolHandler.Unregister());
         velopack.Run();
+        // Velopack writes the Apps list entry after the install hook, with the short name, and
+        // starts the app right after; so the full name is set here, on every start.
+        ProtocolHandler.EnsureFullName();
 
         if (args.Length >= 2 && args[0] == "--self-test")
         {
@@ -51,8 +54,6 @@ internal static class Program
         }
 
         StartupLink = args.FirstOrDefault();
-        // An update may have written the Apps list entry again with the short name.
-        ProtocolHandler.EnsureFullName();
         // A copy is already open: hand it the link and quit, so links reuse one window.
         Instance = SingleInstance.TryStart(SingleInstance.DefaultName, link => App.OnLinkFromAnotherCopy(link));
         if (Instance is null && SingleInstance.SendToRunning(SingleInstance.DefaultName, StartupLink ?? "", TimeSpan.FromSeconds(3)))
