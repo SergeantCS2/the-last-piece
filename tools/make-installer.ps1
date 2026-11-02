@@ -44,6 +44,7 @@ $vpkArgs = @(
     "--packVersion", $Version,
     "--packDir", $stage,
     "--mainExe", "TheLastPiece.exe",
+    "--icon", (Join-Path $root "src/Tlp.Viewer/Assets/app.ico"),
     "--packTitle", $appName,
     "--packAuthors", $publisher,
     "--outputDir", $outDir

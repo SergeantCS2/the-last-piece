@@ -8,6 +8,8 @@
     <AssemblyName>TheLastPiece</AssemblyName>
     <RootNamespace>Tlp.Viewer</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Placeholder icon from logo concept B (docs/logo) until a logo is picked. -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <Version>0.3.0</Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
@@ -41,6 +43,7 @@
   <ItemGroup>
     <!-- Theme fonts, SIL Open Font License (licenses next to them). -->
     <AvaloniaResource Include="Assets\Fonts\*.ttf" />
+    <AvaloniaResource Include="Assets\app.ico" />
   </ItemGroup>
 
   <ItemGroup>
