@@ -12,7 +12,7 @@ body:
       options:
         - The Windows app (viewer)
         - The host (install, host page, server)
-        - The player or sync during the night
+        - The player or sync during the session
         - Installing or uninstalling
         - Somewhere else
     validations:

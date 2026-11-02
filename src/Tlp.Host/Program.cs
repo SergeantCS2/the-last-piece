@@ -47,7 +47,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapGet("/healthz", () => Results.Ok(new { ok = true }));
-app.MapGet("/api/app", () => Results.Ok(new { name = Tlp.Core.AppInfo.Name, publisher = Tlp.Core.AppInfo.Publisher }));
+app.MapGet("/api/app", () => Results.Ok(new { name = Tlp.Core.AppInfo.Name, fullName = Tlp.Core.AppInfo.FullName, publisher = Tlp.Core.AppInfo.Publisher }));
 
 // ---------- Viewer-facing: everything is keyed by the night's secret token ----------
 
@@ -75,7 +75,7 @@ app.MapGet("/n/{token}/announce", (HttpContext ctx, string token, NightStore sto
     var known = store.FindByToken(token) is not null;
     if (known) diag.RecordPeer(ctx.Connection.RemoteIpAddress ?? IPAddress.Loopback);
     var body = !known
-        ? GroupTorrents.Failure("Unknown movie night link.")
+        ? GroupTorrents.Failure("Unknown session link.")
         : torrents.Announce(ctx.Request.QueryString.Value?.TrimStart('?') ?? "", ctx.Connection.RemoteIpAddress ?? IPAddress.Loopback);
     return Results.Bytes(body, "text/plain");
 });

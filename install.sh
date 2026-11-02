@@ -227,7 +227,7 @@ fi
 if [ "$FRESH" = 1 ] || [ "$(getenv SYNCPLAY_PASSWORD)" = change-me ]; then
   setenv SYNCPLAY_PASSWORD "$(rand 20)"
   setenv SYNCPLAY_SALT "$(rand 20)"
-  ok "made a new Syncplay password (viewers never type it; it travels in the night link)"
+  ok "made a new Syncplay password (viewers never type it; it travels in the session link)"
 fi
 TOKEN="$(getenv TLP_ADMIN_TOKEN)"
 if [ -z "$TOKEN" ]; then TOKEN="$(rand 24)"; setenv TLP_ADMIN_TOKEN "$TOKEN"; ok "made an admin password for the host page"; fi
@@ -250,7 +250,7 @@ if [ -z "$PUBLIC_URL" ]; then
   if [ -z "$suggestion" ] || [ "$suggestion" = "http://localhost:8080" ]; then
     suggestion="http://${detected:-localhost}:$PORT"
   fi
-  say "  Other PCs open movie night links at this address. For PCs at home, use this computer's"
+  say "  Other PCs open session links at this address. For PCs at home, use this computer's"
   say "  network address$([ "$IN_WSL" = 1 ] && printf ' (the Windows PC'"'"'s, not WSL'"'"'s)')${detected:+, which looks like $detected}."
   say "  For viewers outside your home, use your public IP or a domain, with ports $PORT and 8999 forwarded on the router."
   PUBLIC_URL="$(ask "Address other PCs use" "$suggestion")"
@@ -359,7 +359,7 @@ say "  Episodes go in: $SHELF_ABS"
 [ "$IN_WSL" = 1 ] && command -v wslpath >/dev/null && say "                  In Windows Explorer: $(wslpath -w "$SHELF_ABS" 2>/dev/null || true)"
 say ""
 say "  Next: open the host page, sign in, and look at the setup check at the top."
-say "  Then make a movie night and open its link on another PC."
+say "  Then make a session and open its link on another PC."
 if [ "$WIN_NET" = mirrored ]; then
   say ""
   warn "One more step for mirrored networking: in Windows, run  wsl --shutdown  and open your"

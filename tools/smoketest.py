@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Smoke test for the movie night Syncplay server.
+"""Smoke test for The Last Piece's Syncplay server.
 
 Speaks Syncplay's line-delimited JSON protocol directly (no Syncplay client
-needed) and checks the things movie night depends on:
+needed) and checks the things a session depends on:
 
   1. a wrong password is rejected
   2. two viewers can join the same room

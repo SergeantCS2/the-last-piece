@@ -47,10 +47,10 @@ number and look at [If something goes wrong](#if-something-goes-wrong).
    Reload the host page (F5).
 
    *You should see:* the files under **Shelf**.
-5. **Make a movie night.** Under **New movie night**, tick the files, give it a title and a start
-   time, and press **Create night and get link**.
+5. **Make a session.** Under **New session**, tick the files, give it a title and a start
+   time, and press **Create session and get link**.
 
-   *You should see:* the night under **Movie nights**, with **Copy link** and **Who's ready**.
+   *You should see:* the session under **Sessions**, with **Copy link** and **Who's ready**.
 6. **Check from PC 2's side early.** On PC 2, open `http://<PC 1's address>:8080/healthz` in a
    browser (the same address the installer used).
 
@@ -64,13 +64,13 @@ number and look at [If something goes wrong](#if-something-goes-wrong).
 
    *You should see:* the app opens by itself with a **Welcome** box. (If it doesn't open, start it
    from the Start menu.)
-8. **Welcome.** Name it `PC 1`, keep the folder, pick any look, paste the movie night link, and
+8. **Welcome.** Name it `PC 1`, keep the folder, pick any look, paste the session link, and
    press **Get started**. If Windows asks whether the app may use the network, choose **Allow**.
 
-   *You should see:* the night's title and its files.
+   *You should see:* the session's title and its files.
 9. **Download all.**
 
-   *You should see:* each file finish with a check. On the host page, **Who's ready** on the night
+   *You should see:* each file finish with a check. On the host page, **Who's ready** on the session
    shows `PC 1` with its files done and the app open.
 
 ## Part 3: join from PC 2
@@ -102,15 +102,15 @@ number and look at [If something goes wrong](#if-something-goes-wrong).
 
 - **A third PC**: repeat Part 3 on it, and watch a three-way sync.
 - **Looks**: in Settings, under Look, try each one. Motion stops when you click another window.
-- **A phone**: open the night link on a phone and follow its "On a phone" part with Synkplay.
+- **A phone**: open the session link on a phone and follow its "On a phone" part with Synkplay.
 - **Discord post**: set `TLP_DISCORD_WEBHOOK` in `server/.env`, run the installer again, and
-  press **Post to Discord** on the night.
+  press **Post to Discord** on the session.
 
 ## Part 6: uninstall
 
 16. **App, on each PC**: Windows Settings, Apps, **The Last Piece**, Uninstall.
 
-    *You should see:* it's gone from the Start menu. Your movie night files stay in their folder.
+    *You should see:* it's gone from the Start menu. Your video files stay in their folder.
 17. **Host, on PC 1**: in Ubuntu run `bash ~/the-last-piece/uninstall.sh` and answer its
     questions. It offers to undo the Windows network settings (one admin prompt).
 

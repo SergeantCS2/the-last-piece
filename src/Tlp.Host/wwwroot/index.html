@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<title>The Last Piece host</title>
+<title>The Last Piece: Watch Together (host)</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF5C7A'/%3E%3Cstop offset='1' stop-color='%238E4BFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M14,23 L23,14 H38 A12,12 0 1,1 62,14 H86 V38 A12,12 0 1,1 86,62 V77 L77,86 H14 V62 A12,12 0 1,0 14,38 Z' fill='url(%23g)'/%3E%3Cpath d='M40,34 L66,50 L40,66 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
 <style>
 :root{color-scheme:light dark;--bg:#fafafa;--fg:#1a1a1a;--muted:#666;--card:#fff;--line:#ddd;--accent:#c0392b;--ok:#27ae60}
@@ -44,7 +44,7 @@ details.health>summary{cursor:pointer;font-weight:600}
 <body>
 <main>
   <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40" aria-hidden="true" class="logo"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF5C7A"/><stop offset="1" stop-color="#8E4BFF"/></linearGradient></defs><path d="M14,23 L23,14 H38 A12,12 0 1,1 62,14 H86 V38 A12,12 0 1,1 86,62 V77 L77,86 H14 V62 A12,12 0 1,0 14,38 Z" fill="url(#lg)"/><path d="M40,34 L66,50 L40,66 Z" fill="#FFFFFF"/></svg><h1 id="appName">The Last Piece</h1></div>
-  <div class="muted">Host page: share files for movie night and keep the disk tidy.</div>
+  <div class="muted">Host page: share files for watch sessions and keep the disk tidy.</div>
 
   <div id="login" class="card">
     <label>Admin password<input id="token" type="password" autocomplete="current-password"></label>
@@ -60,11 +60,11 @@ details.health>summary{cursor:pointer;font-weight:600}
       <details class="health" id="checkDetails"><summary>Show every check</summary><ul class="checks" id="checks"></ul></details>
     </section>
     <section class="card">
-      <h2>New movie night</h2>
+      <h2>New session</h2>
       <div class="row">
-        <label>Title<input id="title" type="text" placeholder="Friday anime night"></label>
+        <label>Title<input id="title" type="text" placeholder="Friday anime"></label>
         <label>Starts<input id="startsAt" type="datetime-local"></label>
-        <label>Room<input id="room" type="text" placeholder="movienight"></label>
+        <label>Room<input id="room" type="text" placeholder="session"></label>
       </div>
       <h3>Add from a page or magnet</h3>
       <div class="row">
@@ -72,18 +72,18 @@ details.health>summary{cursor:pointer;font-weight:600}
         <button id="findBtn" class="ghost" style="flex:0 0 auto">Find magnets</button>
       </div>
       <div id="found"></div>
-      <h3>Picked for this night</h3>
+      <h3>Picked for this session</h3>
       <table><tbody id="picked"><tr><td class="muted">Tick shelf files below or add magnets above.</td></tr></tbody></table>
       <p id="fetchOpt" class="hidden"><label style="display:flex;gap:.5em;align-items:center;font-weight:normal">
         <input id="fetchToServer" type="checkbox" checked style="width:auto">
         Also download magnets to my server, so friends get them from me instead of the public swarm</label></p>
-      <p><button id="createBtn">Create night and get link</button> <span id="createErr" class="err"></span></p>
+      <p><button id="createBtn">Create session and get link</button> <span id="createErr" class="err"></span></p>
       <div id="created"></div>
     </section>
 
     <section class="card hidden" id="fetchCard">
       <h2>Downloads to your server</h2>
-      <p class="muted">Magnets your server is downloading onto the shelf. When one finishes, nights that use it switch to your copy by themselves.</p>
+      <p class="muted">Magnets your server is downloading onto the shelf. When one finishes, sessions that use it switch to your copy by themselves.</p>
       <table><tbody id="fetches"></tbody></table>
     </section>
 
@@ -98,7 +98,7 @@ details.health>summary{cursor:pointer;font-weight:600}
     </section>
 
     <section class="card">
-      <h2>Movie nights</h2>
+      <h2>Sessions</h2>
       <div id="nights"></div>
     </section>
   </div>
@@ -108,7 +108,7 @@ details.health>summary{cursor:pointer;font-weight:600}
 fetch('/api/app').then(r => r.ok ? r.json() : null).then(a => {
   if (!a || !a.name) return;
   document.getElementById('appName').textContent = a.name;
-  document.title = a.name + ' host';
+  document.title = (a.fullName || a.name) + ' (host)';
 }).catch(() => {});
 
 const $ = id => document.getElementById(id);
@@ -147,7 +147,7 @@ async function runChecks() {
   try {
     const list = await api('GET', '/diagnostics');
     const bad = list.filter(c => c.state === 'fail'), warn = list.filter(c => c.state === 'warn');
-    $('checkSummary').innerHTML = bad.length ? `<span class="err">${bad.length} problem(s) to fix before movie night.</span>`
+    $('checkSummary').innerHTML = bad.length ? `<span class="err">${bad.length} problem(s) to fix before the session.</span>`
       : warn.length ? `${warn.length} thing(s) worth a look.` : 'Everything checked out.';
     $('checks').innerHTML = list.map(c => `<li><span class="dot ${esc(c.state)}" title="${esc(c.state)}"></span><div>
       <b>${esc(c.area)}: ${esc(c.name)}</b> ${esc(c.detail)}${c.fix ? `<div class="fix">${esc(c.fix)}</div>` : ''}</div></li>`).join('');
@@ -220,7 +220,7 @@ function renderShelf(s) {
   const pct = s.diskTotalBytes ? Math.round(100 * (s.diskTotalBytes - s.diskFreeBytes) / s.diskTotalBytes) : null;
   $('disk').innerHTML = `Shelf uses ${gb(s.usedBytes)}. ` +
     (pct != null ? `Disk ${pct}% full, ${gb(s.diskFreeBytes)} free.<div class="bar"><div style="width:${pct}%"></div></div>` : '') +
-    `Files are deleted ${s.retentionDays} days after their last movie night unless pinned.` +
+    `Files are deleted ${s.retentionDays} days after their last session unless pinned.` +
     (s.cleanupEnabled ? '' : ' <strong>Cleanup is switched off.</strong>');
   $('shelf').innerHTML = s.files.length ? s.files.map(f => `
     <tr>
@@ -252,9 +252,9 @@ function renderNights(list) {
       <p class="row"><button class="ghost" data-copy="${esc(n.shareUrl)}" style="flex:0 0 auto">Copy link</button>
         ${discordOn ? `<button class="ghost" data-discord="${esc(n.id)}" style="flex:0 0 auto">Post to Discord</button>` : ''}
         <button class="ghost" data-status="${esc(n.id)}" style="flex:0 0 auto">Who's ready</button>
-        <button class="ghost" data-delnight="${esc(n.id)}" style="flex:0 0 auto">Delete night</button></p>
+        <button class="ghost" data-delnight="${esc(n.id)}" style="flex:0 0 auto">Delete session</button></p>
       <div id="status-${esc(n.id)}" class="${openStatus.has(n.id) ? '' : 'hidden'}"></div>
-    </div>`).join('') : '<div class="muted">No movie nights yet.</div>';
+    </div>`).join('') : '<div class="muted">No sessions yet.</div>';
   for (const id of openStatus) loadStatus(id);
 }
 
@@ -288,7 +288,7 @@ document.addEventListener('click', async e => {
   const t = e.target;
   if (t.dataset.pin) { await api('POST', '/shelf/pin', { path: t.dataset.pin, pinned: t.dataset.pinned !== 'true' }); refresh(); }
   if (t.dataset.del && confirm('Delete ' + t.dataset.del + ' from the shelf?')) { await api('DELETE', '/shelf?path=' + encodeURIComponent(t.dataset.del)); refresh(); }
-  if (t.dataset.delnight && confirm('Delete this movie night? Its link stops working.')) { await api('DELETE', '/nights/' + t.dataset.delnight); refresh(); }
+  if (t.dataset.delnight && confirm('Delete this session? Its link stops working.')) { await api('DELETE', '/nights/' + t.dataset.delnight); refresh(); }
   if (t.dataset.discord) {
     t.disabled = true;
     try { await api('POST', '/nights/' + t.dataset.discord + '/announce'); t.textContent = 'Posted'; }

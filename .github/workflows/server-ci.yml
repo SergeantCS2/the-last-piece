@@ -25,7 +25,7 @@ jobs:
         run: docker compose up -d --build syncplay
 
       - name: Smoke test (join, pause sync, chat, wrong password)
-        run: python3 ../tools/smoketest.py --password ci-password --room movienight --wait 60
+        run: python3 ../tools/smoketest.py --password ci-password --room session --wait 60
 
       - name: Start the host app too
         run: |
@@ -40,7 +40,7 @@ jobs:
           curl -fs -H "Authorization: Bearer ci-token" -H "Content-Type: application/json" \
             -d '{"title":"CI night","items":[{"shelfPath":"Show - 01.mkv"},{"shelfPath":"Show - 02.mkv"}]}' \
             localhost:8080/api/admin/nights | tee night.json
-          python3 ../tools/smoketest.py --password ci-password --room movienight --expect-playlist \
+          python3 ../tools/smoketest.py --password ci-password --room session --expect-playlist \
             --playlist-files "Show - 01.mkv|Show - 02.mkv" --wait 60
 
       - name: Server logs
@@ -71,7 +71,7 @@ jobs:
           password="$(sed -n 's/^SYNCPLAY_PASSWORD=//p' .env)"
           test -n "$token" && test "$password" != change-me
           curl -fs "http://$TLP_IP:8080/healthz"
-          python3 "$GITHUB_WORKSPACE/tools/smoketest.py" --host "$TLP_IP" --password "$password" --room movienight --wait 60
+          python3 "$GITHUB_WORKSPACE/tools/smoketest.py" --host "$TLP_IP" --password "$password" --room session --wait 60
           head -c 100000 /dev/urandom > "shelf/Show - 01.mkv"
           curl -fs -H "Authorization: Bearer $token" -H "Content-Type: application/json" \
             -d '{"title":"CI night","items":[{"shelfPath":"Show - 01.mkv"}]}' "http://$TLP_IP:8080/api/admin/nights" > night.json

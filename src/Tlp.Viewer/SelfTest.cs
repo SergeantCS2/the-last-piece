@@ -12,7 +12,7 @@ namespace Tlp.Viewer;
 
 /// <summary>
 /// Run by CI on a Windows machine (TheLastPiece.exe --self-test DIR) against the real, trimmed
-/// build: opens the window, reads a sample movie night, writes Syncplay's settings, starts and
+/// build: opens the window, reads a sample session, writes Syncplay's settings, starts and
 /// stops the torrent engine, saves a picture of the window, and exits 0 if all of that worked.
 /// It touches nothing outside DIR and the system temp folder.
 /// </summary>
@@ -21,9 +21,9 @@ internal static class SelfTest
     private const string SamplePack = """
         {
           "version": 1,
-          "title": "Self-test night",
+          "title": "Self-test session",
           "startsAt": "2026-11-06T20:00:00-05:00",
-          "syncplay": { "host": "movies.example.com", "port": 8999, "room": "movienight", "password": "pw" },
+          "syncplay": { "host": "movies.example.com", "port": 8999, "room": "session", "password": "pw" },
           "items": [
             { "fileName": "[Grp] Show - 01 (1080p).mkv", "size": 1400000000,
               "sources": [ { "kind": "torrent", "uri": "https://movies.example.com/n/t/files/0/group.torrent" },
@@ -37,7 +37,7 @@ internal static class SelfTest
     /// <summary>The window on the sample night in one look, left open (see Program.Showcase).</summary>
     public static void Showcase(MainWindow window, string look, bool settingsOpen, bool dark)
     {
-        var pack = PackJson.DeserializePack(SamplePack)! with { Title = "Friday anime night" };
+        var pack = PackJson.DeserializePack(SamplePack)! with { Title = "Friday anime" };
         window.ShowPack(pack);
         window.Rows[0].Status = "Downloading (the group torrent) · 600 MB of 1.30 GB · 9.8 MB/s";
         window.Rows[0].Percent = 45;
@@ -116,11 +116,11 @@ internal static class SelfTest
             SaveWindowPicture(window, Path.Combine(dir, "welcome.png"));
             window.WelcomeFolder.Text = "not a full path";
             if (await window.FinishWelcomeAsync() || !window.WelcomeShown) throw new InvalidDataException("the welcome accepted a folder it can't use");
-            window.WelcomeFolder.Text = Path.Combine(welcomeTemp, "Movie Night");
+            window.WelcomeFolder.Text = Path.Combine(welcomeTemp, "The Last Piece");
             window.WelcomeName.Text = "Self-test";
             window.WelcomeLink.Text = "";
             if (!await window.FinishWelcomeAsync() || window.WelcomeShown) throw new InvalidDataException("the welcome didn't finish");
-            if (!Directory.Exists(Path.Combine(welcomeTemp, "Movie Night"))) throw new InvalidDataException("the welcome didn't make the folder");
+            if (!Directory.Exists(Path.Combine(welcomeTemp, "The Last Piece"))) throw new InvalidDataException("the welcome didn't make the folder");
             if (!ViewerSettings.Load().SetupDone) throw new InvalidDataException("the welcome didn't save that setup is done");
             if (!window.BugReportText().Contains(AppUpdates.CurrentVersion)) throw new InvalidDataException("the bug report details lack the version");
             log.Add("welcome: ok");

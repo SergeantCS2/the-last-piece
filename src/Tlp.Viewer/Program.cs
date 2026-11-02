@@ -30,8 +30,8 @@ internal static class Program
         var velopack = VelopackApp.Build();
         if (OperatingSystem.IsWindows())
             velopack = velopack
-                .OnAfterInstallFastCallback(_ => ProtocolHandler.EnsureRegistered())
-                .OnAfterUpdateFastCallback(_ => ProtocolHandler.EnsureRegistered())
+                .OnAfterInstallFastCallback(_ => { ProtocolHandler.EnsureRegistered(); ProtocolHandler.EnsureFullName(); })
+                .OnAfterUpdateFastCallback(_ => { ProtocolHandler.EnsureRegistered(); ProtocolHandler.EnsureFullName(); })
                 .OnBeforeUninstallFastCallback(_ => ProtocolHandler.Unregister());
         velopack.Run();
 
@@ -51,6 +51,8 @@ internal static class Program
         }
 
         StartupLink = args.FirstOrDefault();
+        // An update may have written the Apps list entry again with the short name.
+        ProtocolHandler.EnsureFullName();
         // A copy is already open: hand it the link and quit, so links reuse one window.
         Instance = SingleInstance.TryStart(SingleInstance.DefaultName, link => App.OnLinkFromAnotherCopy(link));
         if (Instance is null && SingleInstance.SendToRunning(SingleInstance.DefaultName, StartupLink ?? "", TimeSpan.FromSeconds(3)))

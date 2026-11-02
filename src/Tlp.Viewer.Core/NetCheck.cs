@@ -8,18 +8,18 @@ namespace Tlp.Viewer.Core;
 /// <summary>Turns network failures into sentences a friend can act on, and checks a port answers.</summary>
 public static class NetCheck
 {
-    /// <summary>Why opening a movie night link failed, in plain words.</summary>
+    /// <summary>Why opening a session link failed, in plain words.</summary>
     public static string ExplainLinkFailure(Exception ex, Uri link)
     {
         var host = link.IsDefaultPort ? link.Host : $"{link.Host}:{link.Port}";
-        if (ex is InvalidDataException) return ex.Message.Length > 0 ? ex.Message : "That link answered, but not with a movie night.";
-        if (ex is System.Text.Json.JsonException) return $"{host} answered, but not with a movie night. Check the whole link was copied.";
+        if (ex is InvalidDataException) return ex.Message.Length > 0 ? ex.Message : "That link answered, but not with a session.";
+        if (ex is System.Text.Json.JsonException) return $"{host} answered, but not with a session. Check the whole link was copied.";
         if (ex is TaskCanceledException or TimeoutException)
             return $"{host} didn't answer. The host's computer may be off, or the port isn't open on their router. Ask the host to check their setup page.";
         if (ex is HttpRequestException http)
         {
             if (http.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone)
-                return "This movie night link doesn't work any more. Ask the host for the new one.";
+                return "This session link doesn't work any more. Ask the host for the new one.";
             if (http.StatusCode is { } code)
                 return $"{host} answered with an error ({(int)code}). Try again in a minute, or ask the host.";
             if (Find<AuthenticationException>(ex) is not null)

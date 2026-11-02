@@ -33,7 +33,7 @@ public sealed record ViewerSettings
 {
     public string Name { get; set; } = Environment.UserName;
     public string MovieNightFolder { get; set; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Movie Night");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "The Last Piece");
     /// <summary>Syncplay.exe; defaults to the copy bundled next to the viewer.</summary>
     public string? SyncplayPath { get; set; }
     /// <summary>mpv.exe; defaults to the copy bundled next to the viewer.</summary>

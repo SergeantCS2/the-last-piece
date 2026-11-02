@@ -20,7 +20,7 @@ public sealed class TlpOptions
     /// <summary>Public base URL friends use, e.g. https://movies.example.com. Used to build links.</summary>
     public string PublicBaseUrl { get; set; } = "http://localhost:8080";
 
-    /// <summary>Shelf files are deleted this many days after the last movie night that uses them.</summary>
+    /// <summary>Shelf files are deleted this many days after the last session that uses them.</summary>
     public int RetentionDays { get; set; } = 7;
 
     /// <summary>How often the cleanup job runs.</summary>
@@ -38,7 +38,7 @@ public sealed class TlpOptions
     /// </summary>
     public bool BehindProxy { get; set; }
 
-    /// <summary>Your group's name, shown as the big title in friends' viewer apps. Empty shows "Movie night".</summary>
+    /// <summary>Your group's name, shown as the big title in friends' viewer apps. Empty shows "The Last Piece".</summary>
     public string? GroupName { get; set; }
 
     /// <summary>Lets the host download public magnets onto its own shelf ("Get to my server").</summary>
@@ -62,7 +62,7 @@ public sealed class SyncplayOptions
     public string? PublicHost { get; set; }
     public int Port { get; set; } = 8999;
     public string? Password { get; set; }
-    public string DefaultRoom { get; set; } = "movienight";
+    public string DefaultRoom { get; set; } = "session";
 
     /// <summary>
     /// Optional: path to a Syncplay server to start and keep running (native installs).

@@ -11,7 +11,7 @@ namespace Tlp.Host.Services;
 public sealed record DiagCheck(string Area, string Name, string State, string Detail, string? Fix = null);
 
 /// <summary>
-/// The admin page's "Check setup": the things most likely to stop a movie night, each with what
+/// The admin page's "Check setup": the things most likely to stop a session, each with what
 /// to do about it. Reads only the host's own settings and state; the only network calls are to
 /// the host's own public link and its Syncplay server.
 /// </summary>
@@ -73,10 +73,10 @@ public sealed class Diagnostics(
         checks.AddRange(NightChecks());
         checks.Add(FriendsCheck());
         checks.Add(discord.Configured
-            ? new("Extras", "Discord post", "ok", "A webhook is set; the admin page can post a night's link.")
+            ? new("Extras", "Discord post", "ok", "A webhook is set; the admin page can post a session's link.")
             : new("Extras", "Discord post", "info", "No webhook set, so links are shared by hand.", "Optional: set Tlp__DiscordWebhookUrl."));
         checks.Add(new("Extras", "Cleanup", o.CleanupEnabled ? "ok" : "info",
-            o.CleanupEnabled ? $"Files go {o.RetentionDays} days after the last night that uses them, unless pinned." : "Cleanup only reports; nothing is deleted."));
+            o.CleanupEnabled ? $"Files go {o.RetentionDays} days after the last session that uses them, unless pinned." : "Cleanup only reports; nothing is deleted."));
         return checks;
     }
 
@@ -107,7 +107,7 @@ public sealed class Diagnostics(
     {
         "mirrored" => new("Links", "Windows to WSL", "ok",
             "The installer set up WSL's mirrored networking and the Windows Firewall rules, so other PCs reach this host at the Windows PC's own address.",
-            "To confirm, open the public link's /healthz page on a second PC, or open a night there."),
+            "To confirm, open the public link's /healthz page on a second PC, or open a session there."),
         "portproxy" => new("Links", "Windows to WSL", "ok",
             "The installer set up Windows port forwarding into WSL and the Windows Firewall rules. Every viewer will look like the Windows PC to the host, so viewers can't swap pieces with each other; downloads still work.",
             "WSL's address can change after a restart: re-run server/windows-network.ps1 (or the installer) if a second PC stops connecting."),
@@ -232,16 +232,16 @@ public sealed class Diagnostics(
         var upcoming = nights.Nights.Where(n => n.StartsAt is null || n.StartsAt > now.AddHours(-12)).ToList();
         if (upcoming.Count == 0)
         {
-            yield return new("Nights", "Upcoming nights", "info", "None yet.");
+            yield return new("Sessions", "Upcoming sessions", "info", "None yet.");
             yield break;
         }
         foreach (var night in upcoming)
         {
             var missing = night.Items.Where(i => i.ShelfPath is not null && shelf.Resolve(i.ShelfPath) is null).Select(i => i.FileName).ToList();
             yield return missing.Count == 0
-                ? new("Nights", night.Title, "ok", $"All {night.Items.Count} file(s) available.")
-                : new("Nights", night.Title, "fail", $"Missing from the shelf: {string.Join(", ", missing)}.",
-                    "Put the files back on the shelf, or make a new night. Friends who haven't downloaded yet can only use the public torrent for these.");
+                ? new("Sessions", night.Title, "ok", $"All {night.Items.Count} file(s) available.")
+                : new("Sessions", night.Title, "fail", $"Missing from the shelf: {string.Join(", ", missing)}.",
+                    "Put the files back on the shelf, or make a new session. Viewers who haven't downloaded yet can only use the public torrent for these.");
         }
     }
 
@@ -250,7 +250,7 @@ public sealed class Diagnostics(
         var last = nights.Nights.SelectMany(n => board.For(n.Id)).Select(e => (DateTimeOffset?)e.LastSeen).Max();
         return last is { } at
             ? new("Links", "Heard from a friend's app", "ok", $"Last {Ago(at)}, so friends can reach this host.")
-            : new("Links", "Heard from a friend's app", "info", "Not yet. Once a friend opens a night link, their app reports here and this turns green.");
+            : new("Links", "Heard from a viewer's app", "info", "Not yet. Once a viewer opens a session link, their app reports here and this turns green.");
     }
 
     private string Ago(DateTimeOffset at)

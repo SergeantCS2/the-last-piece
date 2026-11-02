@@ -5,7 +5,7 @@ Two parts: the **host** (one person, usually the one with the files) and the **v
 
 ## 1. Host
 
-The host runs two things side by side: the host app (admin page, shelf of episodes, movie night
+The host runs two things side by side: the host app (admin page, shelf of episodes, session
 links, group torrents, cleanup) and a Syncplay server (keeps everyone's players in step).
 
 ### The installer (recommended)
@@ -43,7 +43,7 @@ bash ~/the-last-piece/uninstall.sh
 ```
 
 It stops and removes the containers and images and asks before deleting anything else: the app's
-data (movie nights, admin password), the Windows network settings the installer made (in WSL, one
+data (sessions, admin password), the Windows network settings the installer made (in WSL, one
 admin prompt), your episodes (kept by default, moved to `~/the-last-piece-episodes` if they were
 inside the app folder) and the app folder. Docker and git stay installed. `--yes` takes the
 defaults; add `--delete-shelf` to delete the episodes too.
@@ -69,10 +69,10 @@ Settings in `server/.env` that matter on day one:
 
 | Setting | What to put |
 |---|---|
-| `SYNCPLAY_PASSWORD` | Any password. Viewers never type it; it travels inside the movie night link. |
+| `SYNCPLAY_PASSWORD` | Any password. Viewers never type it; it travels inside the session link. |
 | `TLP_PUBLIC_URL` | How viewers reach this machine, e.g. `http://203.0.113.7:8080` or `https://movies.example.com`. |
 | `SHELF_DIR` | The folder with your episodes, if not `./shelf`. |
-| `TLP_RETENTION_DAYS` | Days to keep an episode after its last night (pin to keep it longer). |
+| `TLP_RETENTION_DAYS` | Days to keep an episode after its last session (pin to keep it longer). |
 
 Everything else in `.env.example` is explained there and can wait.
 
@@ -98,20 +98,20 @@ option is in `src/Tlp.Host/TlpOptions.cs`.
 Check Syncplay from anywhere with Python 3:
 
 ```bash
-python3 tools/smoketest.py --host <your address> --password '<password>' --room movienight
+python3 tools/smoketest.py --host <your address> --password '<password>' --room session
 ```
 
-### A movie night
+### A session
 
 1. Put the episodes in the shelf folder, or paste magnets or a release page in the admin page.
    With **Get to my server** (or the tick box under the picked files), your server downloads the
-   magnet itself. Once it's on your shelf, the night hands viewers your copy and your private
+   magnet itself. Once it's on your shelf, the session hands viewers your copy and your private
    group torrent instead of the public swarm. Progress shows under **Downloads to your server**.
-2. **New movie night**: pick the files, a title and a start time.
+2. **New session**: pick the files, a title and a start time.
 3. Copy the link, or press **Post to Discord** if you set a webhook.
 4. Before the start, open **Who's ready** to see who has the files and who's in the room.
 
-The host fills the Syncplay room's playlist with the night's episodes by itself, so everyone
+The host fills the Syncplay room's playlist with the session's episodes by itself, so everyone
 moves to the next episode together.
 
 ## 2. Viewer app (Windows)
@@ -120,13 +120,13 @@ moves to the next episode together.
    for you only, with no admin prompt. Until the app is signed, Windows may say it protected
    your PC: choose **More info**, then **Run anyway**.
 2. The first time it opens, a **Welcome** box asks for your name (what others see in the room),
-   where to keep movie night files, a look, and the movie night link if you have one. If Windows
+   where to keep video files, a look, and the session link if you have one. If Windows
    asks whether the app may use the network, choose **Allow**. All of it can be changed later in
    **Settings**.
-3. Click the movie night link, then **Open in The Last Piece**. Or paste it into the app.
+3. Click the session link, then **Open in The Last Piece**. Or paste it into the app.
 4. **Download all**. Files come from the other viewers and the host by torrent, or straight from the host,
    and each one is checked against the host's copy.
-5. At showtime, **Join movie night**. The player opens in the room.
+5. At showtime, **Join session**. The player opens in the room.
 
 In the player:
 
@@ -190,7 +190,7 @@ WSL. If the Windows network is set to **Public**, Windows may still block other 
 
 ## 3. Phones
 
-**Synkplay** (Android, iOS) can join the same server and room. Open the night link on the phone:
+**Synkplay** (Android, iOS) can join the same server and room. Open the session link on the phone:
 its "On a phone" part has the downloads and the server, port, room and password, each with a
 Copy button. Use Synkplay's mpv engine for proper anime subtitles. Phone support is experimental.
 

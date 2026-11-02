@@ -37,4 +37,4 @@ any game or film.
 Checks: the app's self-test (`--self-test DIR`) fails if a look misses a key or a font falls back
 to a system font, and saves a picture of each look. Those pictures skip drop shadows and glows,
 so for real pictures run `TheLastPiece --showcase "Breach" [settings] [dark]`, which opens the app
-with a sample night in that look, and screenshot the window.
+with a sample session in that look, and screenshot the window.

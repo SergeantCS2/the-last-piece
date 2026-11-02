@@ -1,4 +1,4 @@
-; Syncplay settings for movie night.
+; Syncplay settings for The Last Piece.
 ; Windows: save as %APPDATA%\syncplay.ini   (paste %APPDATA% into Explorer's address bar)
 ; Linux:   ~/.config/syncplay.ini
 ; Anything left out falls back to Syncplay's defaults, and the Syncplay
@@ -12,10 +12,10 @@ password =
 
 [client_settings]
 name = YourName
-room = movienight
-; The folder where you keep movie night files. Syncplay finds the playlist's
+room = session
+; The folder where you keep your video files. Syncplay finds the playlist's
 ; files here by filename, so keep the names exactly as shared.
-mediaSearchDirectories = ['C:\\Users\\YOU\\Videos\\MovieNight']
+mediaSearchDirectories = ['C:\\Users\\YOU\\Videos\\The Last Piece']
 sharedPlaylistEnabled = True
 ; Lets the shared playlist play files straight from the host's shelf.
 onlySwitchToTrustedDomains = True

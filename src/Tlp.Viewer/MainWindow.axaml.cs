@@ -1,5 +1,9 @@
 using System.Collections.ObjectModel;
+using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Input.Platform;
@@ -28,6 +32,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Title = Tlp.Core.AppInfo.Name;
+        TitleText.Text = Title;
+        SetUpTitleBar();
         ShowGroup(_settings.GroupName);
         // The looks' motion (Themes/) pauses while the window is in the background, so a look
         // never costs anything while the movie plays.
@@ -157,7 +163,7 @@ public partial class MainWindow : Window
 
     private async Task BrowseAsync(TextBox target)
     {
-        var picked = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Movie night folder", AllowMultiple = false });
+        var picked = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Video folder", AllowMultiple = false });
         if (picked.FirstOrDefault()?.TryGetLocalPath() is { } path) target.Text = path;
     }
 
@@ -186,7 +192,7 @@ public partial class MainWindow : Window
     /// <summary>"120 GB free on that drive", or why the folder won't work; null if it can't tell.</summary>
     internal static string? FreeSpaceText(string? folder)
     {
-        if (string.IsNullOrWhiteSpace(folder) || !Path.IsPathFullyQualified(folder.Trim())) return "Pick a full folder path, like C:\\Users\\you\\Videos\\Movie Night.";
+        if (string.IsNullOrWhiteSpace(folder) || !Path.IsPathFullyQualified(folder.Trim())) return "Pick a full folder path, like C:\\Users\\you\\Videos\\The Last Piece.";
         try
         {
             var root = Path.GetPathRoot(folder.Trim());
@@ -209,7 +215,7 @@ public partial class MainWindow : Window
     {
         var folder = (WelcomeFolder.Text ?? "").Trim();
         string? problem = null;
-        if (folder.Length == 0 || !Path.IsPathFullyQualified(folder)) problem = "Pick a full folder path for movie night files.";
+        if (folder.Length == 0 || !Path.IsPathFullyQualified(folder)) problem = "Pick a full folder path for your video files.";
         else
         {
             try
@@ -262,6 +268,41 @@ public partial class MainWindow : Window
     }
 
     /// <summary>Version, Windows, settings that matter and the last log lines, for a bug report.</summary>
+    /// <summary>
+    /// The app draws its own title bar (MainWindow.axaml, styled by the look). Windows still gives
+    /// the resize edges, Aero snap (drag to an edge, Win+arrows) and Alt+F4.
+    /// </summary>
+    private void SetUpTitleBar()
+    {
+        MinButton.Click += (_, _) => WindowState = WindowState.Minimized;
+        MaxButton.Click += (_, _) => ToggleMaximise();
+        CloseButton.Click += (_, _) => Close();
+        TitleBar.PointerPressed += (_, e) =>
+        {
+            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+            if (e.ClickCount == 2) ToggleMaximise();
+            else BeginMoveDrag(e);
+        };
+        PropertyChanged += (_, e) => { if (e.Property == WindowStateProperty) ShowWindowState(); };
+        KeyDown += (_, e) =>
+        {
+            if (e.Key == Key.F11) WindowState = WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+        };
+    }
+
+    private void ToggleMaximise() =>
+        WindowState = WindowState is WindowState.Maximized or WindowState.FullScreen ? WindowState.Normal : WindowState.Maximized;
+
+    private void ShowWindowState()
+    {
+        var big = WindowState is WindowState.Maximized or WindowState.FullScreen;
+        // A maximised window that draws into its frame reaches past the screen edge by the frame's width.
+        Root.Margin = WindowState == WindowState.Maximized ? OffScreenMargin : default;
+        MaxGlyph.Data = Geometry.Parse(big ? "M2.5,0.5 H9.5 V7.5 M0.5,2.5 H7.5 V9.5 H0.5 Z" : "M0.5,0.5 H9.5 V9.5 H0.5 Z");
+        ToolTip.SetTip(MaxButton, big ? "Restore" : "Maximise");
+        AutomationProperties.SetName(MaxButton, big ? "Restore" : "Maximise");
+    }
+
     internal string BugReportText()
     {
         var lines = new List<string>
@@ -269,7 +310,7 @@ public partial class MainWindow : Window
             $"{Tlp.Core.AppInfo.Name} {AppUpdates.CurrentVersion}",
             System.Runtime.InteropServices.RuntimeInformation.OSDescription,
             $"Look: {_settings.Theme}; files from: {_settings.SourcePreference}; share progress: {_settings.ShareProgress}; seed: {_settings.SeedWhileOpen}",
-            _pack is null ? "No night open." : $"Night: {_pack.Title} ({_pack.Items.Count} files), room server {_pack.Syncplay.Host}:{_pack.Syncplay.Port}",
+            _pack is null ? "No session open." : $"Session: {_pack.Title} ({_pack.Items.Count} files), room server {_pack.Syncplay.Host}:{_pack.Syncplay.Port}",
             $"Status: {StatusText.Text}",
             "",
             "Recent log:",
@@ -292,18 +333,18 @@ public partial class MainWindow : Window
         var uri = PackLink.ToPackUri(input);
         if (uri is null)
         {
-            StatusText.Text = "That doesn't look like a movie night link. It should look like https://…/n/…";
+            StatusText.Text = "That doesn't look like a session link. It should look like https://…/n/…";
             return;
         }
-        StatusText.Text = "Opening movie night…";
-        AppLog.Write($"Opening a night from {uri.Host}:{uri.Port}.");
+        StatusText.Text = "Opening the session…";
+        AppLog.Write($"Opening a session from {uri.Host}:{uri.Port}.");
         try
         {
             _pack = await new PackClient(Http).FetchAsync(uri);
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or System.Text.Json.JsonException or TaskCanceledException)
         {
-            StatusText.Text = "Couldn't open that movie night. " + NetCheck.ExplainLinkFailure(ex, uri);
+            StatusText.Text = "Couldn't open that session. " + NetCheck.ExplainLinkFailure(ex, uri);
             AppLog.Write(StatusText.Text + $" ({ex.GetType().Name}: {ex.Message})");
             return;
         }
@@ -311,9 +352,9 @@ public partial class MainWindow : Window
         ShowPack(_pack);
     }
 
-    public const string DefaultTitle = "Movie night";
+    public const string DefaultTitle = Tlp.Core.AppInfo.Name;
 
-    /// <summary>The big title: the host's group name, or "Movie night".</summary>
+    /// <summary>The big title: the host's group name, or the app's name.</summary>
     private void ShowGroup(string? group) =>
         Brand.Content = string.IsNullOrWhiteSpace(group) ? DefaultTitle : group.Trim();
 
@@ -327,7 +368,7 @@ public partial class MainWindow : Window
             try { _settings.Save(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
         NightTitle.Text = pack.Title;
-        AppLog.Write($"Night \"{pack.Title}\": {pack.Items.Count} file(s), room server {pack.Syncplay.Host}:{pack.Syncplay.Port}.");
+        AppLog.Write($"Session \"{pack.Title}\": {pack.Items.Count} file(s), room server {pack.Syncplay.Host}:{pack.Syncplay.Port}.");
         NightInfo.Text = (pack.StartsAt is { } at ? $"Starts {at.ToLocalTime():dddd d MMM, h:mm tt}. " : "")
                          + $"{pack.Items.Count} file(s). Room \"{pack.Syncplay.Room}\".";
         _rows.Clear();
@@ -357,7 +398,7 @@ public partial class MainWindow : Window
         LinkBox.Text = link;
         if (_downloading is not null)
         {
-            StatusText.Text = "Downloads are running for this night. Press Open on the new link once they finish.";
+            StatusText.Text = "Downloads are running for this session. Press Open on the new link once they finish.";
             return;
         }
         _ = LoadAsync(link);

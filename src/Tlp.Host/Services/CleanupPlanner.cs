@@ -3,7 +3,7 @@ namespace Tlp.Host.Services;
 /// <summary>
 /// Decides which shelf files can go. Rules, kept deliberately conservative:
 /// - Pinned files are never deleted.
-/// - A file that no movie night uses is never deleted automatically (it shows in the
+/// - A file that no session uses is never deleted automatically (it shows in the
 ///   host page so the host can delete it by hand).
 /// - A file used by nights is deleted once every one of those nights is more than
 ///   RetentionDays in the past. A night without a date counts from when it was created.

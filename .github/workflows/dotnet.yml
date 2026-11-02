@@ -150,6 +150,9 @@ jobs:
           $cmd = (Get-ItemProperty "HKCU:\Software\Classes\tlp\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
           Write-Host "tlp:// opens: $cmd"
           if ($cmd -notlike "*TheLastPiece\current\TheLastPiece.exe*") { throw "the install hook didn't register tlp:// links" }
+          $entry = Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\TheLastPiece" -ErrorAction SilentlyContinue
+          Write-Host "Apps list: '$($entry.DisplayName)', icon $($entry.DisplayIcon)"
+          if ($entry.DisplayName -ne "The Last Piece: Watch Together") { throw "the Apps list entry isn't named 'The Last Piece: Watch Together'" }
           $startMenu = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
           $links = @(Get-ChildItem $startMenu, ([Environment]::GetFolderPath("Desktop")) -Recurse -Filter *.lnk -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*Last Piece*" })
           $links | ForEach-Object { Write-Host "shortcut: $($_.FullName)" }

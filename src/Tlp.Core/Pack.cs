@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Tlp.Core;
 
 /// <summary>
-/// One movie night, as handed to viewers. Served by the host at /n/{token}/pack.json.
+/// One session, as handed to viewers. Served by the host at /n/{token}/pack.json.
 /// Everything a viewer needs: what to download, from where, and which Syncplay room to join.
 /// </summary>
 public sealed record Pack
@@ -16,7 +16,7 @@ public sealed record Pack
     public required string Title { get; init; }
     /// <summary>
     /// The group's name, shown as the viewer app's big title (e.g. "Friday crew"). Set by the
-    /// host; null means the app's default, "Movie night".
+    /// host; null means the app's default, the app's name.
     /// </summary>
     public string? Group { get; init; }
     /// <summary>When the night starts, with offset. Null if not scheduled.</summary>

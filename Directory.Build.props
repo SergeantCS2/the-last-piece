@@ -5,6 +5,8 @@
   <PropertyGroup>
     <AppDisplayName>The Last Piece</AppDisplayName>
     <AppPublisher>The Last Piece</AppPublisher>
+    <!-- The descriptive name: Windows' Apps list (uninstall entry), the host page's tab, the README. -->
+    <AppFullName>The Last Piece: Watch Together</AppFullName>
     <Product>$(AppDisplayName)</Product>
     <Company>$(AppPublisher)</Company>
   </PropertyGroup>

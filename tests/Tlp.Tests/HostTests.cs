@@ -90,7 +90,7 @@ public class HostTests(HostFixture fx) : IClassFixture<HostFixture>
         var pack = await anon.GetFromJsonAsync<Pack>(new Uri(night!.ShareUrl + "/pack.json").PathAndQuery, PackJson.Options);
         Assert.NotNull(pack);
         Assert.Equal("sync.example.com", pack!.Syncplay.Host);
-        Assert.Equal("movienight", pack.Syncplay.Room);
+        Assert.Equal("session", pack.Syncplay.Room);
         Assert.Equal("pw", pack.Syncplay.Password);
         Assert.Equal(["[Grp] Show - 01.mkv", "Show - 02.mkv"], pack.Items.Select(i => i.FileName));
         Assert.Equal(300_000, pack.Items[0].Size);

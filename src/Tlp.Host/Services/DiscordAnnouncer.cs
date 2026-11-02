@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 namespace Tlp.Host.Services;
 
 /// <summary>
-/// Posts a movie night's link to a Discord channel through a webhook (Server Settings,
+/// Posts a session's link to a Discord channel through a webhook (Server Settings,
 /// Integrations, Webhooks). A webhook needs no bot account and can only post to its own channel.
 /// </summary>
 public sealed class DiscordAnnouncer(HttpClient http, IOptions<TlpOptions> options)
@@ -36,7 +36,7 @@ public sealed class DiscordAnnouncer(HttpClient http, IOptions<TlpOptions> optio
         if (!Configured) throw new InvalidOperationException("No Discord webhook configured.");
         var payload = new
         {
-            username = "Movie night",
+            username = Tlp.Core.AppInfo.Name,
             content = Message(night, _opts),
             allowed_mentions = new { parse = Array.Empty<string>() }, // never ping @everyone by accident
         };

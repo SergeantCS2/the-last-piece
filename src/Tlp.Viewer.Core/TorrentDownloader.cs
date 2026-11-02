@@ -6,7 +6,7 @@ namespace Tlp.Viewer.Core;
 
 /// <summary>
 /// Built-in torrent client (MonoTorrent, MIT licensed, pure C#). Replaces uTorrent for
-/// movie night magnets: no ads, no bundled extras, and files land exactly where Syncplay
+/// session magnets: no ads, no bundled extras, and files land exactly where Syncplay
 /// expects them.
 /// </summary>
 public sealed class TorrentDownloader : IAsyncDisposable
@@ -92,7 +92,7 @@ public sealed class TorrentDownloader : IAsyncDisposable
                     await manager.SetFilePriorityAsync(f, Priority.DoNotDownload);
 
             if (item.Size is { } expected && wanted.Length != expected)
-                throw new InvalidDataException($"The torrent's file is {wanted.Length} bytes but movie night expects {expected}. It's a different release.");
+                throw new InvalidDataException($"The torrent's file is {wanted.Length} bytes but the session expects {expected}. It's a different release.");
 
             long lastDone = -1;
             var lastChange = DateTime.UtcNow;
@@ -136,7 +136,7 @@ public sealed class TorrentDownloader : IAsyncDisposable
         }
     }
 
-    /// <summary>The file in the torrent that is this movie night item.</summary>
+    /// <summary>The file in the torrent that is this session item.</summary>
     public static ITorrentManagerFile PickFile(IList<ITorrentManagerFile> files, string fileName)
     {
         if (files.Count == 1) return files[0];

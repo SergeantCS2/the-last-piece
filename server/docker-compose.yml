@@ -1,4 +1,4 @@
-# Movie night host: the host app (shelf, links, cleanup, admin page) and the
+# The Last Piece host: the host app (shelf, links, cleanup, admin page) and the
 # Syncplay server. Run from this folder.
 #
 #   docker compose up -d --build                  -> host app on :8080, Syncplay on :8999
@@ -25,7 +25,7 @@ services:
       Tlp__RetentionDays: ${TLP_RETENTION_DAYS:-7}
       Tlp__Syncplay__PublicHost: ${SYNCPLAY_PUBLIC_HOST:-}
       Tlp__Syncplay__Password: ${SYNCPLAY_PASSWORD:-}
-      Tlp__Syncplay__DefaultRoom: ${SYNCPLAY_ROOM:-movienight}
+      Tlp__Syncplay__DefaultRoom: ${SYNCPLAY_ROOM:-session}
       Tlp__DiscordWebhookUrl: ${TLP_DISCORD_WEBHOOK:-}
       Tlp__GroupName: ${TLP_GROUP_NAME:-}
       Tlp__BehindProxy: ${TLP_BEHIND_PROXY:-false}

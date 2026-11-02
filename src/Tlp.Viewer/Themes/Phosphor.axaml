@@ -1,7 +1,7 @@
 <!--
   Phosphor: a monochrome tube terminal, in amber or green (two palettes, one set of templates).
   Inspired by in-game computer terminals and wrist computers:
-  one ink on a dark tube, scanlines, a rolling glow band, a rounded screen behind a bezel, panels
+  one ink on a dark tube, scanlines, a rolling glow band, a thin square rim at the window edge, panels
   with their name in an inverted tab, bracketed [ OPTIONS ], a prompt and a blinking cursor.
   Our own drawing; fonts VT323 and IBM Plex Mono (SIL OFL).
 -->
@@ -67,7 +67,7 @@
           <Rectangle Fill="{StaticResource PhVignette}"/>
           <Rectangle Fill="{StaticResource PhGlare}"/>
           <Rectangle Classes="flicker" Fill="{DynamicResource TlpGlow}" Opacity="0"/>
-          <d:Bezel Fill="#000000" Rim="{DynamicResource TlpBorder}" Radius="30" Inset="5"/>
+          <d:Bezel Fill="#000000" Rim="{DynamicResource TlpBorder}" Radius="0" Inset="3"/>
         </Panel>
       </ControlTemplate>
     </Setter>

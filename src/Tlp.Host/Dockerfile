@@ -1,4 +1,4 @@
-# Host app (shelf, movie night links, cleanup, admin page).
+# Host app (shelf, session links, cleanup, admin page).
 # Build from the repo root:  docker build -f src/Tlp.Host/Dockerfile -t the-last-piece/host .
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src

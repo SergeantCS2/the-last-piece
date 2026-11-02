@@ -7,7 +7,7 @@ public sealed class PackClient(HttpClient http)
     public async Task<Pack> FetchAsync(Uri packUri, CancellationToken ct = default)
     {
         var pack = PackJson.DeserializePack(await http.GetStringAsync(packUri, ct))
-                   ?? throw new InvalidDataException("The movie night link returned nothing.");
+                   ?? throw new InvalidDataException("The session link returned nothing.");
         Validate(pack);
         return pack;
     }
@@ -16,11 +16,11 @@ public sealed class PackClient(HttpClient http)
     public static void Validate(Pack pack)
     {
         if (pack.Version > Pack.CurrentVersion)
-            throw new InvalidDataException("This movie night needs a newer version of the viewer app.");
+            throw new InvalidDataException("This session needs a newer version of the viewer app.");
         foreach (var item in pack.Items)
         {
             if (!SafeFileName.IsSafe(item.FileName))
-                throw new InvalidDataException($"Unsafe file name in movie night: '{item.FileName}'.");
+                throw new InvalidDataException($"Unsafe file name in session: '{item.FileName}'.");
             foreach (var s in item.Sources)
             {
                 var ok = s.Kind switch

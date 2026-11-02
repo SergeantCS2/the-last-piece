@@ -13,7 +13,7 @@
       <TlpAppInfoFile>$(IntermediateOutputPath)AppInfo.g.cs</TlpAppInfoFile>
     </PropertyGroup>
     <WriteLinesToFile File="$(TlpAppInfoFile)" Overwrite="true" WriteOnlyWhenDifferent="true"
-      Lines="namespace Tlp.Core%3B;public static class AppInfo { public const string Name = &quot;$(AppDisplayName)&quot;%3B public const string Publisher = &quot;$(AppPublisher)&quot;%3B }" />
+      Lines="namespace Tlp.Core%3B;public static class AppInfo { public const string Name = &quot;$(AppDisplayName)&quot;%3B public const string Publisher = &quot;$(AppPublisher)&quot;%3B public const string FullName = &quot;$(AppFullName)&quot;%3B }" />
     <ItemGroup>
       <Compile Include="$(TlpAppInfoFile)" />
       <FileWrites Include="$(TlpAppInfoFile)" />

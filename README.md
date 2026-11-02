@@ -5,14 +5,14 @@
 <h1 align="center">The Last Piece</h1>
 
 <p align="center">
-  <b>Movie and anime night with friends, in full quality, without screen share.</b><br>
+  <b>Watch Together: movies and anime with friends, in full quality, without screen share.</b><br>
   Everyone plays the real file on their own machine, kept in step to the frame.
 </p>
 
 <p align="center">
   <a href="https://github.com/SergeantCS2/the-last-piece/releases">Download</a> ·
-  <a href="#joining-a-movie-night">Join a night</a> ·
-  <a href="#hosting-a-movie-night">Host a night</a> ·
+  <a href="#joining-a-session">Join a session</a> ·
+  <a href="#hosting-a-session">Host a session</a> ·
   <a href="#looks">Looks</a> ·
   <a href="#faq">FAQ</a> ·
   <a href="CONTRIBUTING.md">Contributing</a>
@@ -41,18 +41,18 @@ Screen sharing a movie over a voice app squeezes the picture, ties the film's vo
 
 It comes in two parts:
 
-- **The viewer app** (Windows), for everyone watching. Open a movie night link, press Download all, then Join. A player opens already in the room.
-- **The host app** (Docker on Linux or WSL, or native), for whoever runs the night. It keeps a shelf of episodes, makes movie night links, shares the files and runs the sync server.
+- **The viewer app** (Windows), for everyone watching. Open a session link, press Download all, then Join. A player opens already in the room.
+- **The host app** (Docker on Linux or WSL, or native), for whoever runs the session. It keeps a shelf of episodes, makes session links, shares the files and runs the sync server.
 
-> **Status: early pre-release.** The automated tests and Windows builds pass on every change, but it hasn't seen many real movie nights yet. Bug reports are very welcome.
+> **Status: early pre-release.** The automated tests and Windows builds pass on every change, but it hasn't seen many real sessions yet. Bug reports are very welcome.
 
 ## Features
 
 - **Original quality.** No re-encoding and no stream bitrate cap. Every audio track and styled anime subtitle (ASS) survives.
 - **Your own volume, window and tracks.** Each viewer picks their own subtitles, audio language and volume (up to 300%).
-- **One link per night.** The link carries the file list, the room and the password, so nobody types server details.
+- **One link per session.** The link carries the file list, the room and the password, so nobody types server details.
 - **Downloads built in.** Files come by torrent, shared between viewers in a private group swarm, or straight from the host. If one way stalls, the app switches to the next.
-- **Checked files.** Every file is checked against the host's copy (size and SHA-256), so a different release with the same name is caught before the night starts.
+- **Checked files.** Every file is checked against the host's copy (size and SHA-256), so a different release with the same name is caught before the session starts.
 - **Bundled player.** mpv, set up to look and handle like VLC, with on-screen chat. Syncplay and mpv come inside the app, with nothing else to install.
 - **"Who's ready" for the host.** See who has the files, who has the app open and who is in the room.
 - **Queues that move together.** The host fills the room's playlist, so everyone goes to the next episode at the same time.
@@ -60,16 +60,16 @@ It comes in two parts:
 - **Installer with auto-update.** Per-user install, no admin prompt, updates in the background.
 - **Five looks.** A plain default, plus warm, retro terminal, cyberpunk and synthwave designs.
 
-## Joining a movie night
+## Joining a session
 
-You need Windows 10 or 11 (64-bit) and a movie night link from your host.
+You need Windows 10 or 11 (64-bit) and a session link from your host.
 
 1. **Install.** Download `TheLastPiece-win-Setup.exe` from the [latest release](https://github.com/SergeantCS2/the-last-piece/releases) and run it. It installs for you only, with no admin prompt. The app isn't code-signed yet, so Windows may say it protected your PC: choose **More info**, then **Run anyway**.
    - Rather not install? The release also has a portable zip. Unzip it anywhere and run `TheLastPiece.exe`.
-2. **Welcome.** The first time it opens, the app asks for your name (what others see in the room), the folder for movie night files and a look. Paste your link there too. If Windows asks whether the app may use the network, choose **Allow**, so you can share pieces with the others.
-3. **Open the night.** Click the link and choose **Open in The Last Piece**, or paste the link into the app and press **Open**.
+2. **Welcome.** The first time it opens, the app asks for your name (what others see in the room), the folder for video files and a look. Paste your link there too. If Windows asks whether the app may use the network, choose **Allow**, so you can share pieces with the others.
+3. **Open the session.** Click the link and choose **Open in The Last Piece**, or paste the link into the app and press **Open**.
 4. **Download all.** Each file arrives by torrent or from the host, then gets checked.
-5. **Join.** At showtime press **Join movie night**. The player opens straight into the room.
+5. **Join.** At showtime press **Join session**. The player opens straight into the room.
 
 In the player:
 
@@ -82,11 +82,11 @@ In the player:
 | Mouse wheel, Up/Down | Volume, up to 300% (set the limit in Settings) |
 | Enter | Send a chat message to everyone's screen |
 
-Already use VLC or your own Syncplay? That works too: the night page lists the file names, server and room. On-screen chat only shows in mpv.
+Already use VLC or your own Syncplay? That works too: the session page lists the file names, server and room. On-screen chat only shows in mpv.
 
-**Phones.** Synkplay on Android or iOS can join the same room. Open the night link on the phone and follow its "On a phone" part. This is still experimental.
+**Phones.** Synkplay on Android or iOS can join the same room. Open the session link on the phone and follow its "On a phone" part. This is still experimental.
 
-## Hosting a movie night
+## Hosting a session
 
 The host runs the host app and a Syncplay server in Docker, on a Linux server or in WSL on Windows. One command sets it all up:
 
@@ -101,7 +101,7 @@ Prefer to do it by hand? See [Docker by hand](docs/setup.md#docker-by-hand).
 Open `http://<your server>:8080` and sign in with the admin password the installer printed. The page starts with a **setup check** that marks each part green, yellow or red and says what to fix. Then:
 
 1. Put episodes in the shelf folder, or paste a magnet link or a release page into the admin page. **Get to my server** downloads a public torrent onto your shelf first, so viewers get it from you.
-2. **New movie night**: pick the files, a title and a start time.
+2. **New session**: pick the files, a title and a start time.
 3. Share the link. With a Discord webhook set, **Post to Discord** posts it for you.
 4. Before the start, open **Who's ready**.
 
@@ -117,8 +117,8 @@ Ports viewers need to reach:
 Useful settings in `server/.env`:
 
 - `TLP_GROUP_NAME`: your group's name, shown as the big title in everyone's app.
-- `TLP_RETENTION_DAYS`: how long to keep an episode after its last night (pinned files are kept).
-- `TLP_DISCORD_WEBHOOK`: adds a **Post to Discord** button to each night. Nothing posts until you press it.
+- `TLP_RETENTION_DAYS`: how long to keep an episode after its last session (pinned files are kept).
+- `TLP_DISCORD_WEBHOOK`: adds a **Post to Discord** button to each session. Nothing posts until you press it.
 - `TLP_BEHIND_PROXY=true`: set this with the HTTPS profile, so group torrents see viewers' real addresses.
 - `TLP_GROUP_TORRENTS=false`, `TLP_FETCH=false`, `TLP_ROOM_HELPER=false`: turn off group torrents, Get to my server, or the room helper.
 
@@ -143,7 +143,7 @@ Motion pauses when the window isn't active, and a box in Settings turns it off. 
 ## Privacy
 
 - While it's open, the viewer app tells the host your name and how far your downloads have got, so the host can see who's ready. Turn it off with the **Show the host my name and download progress** box in Settings.
-- Like any torrent client, torrent downloads show your IP address to the others in that swarm. Group torrents are private to the people with the night's link; public magnets are not.
+- Like any torrent client, torrent downloads show your IP address to the others in that swarm. Group torrents are private to the people with the session's link; public magnets are not.
 - The app checks GitHub Releases for updates. There are no analytics or accounts.
 
 ## FAQ
@@ -178,7 +178,7 @@ More in the [setup guide](docs/setup.md#troubleshooting). Still stuck? [Open a b
 - [Setup guide](docs/setup.md): hosting in detail, the viewer app, phones.
 - [How it works](docs/how-it-works.md): file sharing, peer to peer, the player and the design choices.
 - [Options considered](docs/options.md): the alternatives and why they weren't picked.
-- [First test](docs/testing.md): a step-by-step run-through with two PCs at home, before a real night.
+- [First test](docs/testing.md): a step-by-step run-through with two PCs at home, before a real session.
 - [Roadmap](docs/roadmap.md): what's planned.
 - [Contributing](CONTRIBUTING.md): building, testing, releases and signing.
 

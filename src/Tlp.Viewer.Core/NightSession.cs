@@ -5,7 +5,7 @@ namespace Tlp.Viewer.Core;
 /// <param name="Checking">True while the finished file is being compared with the host's copy.</param>
 public sealed record ItemStatus(PackItem Item, FileState State, string Message, double Fraction, bool Checking = false);
 
-/// <summary>Gets every file for a movie night into the folder, by the best available route, and checks it.</summary>
+/// <summary>Gets every file for a session into the folder, by the best available route, and checks it.</summary>
 public sealed class NightSession(Pack pack, ViewerSettings settings, HttpDownloader http, TorrentDownloader torrents)
 {
     public Pack Pack => pack;

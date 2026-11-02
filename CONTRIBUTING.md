@@ -31,7 +31,7 @@ and the log's last lines, with no passwords or links.
 
 | Path | What |
 |---|---|
-| `src/Tlp.Core` | Shared: movie night pack format, magnets, app name |
+| `src/Tlp.Core` | Shared: session pack format, magnets, app name |
 | `src/Tlp.Host` | Host app: API, admin page (`wwwroot`), Syncplay room helper, group torrents |
 | `src/Tlp.Viewer.Core` | Viewer logic: downloads, torrents, file checks, Syncplay launch |
 | `src/Tlp.Viewer` | Windows app (Avalonia), themes, installer hooks |
@@ -48,7 +48,7 @@ Every push runs:
   settings, installs `Setup.exe` (checking the Start menu shortcut), updates and uninstalls it
   (checking nothing is left), and runs `windows-network.ps1` for real: port forwarding twice,
   mirrored networking with and without an existing `.wslconfig`, and undo putting everything back.
-- `server`: builds the images, starts them with Compose, and checks a night's playlist reaches
+- `server`: builds the images, starts them with Compose, and checks a session's playlist reaches
   Syncplay. A second job runs shellcheck on the scripts, installs with `install.sh` on a fresh
   runner, checks the host, the smoke test and the setup check, runs the installer again (settings
   kept), uninstalls (no containers, volumes, images or folder left), and tries the piped

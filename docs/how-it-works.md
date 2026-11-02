@@ -14,8 +14,8 @@ verified), **UNKNOWN**.
 
  ┌──────────────────────── Host (a PC in WSL, or a Linux server) ──────────────────────┐
  │  Host app (:8080, HTTPS via Caddy)              Syncplay server (:8999)             │
- │  - admin page: shelf, nights, cleanup           - rooms, shared playlist            │
- │  - movie night link → pack.json + web page      - play/pause/seek sync              │
+ │  - admin page: shelf, sessions, cleanup         - rooms, shared playlist            │
+ │  - session link → pack.json + web page          - play/pause/seek sync              │
  │  - files served with resume                     - on-screen chat (mpv)              │
  │  - "find magnets on this page"                                                      │
  └───────────▲───────────────────────────────────────────────▲──────────────────────────┘
@@ -30,9 +30,9 @@ verified), **UNKNOWN**.
  └────────────────────────────────────────────┘      friends seeding to each other)
 ```
 
-## Movie night pack
+## Session pack
 
-One link per night. The host app turns it into a page with an "Open in The Last Piece" button, and into `pack.json` for the app:
+One link per session. The host app turns it into a page with an "Open in The Last Piece" button, and into `pack.json` for the app:
 
 - Title and start time.
 - Syncplay server, room and password, so friends never type them.
@@ -49,7 +49,7 @@ One link per night. The host app turns it into a page with an "Open in The Last 
 | **Public magnet** (built in) | The episode came from a public torrent. The host pastes the magnet, or pastes the page and the host app finds it. | None: friends download from the public swarm. |
 | **Host's copy** (plain download) | Fallback, or for anyone who prefers it. | One copy per friend. |
 
-**Get to my server.** The host app can download a public magnet onto its own shelf first ("Get to my server" next to a found magnet, or the tick box when creating a night). When it finishes, every night that lists that magnet switches to the host's copy by itself, so friends get it from the host's server: the group torrent (the host's own private "magnet") plus the plain download, with the public magnet left as a last resort. Half-downloaded files stay out of the shelf until they're complete, it resumes after a restart, and it stops sharing with the public swarm once done. PROVEN in a test with a real torrent transfer through the host app; INFERRED for public swarms and real home networks.
+**Get to my server.** The host app can download a public magnet onto its own shelf first ("Get to my server" next to a found magnet, or the tick box when creating a session). When it finishes, every session that lists that magnet switches to the host's copy by itself, so friends get it from the host's server: the group torrent (the host's own private "magnet") plus the plain download, with the public magnet left as a last resort. Half-downloaded files stay out of the shelf until they're complete, it resumes after a restart, and it stops sharing with the public swarm once done. PROVEN in a test with a real torrent transfer through the host app; INFERRED for public swarms and real home networks.
 
 - **Picking a source.** Each friend chooses in settings:
   - Best available (default): group torrent, then the host's copy, then the public magnet.
@@ -64,8 +64,8 @@ One link per night. The host app turns it into a page with an "Open in The Last 
 ## Peer to peer
 
 - **Group torrent, for files on the host's shelf:**
-  - The host app makes a private `.torrent` for each shelf file in a night, in the background.
-  - It runs the tracker itself, behind the night's secret link, so only people with the link find each other. Private means clients don't use DHT or peer exchange, so strangers can't join.
+  - The host app makes a private `.torrent` for each shelf file in a session, in the background.
+  - It runs the tracker itself, behind the session's secret link, so only people with the link find each other. Private means clients don't use DHT or peer exchange, so strangers can't join.
   - The shelf link is the web seed: The host's copy is always there to fill gaps, without a torrent client on the host.
   - PROVEN, with the real host app over real sockets:
     - Friend A downloads with nobody else around, entirely from the web seed.
@@ -82,7 +82,7 @@ One link per night. The host app turns it into a page with an "Open in The Last 
 
 - uTorrent is closed source and has a history of bundled adware and, in 2015, a bundled cryptocurrency miner (INFERRED: widely reported, not re-verified here).
 - The app's built-in engine is MonoTorrent: MIT licensed, open source, and only downloads what's in the pack.
-- Anyone who wants an external client can still copy the magnet from the night page. qBittorrent is the open-source pick there.
+- Anyone who wants an external client can still copy the magnet from the session page. qBittorrent is the open-source pick there.
 - **Note:** a torrent shows your IP address to everyone in the swarm, as with any torrent client.
 
 ## The player: bundled mpv with a VLC look
@@ -102,19 +102,19 @@ One link per night. The host app turns it into a page with an "Open in The Last 
 
 Cleanup:
 
-- A shelf file is deleted a set number of days (default 7) after the last movie night that uses it, unless pinned.
-- Files no night uses are never deleted automatically. The admin page lists them with a delete button and shows disk space.
+- A shelf file is deleted a set number of days (default 7) after the last session that uses it, unless pinned.
+- Files no session uses are never deleted automatically. The admin page lists them with a delete button and shows disk space.
 - Cleanup has a preview, and can be switched to report-only (`Tlp__CleanupEnabled=false`).
 - PROVEN: logic unit-tested, and delete works in Docker.
 - Docker detail: the host app runs as user id 1654. The shelf folder has to be writable by it for cleanup (for example `sudo chown -R 1654 shelf`).
 
 ## Room helper and "Who's ready"
 
-- Room helper: fills each active night's Syncplay room playlist, so the room goes to the next episode together. PROVEN against real Syncplay 1.7.6 (locally and in the `server` CI run).
+- Room helper: fills each active session's Syncplay room playlist, so the room goes to the next episode together. PROVEN against real Syncplay 1.7.6 (locally and in the `server` CI run).
   - It only steps into a room while it's empty, because Syncplay pauses a room when anyone leaves it, the helper included. "Fill room playlist now" on the admin page can force it, which pauses people in the room once.
   - It never sends a play position and has no file open, so Syncplay leaves it out of "wait for the slowest viewer" and of the ready count (PROVEN in Syncplay's source).
   - Turn it off with `TLP_ROOM_HELPER=false`.
-- "Who's ready" on each night: per friend, files done out of total, app open or away, in the room, and what they're playing. PROVEN with tests and real Syncplay; the viewer side is INFERRED on Windows.
+- "Who's ready" on each session: per friend, files done out of total, app open or away, in the room, and what they're playing. PROVEN with tests and real Syncplay; the viewer side is INFERRED on Windows.
 
 ## No Syncplay connect window
 

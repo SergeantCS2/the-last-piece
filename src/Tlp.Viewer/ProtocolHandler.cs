@@ -13,7 +13,7 @@ public static class ProtocolHandler
         try
         {
             using var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\tlp");
-            key.SetValue("", $"URL:{Tlp.Core.AppInfo.Name} movie night");
+            key.SetValue("", $"URL:{Tlp.Core.AppInfo.Name} session link");
             key.SetValue("URL Protocol", "");
             using var cmd = key.CreateSubKey(@"shell\open\command");
             cmd.SetValue("", $"\"{exe}\" \"%1\"");
@@ -21,6 +21,26 @@ public static class ProtocolHandler
         catch (UnauthorizedAccessException)
         {
             // Not fatal: friends can still paste the link.
+        }
+    }
+
+    /// <summary>
+    /// Gives the app's entry in Windows' Apps list its full name. The installer names it with the
+    /// short name (which the Start menu shortcut also uses, and a shortcut can't contain ":").
+    /// Runs after install, after each update and at start, and only touches our own entry.
+    /// </summary>
+    public static void EnsureFullName()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\TheLastPiece", writable: true);
+            if (key is null) return;
+            if (key.GetValue("DisplayName") as string != Tlp.Core.AppInfo.FullName) key.SetValue("DisplayName", Tlp.Core.AppInfo.FullName);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            // Not fatal: the entry keeps the short name.
         }
     }
 

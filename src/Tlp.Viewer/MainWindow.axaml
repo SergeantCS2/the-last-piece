@@ -3,12 +3,13 @@
         xmlns:local="using:Tlp.Viewer"
         x:Class="Tlp.Viewer.MainWindow"
         Icon="avares://TheLastPiece/Assets/app.ico"
-        Width="780" Height="700" MinWidth="560" MinHeight="520">
+        Width="780" Height="700" MinWidth="560" MinHeight="520"
+        ExtendClientAreaToDecorationsHint="True" ExtendClientAreaChromeHints="NoChrome" ExtendClientAreaTitleBarHeightHint="-1">
   <!-- Three layers: the look's backdrop (pictures, patterns, motion), the app, and the look's
        overlay (scanlines, glare). Both decor layers ignore the mouse. Themes/ fills them. -->
-  <Panel>
+  <Panel x:Name="Root">
     <ContentControl x:Name="Backdrop" Classes="backdrop" IsHitTestVisible="False" Focusable="False"/>
-    <DockPanel Margin="22,16,22,16">
+    <DockPanel Margin="22,44,22,16">
       <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
         <StackPanel VerticalAlignment="Bottom">
           <ContentControl x:Name="Brand" Classes="brand" Focusable="False"/>
@@ -19,7 +20,7 @@
       <HeaderedContentControl DockPanel.Dock="Top" Classes="panel" Header="{DynamicResource TlpNightLabel}">
         <StackPanel Spacing="8">
           <Grid ColumnDefinitions="*,Auto">
-            <TextBox x:Name="LinkBox" Watermark="Paste the movie night link from the host"/>
+            <TextBox x:Name="LinkBox" Watermark="Paste the session link from the host"/>
             <Button x:Name="LoadButton" Grid.Column="1" Margin="8,0,0,0" Content="Open"/>
           </Grid>
           <TextBlock x:Name="NightTitle" Classes="heading" TextWrapping="Wrap"/>
@@ -33,7 +34,7 @@
           <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
             <TextBlock Text="Your name" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <TextBox x:Name="NameBox" Grid.Column="1" Margin="0,0,0,6"/>
-            <TextBlock Grid.Row="1" Text="Movie night folder" VerticalAlignment="Center" Margin="0,0,16,6"/>
+            <TextBlock Grid.Row="1" Text="Video folder" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
               <TextBox x:Name="FolderBox"/>
               <Button x:Name="BrowseButton" Grid.Column="1" Margin="6,0,0,0" Content="Browse"/>
@@ -83,7 +84,7 @@
         <Grid ColumnDefinitions="*,Auto,Auto">
           <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap"/>
           <Button x:Name="DownloadButton" Grid.Column="1" Margin="8,0,0,0" Content="Download all" IsEnabled="False"/>
-          <Button x:Name="JoinButton" Grid.Column="2" Margin="8,0,0,0" Content="Join movie night" IsEnabled="False" Classes="accent"/>
+          <Button x:Name="JoinButton" Grid.Column="2" Margin="8,0,0,0" Content="Join session" IsEnabled="False" Classes="accent"/>
         </Grid>
       </ContentControl>
       </StackPanel>
@@ -114,12 +115,12 @@
         <HeaderedContentControl Classes="panel" Header="Welcome" MaxWidth="560" Margin="24"
                                 HorizontalAlignment="Center" VerticalAlignment="Center">
           <StackPanel Spacing="8">
-            <TextBlock Classes="heading" TextWrapping="Wrap" Text="Let's get you ready for movie night"/>
+            <TextBlock Classes="heading" TextWrapping="Wrap" Text="Let's get you set up"/>
             <TextBlock Classes="muted" TextWrapping="Wrap"
                        Text="Three quick things. You can change any of them later in Settings."/>
             <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="1. Your name, as the others see it in the room"/>
             <TextBox x:Name="WelcomeName" MaxLength="40"/>
-            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="2. Where to keep movie night files"/>
+            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="2. Where to keep video files"/>
             <Grid ColumnDefinitions="*,Auto">
               <TextBox x:Name="WelcomeFolder"/>
               <Button x:Name="WelcomeBrowse" Grid.Column="1" Margin="6,0,0,0" Content="Browse"/>
@@ -127,7 +128,7 @@
             <TextBlock x:Name="WelcomeSpace" Classes="muted small" TextWrapping="Wrap"/>
             <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="3. A look (pick one to preview it)"/>
             <ComboBox x:Name="WelcomeTheme" HorizontalAlignment="Stretch"/>
-            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="Your movie night link, if you have one"/>
+            <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" Text="Your session link, if you have one"/>
             <TextBox x:Name="WelcomeLink" Watermark="Paste it here, or open it later"/>
             <TextBlock Classes="muted small" TextWrapping="Wrap" Margin="0,6,0,0"
                        Text="If Windows asks whether The Last Piece may use the network, choose Allow. That lets you swap pieces of files with the others, which makes downloads faster for everyone."/>
@@ -137,6 +138,27 @@
         </HeaderedContentControl>
       </ScrollViewer>
     </Panel>
+    <!-- The app's own title bar, drawn by the look (Styles.axaml: Border.titlebar, Button.caption).
+         Drag it to move the window, double-click it to maximise. -->
+    <Border x:Name="TitleBar" Classes="titlebar" VerticalAlignment="Top" Height="34">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+          <Button x:Name="MinButton" Classes="caption" ToolTip.Tip="Minimise" AutomationProperties.Name="Minimise">
+            <Path Data="M0,5 H10" Classes="glyph"/>
+          </Button>
+          <Button x:Name="MaxButton" Classes="caption" ToolTip.Tip="Maximise" AutomationProperties.Name="Maximise">
+            <Path x:Name="MaxGlyph" Data="M0.5,0.5 H9.5 V9.5 H0.5 Z" Classes="glyph"/>
+          </Button>
+          <Button x:Name="CloseButton" Classes="caption close" ToolTip.Tip="Close" AutomationProperties.Name="Close">
+            <Path Data="M0,0 L10,10 M10,0 L0,10" Classes="glyph"/>
+          </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="12,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+          <Image Source="avares://TheLastPiece/Assets/app.ico" Width="16" Height="16" VerticalAlignment="Center"/>
+          <TextBlock x:Name="TitleText" Classes="wintitle" VerticalAlignment="Center"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
     <ContentControl x:Name="Overlay" Classes="overlay" IsHitTestVisible="False" Focusable="False"/>
   </Panel>
 </Window>

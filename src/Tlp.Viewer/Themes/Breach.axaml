@@ -120,7 +120,7 @@
             <Rectangle Width="120" Height="4" Fill="#F3E600" VerticalAlignment="Center"/>
             <Rectangle Width="18" Height="4" Fill="#F3E600" VerticalAlignment="Center"/>
             <Rectangle Width="6" Height="4" Fill="#F3E600" VerticalAlignment="Center"/>
-            <TextBlock Text="NIGHT_PROTOCOL.EXE" FontFamily="{DynamicResource TlpMonoFont}" FontSize="11" LetterSpacing="2" Foreground="#F3E600" VerticalAlignment="Center"/>
+            <TextBlock Text="SYNC_PROTOCOL.EXE" FontFamily="{DynamicResource TlpMonoFont}" FontSize="11" LetterSpacing="2" Foreground="#F3E600" VerticalAlignment="Center"/>
           </StackPanel>
         </StackPanel>
       </ControlTemplate>

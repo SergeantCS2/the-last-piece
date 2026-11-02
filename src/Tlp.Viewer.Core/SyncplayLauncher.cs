@@ -5,12 +5,12 @@ using Tlp.Core;
 namespace Tlp.Viewer.Core;
 
 /// <summary>
-/// Starts Syncplay already pointed at the movie night room, with mpv as the player.
+/// Starts Syncplay already pointed at the session's room, with mpv as the player.
 /// Nothing is written to the user's own Syncplay settings:
 /// - The bundled Syncplay gets a portable syncplay.ini next to Syncplay.exe. Syncplay 1.7.6
 ///   reads that instead of %APPDATA%\syncplay.ini (ConfigurationGetter._checkForPortableFile),
 ///   and it turns off the connect window and update pop-ups.
-/// - Room-specific settings go in a ".syncplay" file in the movie night folder, which Syncplay
+/// - Room-specific settings go in a ".syncplay" file in the video folder, which Syncplay
 ///   reads for files opened from that folder.
 /// - Server, room, name and password are command-line arguments, with --no-store.
 /// </summary>
@@ -47,7 +47,7 @@ public static class SyncplayLauncher
             if (Uri.TryCreate(src.Uri, UriKind.Absolute, out var u) && !trusted.Contains(u.Host)) trusted.Add(u.Host);
 
         var sb = new StringBuilder();
-        sb.AppendLine($"; Written by {AppInfo.Name} for this movie night folder.");
+        sb.AppendLine($"; Written by {AppInfo.Name} for this video folder.");
         sb.AppendLine("[client_settings]");
         sb.AppendLine($"mediaSearchDirectories = {PyList([folder])}");
         sb.AppendLine("sharedPlaylistEnabled = True");

@@ -9,7 +9,7 @@ using MonoTorrent.TrackerServer;
 namespace Tlp.Host.Services;
 
 /// <summary>
-/// Group torrents: a private .torrent for each shelf file used in a movie night, so friends
+/// Group torrents: a private .torrent for each shelf file used in a session, so friends
 /// share pieces with each other instead of all pulling the whole file from the host.
 ///
 /// - The host doesn't run a torrent client. Its shelf download link is the torrent's web

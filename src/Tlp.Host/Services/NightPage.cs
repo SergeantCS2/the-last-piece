@@ -4,7 +4,7 @@ using Tlp.Core;
 
 namespace Tlp.Host.Services;
 
-/// <summary>The page a friend sees when they open a movie night link in a browser.</summary>
+/// <summary>The page a friend sees when they open a session link in a browser.</summary>
 public static class NightPage
 {
     /// <summary>Small version of the Neon logo (docs/logo/a-neon-small.svg).</summary>
@@ -14,11 +14,11 @@ public static class NightPage
     {
         var h = (string? s) => WebUtility.HtmlEncode(s ?? "");
         var sb = new StringBuilder();
-        sb.Append("""
+        sb.Append($$$"""
             <!doctype html><html lang="en"><head><meta charset="utf-8">
             <meta name="viewport" content="width=device-width,initial-scale=1">
             <meta name="robots" content="noindex">
-            <title>Movie night</title>
+            <title>{{{h(string.IsNullOrWhiteSpace(pack.Group) ? AppInfo.Name : pack.Group)}}}</title>
             <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF5C7A'/%3E%3Cstop offset='1' stop-color='%238E4BFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M14,23 L23,14 H38 A12,12 0 1,1 62,14 H86 V38 A12,12 0 1,1 86,62 V77 L77,86 H14 V62 A12,12 0 1,0 14,38 Z' fill='url(%23g)'/%3E%3Cpath d='M40,34 L66,50 L40,66 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
             <style>
             :root{color-scheme:light dark;--bg:#fafafa;--fg:#1a1a1a;--muted:#666;--card:#fff;--line:#ddd;--accent:#c0392b}

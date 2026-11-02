@@ -2,7 +2,7 @@
 # The Last Piece: removes the host that install.sh set up.
 #
 # Stops and removes the host app and Syncplay containers and their images, and asks before
-# deleting anything else: the app's data (movie nights, admin password, Syncplay rooms), your
+# deleting anything else: the app's data (sessions, admin password, Syncplay rooms), your
 # episodes folder, the app folder, and (in WSL) the Windows network settings the installer made.
 # Docker and git stay installed, since other things may use them.
 #
@@ -76,7 +76,7 @@ if command -v docker >/dev/null; then
   DOCKER="docker"; docker info >/dev/null 2>&1 || DOCKER="$SUDO docker"
   dc() { (cd "$SERVER" && $DOCKER compose --profile https "$@"); }
   down=(down --remove-orphans --rmi all)
-  if confirm "Delete the app's data too (movie nights, the admin password, Syncplay rooms)?" y; then
+  if confirm "Delete the app's data too (sessions, the admin password, Syncplay rooms)?" y; then
     down+=(--volumes)
     DATA_GONE=1
   else

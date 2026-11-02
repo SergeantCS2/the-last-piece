@@ -2,7 +2,7 @@ namespace Tlp.Core;
 
 /// <summary>
 /// Pack file names come from the network, so viewers must never let one escape the
-/// movie night folder or produce a name Windows can't create.
+/// video folder or produce a name Windows can't create.
 /// </summary>
 public static class SafeFileName
 {

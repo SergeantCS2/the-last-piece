@@ -2,7 +2,7 @@
 
 Planned or wanted, roughly in order. Nothing here has a date.
 
-- **More real-world testing.** Real movie nights on Windows PCs, and Synkplay on phones (sync and styled subtitles).
+- **More real-world testing.** Real sessions on Windows PCs, and Synkplay on phones (sync and styled subtitles).
 - **Code signing**, so Windows stops warning on install (SignPath for open-source projects is the likely route; see [CONTRIBUTING.md](../CONTRIBUTING.md#signing)).
 - **Screenshots of the player and host pages** in the docs.
 - **Smaller download** (see [How it works](how-it-works.md#download-size)).

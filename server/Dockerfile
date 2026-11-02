@@ -1,4 +1,4 @@
-# Syncplay server for movie night.
+# Syncplay server for The Last Piece.
 # Syncplay isn't published on PyPI, so we pull the tagged source release
 # and install only the server's requirements (no Qt GUI deps).
 FROM python:3.13-slim
