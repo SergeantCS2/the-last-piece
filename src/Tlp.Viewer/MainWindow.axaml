@@ -64,6 +64,7 @@
                      Text="These apply the next time you join. You can always switch tracks in the player."/>
           <CheckBox x:Name="SeedBox" Content="Share finished torrents with the group while this app is open"/>
           <CheckBox x:Name="ShareBox" Content="Show the host my name and download progress (their &quot;who's ready&quot; list)"/>
+          <CheckBox x:Name="MotionBox" Content="Animate the look (glow, glitch, flicker)"/>
           <Button x:Name="SaveButton" Content="Save settings"/>
         </StackPanel>
       </Expander>

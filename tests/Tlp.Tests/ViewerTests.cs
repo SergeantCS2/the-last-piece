@@ -120,6 +120,7 @@ public class SyncplayLauncherTests
             // Older settings than these fields keep the defaults, not false or null.
             Assert.True(s.ShareProgress);
             Assert.True(s.SeedWhileOpen);
+            Assert.True(s.Motion);
             Assert.Equal("Default", s.Theme);
             Assert.Equal("Scrolling", s.ChatStyle);
             (s with { Tracks = TrackChoice.EnglishDub, MaxVolume = 200 }).Save(path);

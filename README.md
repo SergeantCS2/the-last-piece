@@ -1,6 +1,40 @@
-# the-last-piece
+<p align="center">
+  <img src="docs/logo/concept-b.svg" width="96" alt="The Last Piece logo (placeholder until a logo is picked)">
+</p>
 
-Remote movie and anime night that looks as good as watching alone, without Discord screen share.
+<h1 align="center">The Last Piece</h1>
+
+<p align="center">
+  <b>Movie and anime night with friends, in full quality, without screen share.</b><br>
+  Everyone plays the real file, kept in step to the frame.
+</p>
+
+<p align="center">
+  <a href="#running-the-host">Quick start</a> ·
+  <a href="docs/setup.md">Setup guide</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a> ·
+  <a href="#roadmap-after-the-mvp">Roadmap</a> ·
+  <a href="#themes">Looks</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/SergeantCS2/the-last-piece/actions/workflows/dotnet.yml"><img src="https://github.com/SergeantCS2/the-last-piece/actions/workflows/dotnet.yml/badge.svg?branch=main" alt="Windows app build"></a>
+  <a href="https://github.com/SergeantCS2/the-last-piece/actions/workflows/server-ci.yml"><img src="https://github.com/SergeantCS2/the-last-piece/actions/workflows/server-ci.yml/badge.svg?branch=main" alt="Host build"></a>
+  <img src="https://img.shields.io/badge/viewer-Windows-0078D4" alt="Viewer runs on Windows">
+  <img src="https://img.shields.io/badge/.NET-10-512BD4" alt=".NET 10">
+  <img src="https://img.shields.io/badge/sync-Syncplay%201.7-7A3FB0" alt="Syncplay 1.7">
+</p>
+
+<p align="center">
+  <img src="docs/readme/hero.png" width="820" alt="The Last Piece viewer window in the Default look, dark mode, with tonight's episodes downloading">
+</p>
+
+<p align="center">
+  <img src="docs/readme/looks-strip.png" width="820" alt="The four looks side by side: Default, Phosphor, Breach and Outrun">
+  <br><sub>Four looks built in: Default, Phosphor, Breach and Outrun. Pick one in Settings.</sub>
+</p>
+
+---
 
 ## TLDR
 
@@ -206,7 +240,8 @@ Phone:
 - [x] Four looks in the app, redesigned as full designs rather than colour swaps: Default, Phosphor (amber or green), Breach and Outrun (see [Themes](#themes)).
 - [ ] The host picks which looks ship and which is the default; the admin page follows the pick.
 - [ ] Logo: three concepts drafted in `docs/logo` for the host to pick from.
-- [ ] Polished README: centred logo and name, a one-line tagline, links to Quick start, Setup guide, Contributing and Roadmap, build status badges, and a large framed screenshot of the app, with more screenshots further down. Real screenshots, taken once the theme is picked.
+- [x] Polished README top: centred logo, name, tagline, links, build badges, a framed screenshot and the four looks. The logo is a placeholder (concept B) until the host picks one.
+- [ ] Swap in the picked logo and look, and add screenshots of the player and host pages further down.
 - [x] [Setup guide](docs/setup.md) and [contributing guide](CONTRIBUTING.md), for those README links.
 - [ ] Licence file (the host leans MIT).
 - [ ] First person-tested night (the checklist below).
@@ -275,7 +310,7 @@ Four looks are in the app now (Settings, "Look"; picking one previews it). Each 
 - **Breach.** A cyberpunk hacking HUD: chamfered panels, a glitching title, a hex buffer readout and hazard stripes.
 - **Outrun.** Synthwave: a neon sign title, a striped sun over a perspective grid, and a VHS tracking line.
 
-They use our own colours and art and freely licensed fonts, with no artwork, logos, fonts or names from any game or film. Motion pauses when the window isn't active. How looks are built is in [`src/Tlp.Viewer/Themes/README.md`](src/Tlp.Viewer/Themes/README.md).
+They use our own colours and art and freely licensed fonts, with no artwork, logos, fonts or names from any game or film. Motion pauses when the window isn't active, and a box in Settings turns it off. How looks are built is in [`src/Tlp.Viewer/Themes/README.md`](src/Tlp.Viewer/Themes/README.md).
 
 | Default | Phosphor | Breach | Outrun |
 |---|---|---|---|

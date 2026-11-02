@@ -32,6 +32,7 @@ public partial class MainWindow : Window
         // never costs anything while the movie plays.
         Activated += (_, _) => SetStill(false);
         Deactivated += (_, _) => SetStill(true);
+        MotionBox.IsCheckedChanged += (_, _) => SetStill(!IsActive);
         ItemsList.ItemsSource = _rows;
         ShowSettings();
 
@@ -80,6 +81,7 @@ public partial class MainWindow : Window
 
     private void SetStill(bool still)
     {
+        still |= MotionBox.IsChecked == false;
         foreach (var part in new Control[] { Backdrop, Overlay, Brand, Kicker, HeaderSide })
             part.Classes.Set("still", still);
     }
@@ -92,6 +94,7 @@ public partial class MainWindow : Window
         ChatBox.SelectedIndex = _settings.ChatStyle == "Scrolling" ? 1 : 0;
         SeedBox.IsChecked = _settings.SeedWhileOpen;
         ShareBox.IsChecked = _settings.ShareProgress;
+        MotionBox.IsChecked = _settings.Motion;
         TracksBox.SelectedIndex = (int)_settings.Tracks;
         VolumeBox.ItemsSource = PlayerOptions.VolumeChoices.Select(v => $"{v}%").ToList();
         VolumeBox.SelectedIndex = Math.Max(0, PlayerOptions.VolumeChoices.ToList().IndexOf(
@@ -118,6 +121,7 @@ public partial class MainWindow : Window
             ChatStyle = ChatBox.SelectedIndex == 1 ? "Scrolling" : "Chatroom",
             SeedWhileOpen = SeedBox.IsChecked == true,
             ShareProgress = ShareBox.IsChecked == true,
+            Motion = MotionBox.IsChecked != false,
             Tracks = (TrackChoice)Math.Clamp(TracksBox.SelectedIndex, 0, 2),
             MaxVolume = PlayerOptions.VolumeChoices[Math.Clamp(VolumeBox.SelectedIndex, 0, PlayerOptions.VolumeChoices.Count - 1)],
             Theme = ThemeBox.SelectedItem as string ?? ThemeManager.DefaultTheme,

@@ -50,6 +50,8 @@ public sealed record ViewerSettings
     public TrackChoice Tracks { get; set; } = TrackChoice.Original;
     /// <summary>Name of the app's look (a file in the viewer's Themes folder).</summary>
     public string Theme { get; set; } = "Default";
+    /// <summary>Let the look animate (glow, glitch, flicker). Off keeps it still.</summary>
+    public bool Motion { get; set; } = true;
 
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TheLastPiece", "settings.json");

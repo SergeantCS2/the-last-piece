@@ -25,7 +25,8 @@ run time, so picking a look in Settings previews it straight away; Save settings
 | Outrun | Synthwave: neon sign title, striped sun, perspective grid, VHS line | Monoton, Mr Dafoe, Exo 2 |
 
 Motion (glow bands, glitch, flicker, twinkling stars) pauses while the window isn't active, to save
-power. Shapes the looks need (cut corners, corner marks, the CRT bezel, the clock) are small
+power, and stays off when the viewer unticks "Animate the look" in Settings. Both work through a
+`still` class on the decorated parts, so a look's animations should all sit under `:not(.still)`. Shapes the looks need (cut corners, corner marks, the CRT bezel, the clock) are small
 controls in `Decor/Shapes.cs`.
 
 Rules for every look: our own colours and art, and fonts under the SIL Open Font License (texts in

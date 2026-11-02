@@ -83,6 +83,13 @@ internal static class SelfTest
             ThemeManager.Apply(Avalonia.Application.Current!, ThemeManager.DefaultTheme);
             log.Add($"themes: ok ({string.Join(", ", ThemeManager.Available)})");
 
+            // Turning motion off in Settings keeps every look still, whether or not the window is active.
+            window.MotionBox.IsChecked = false;
+            var backdrop = window.FindControl<ContentControl>("Backdrop") ?? throw new InvalidDataException("no Backdrop");
+            if (!backdrop.Classes.Contains("still")) throw new InvalidDataException("motion off didn't stop the look's animation");
+            window.MotionBox.IsChecked = true;
+            log.Add("motion setting: ok");
+
             window.ShowPack(pack);
             window.Rows[0].Status = "Downloading (the group torrent) · 600 MB of 1.30 GB · 9.8 MB/s";
             window.Rows[0].Percent = 45;
