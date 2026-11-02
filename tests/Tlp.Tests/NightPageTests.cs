@@ -26,6 +26,15 @@ public class NightPageTests
     }
 
     [Fact]
+    public void Shows_the_logo_and_the_group_name_encoded()
+    {
+        var html = NightPage.Render(Sample(null) with { Group = "<Friday> crew" }, "https://h.example/n/t/pack.json");
+        Assert.Contains("class=\"logo\"", html);
+        Assert.Contains("<span>&lt;Friday&gt; crew</span>", html);
+        Assert.DoesNotContain("<span></span>", NightPage.Render(Sample(null), "https://h.example/n/t/pack.json"));
+    }
+
+    [Fact]
     public void No_password_row_without_a_password()
     {
         var html = NightPage.Render(Sample(null), "https://h.example/n/t/pack.json");

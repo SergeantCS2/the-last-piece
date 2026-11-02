@@ -54,7 +54,7 @@
 - **Host knows who's ready.** The host keeps a quiet helper in Syncplay that fills each night's room playlist (so everyone moves to the next episode together) and shows, per friend, what's downloaded and who's in the room.
 - **Proper installer with auto-update.** `Setup.exe` installs per user with no admin prompt, registers movie night links, and updates itself from GitHub Releases. Signing slots into CI once the host picks a route (see [Signing](#signing)).
 - **Status:**
-  - 106 automated tests on Linux, including a group torrent between the real host app and two friends.
+  - 107 automated tests on Linux, including a group torrent between the real host app and two friends.
   - The room helper filled a real Syncplay 1.7.6 room's playlist, here and in CI.
   - The host runs in Docker.
   - On every push, GitHub Actions builds the Windows zip and runs the real `TheLastPiece.exe` on a Windows machine. It opens the window, downloads a test torrent, and starts the bundled Syncplay and mpv, which must join a real Syncplay server with the file open (see CI for the latest result).
@@ -241,10 +241,11 @@ Phone:
 - [x] Volume up to 130, 200 or 300% (Settings, "Loudest volume"). Mouse wheel and arrow keys change volume rather than seeking, so a stray key doesn't move the whole room.
 - [x] App name and publisher in one place (`Directory.Build.props`).
 - [x] Five looks in the app: a plain Default, plus full designs (not colour swaps) Warm, Phosphor (amber or green), Breach and Outrun (see [Themes](#themes)).
-- [ ] The host picks which looks ship and which is the default; the admin page follows the pick.
-- [ ] Logo: three concepts drafted in `docs/logo` for the host to pick from.
-- [x] Polished README top: centred logo, name, tagline, links, build badges, a framed screenshot and the four looks. The logo is a placeholder (concept B) until the host picks one.
-- [ ] Swap in the picked logo and look, and add screenshots of the player and host pages further down.
+- [x] Default is the plain look (2026-11-02); Warm, Phosphor, Breach and Outrun ship as choices in Settings. The host pages stay plain to match, with the logo.
+- [x] Logo: The host picked the piece, drawn in more detail as Neon (the logo) with Terminal kept as an alternate (`docs/logo`).
+- [x] Polished README top: centred logo, name, tagline, links, build badges, a framed screenshot and the looks.
+- [x] Swap in the picked logo and look (app icon, host pages' tab icon and header, README).
+- [ ] Screenshots of the player and host pages further down (needs a browser and mpv on a real machine; INFERRED until then).
 - [x] [Setup guide](docs/setup.md) and [contributing guide](CONTRIBUTING.md), for those README links.
 - [ ] Licence file (the host leans MIT).
 - [ ] First person-tested night (the checklist below).
@@ -392,7 +393,7 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 | `src/Tlp.Host` | Host app: API, admin page (`wwwroot`), cleanup, hashing, Dockerfile |
 | `src/Tlp.Viewer.Core` | Viewer logic: pack client, downloads, torrent, verify, Syncplay launch |
 | `src/Tlp.Viewer` | Windows app window (Avalonia), themes, installer hooks and updates |
-| `tests/Tlp.Tests` | 106 tests, including a group torrent, a server-side magnet download through the real host app and a fake Syncplay server |
+| `tests/Tlp.Tests` | 107 tests, including a group torrent, a server-side magnet download through the real host app and a fake Syncplay server |
 | `server/` | Compose file, Syncplay image, Caddy |
 | `viewer/mpv.conf` | VLC look for the bundled mpv |
 | `tools/` | Syncplay smoke test, viewer zip packager, installer builder |

@@ -7,6 +7,9 @@ namespace Tlp.Host.Services;
 /// <summary>The page a friend sees when they open a movie night link in a browser.</summary>
 public static class NightPage
 {
+    /// <summary>Small version of the Neon logo (docs/logo/a-neon-small.svg).</summary>
+    private const string LogoSvg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40" aria-hidden="true" class="logo"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF5C7A"/><stop offset="1" stop-color="#8E4BFF"/></linearGradient></defs><path d="M14,23 L23,14 H38 A12,12 0 1,1 62,14 H86 V38 A12,12 0 1,1 86,62 V77 L77,86 H14 V62 A12,12 0 1,0 14,38 Z" fill="url(#lg)"/><path d="M40,34 L66,50 L40,66 Z" fill="#FFFFFF"/></svg>""";
+
     public static string Render(Pack pack, string packUrl)
     {
         var h = (string? s) => WebUtility.HtmlEncode(s ?? "");
@@ -30,8 +33,11 @@ public static class NightPage
             .kv{display:grid;grid-template-columns:5.5em 1fr auto;gap:8px;align-items:center;margin:6px 0}
             .kv button{font:inherit;font-size:13px;padding:4px 10px;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent)}
             ol{padding-left:20px;margin:0}li{margin:6px 0}
+            .brand{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:600}h1{margin:8px 0 4px}
             </style></head><body><main>
             """);
+        // The app's logo and, when the host set one, the group's name above the night's title.
+        sb.Append("<div class=\"brand\">" + LogoSvg + (string.IsNullOrWhiteSpace(pack.Group) ? "" : $"<span>{h(pack.Group)}</span>") + "</div>");
         sb.Append($"<h1>{h(pack.Title)}</h1>");
         if (pack.StartsAt is { } at)
             sb.Append($"<p class=\"muted\">Starts <time datetime=\"{at:O}\">{at:ddd d MMM, HH:mm} (UTC{at:zzz})</time></p>");
