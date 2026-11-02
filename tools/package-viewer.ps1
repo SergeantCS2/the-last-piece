@@ -78,6 +78,13 @@ The Last Piece viewer $((Get-Item (Join-Path $stage 'TheLastPiece.exe')).Version
 Bundled third-party software, unmodified:
 - Syncplay $($sp.Tag) ($($sp.Name)), Apache License 2.0, https://github.com/Syncplay/syncplay
 - mpv ($($mpv.Name)) from $MpvRepo $($mpv.Tag), see mpv's own license files in the mpv folder, https://mpv.io
+
+Libraries built into TheLastPiece.exe:
+- .NET runtime, MIT License, https://github.com/dotnet/runtime
+- Avalonia, MIT License, https://github.com/AvaloniaUI/Avalonia
+- SkiaSharp and HarfBuzzSharp, MIT License, with Skia (BSD 3-Clause) and HarfBuzz (MIT-style), https://github.com/mono/SkiaSharp
+- MonoTorrent, MIT License, https://github.com/alanmcgovern/monotorrent
+- Velopack (installer and updates), MIT License, https://github.com/velopack/velopack
 "@ | Set-Content (Join-Path $stage "THIRD-PARTY-NOTICES.txt")
 
 New-Item -ItemType Directory -Force (Join-Path $root $Out) | Out-Null

@@ -17,8 +17,11 @@ Remote movie and anime night that looks as good as watching alone, without Disco
     - Then one button opens the bundled player, already in the room.
 - **Bundled player is mpv, set up to look like VLC.** Anime subtitles are styled ASS, which VLC and mpv both draw with libass. mpv rather than VLC because Syncplay's on-screen chat only works in mpv.
 - **No more uTorrent needed.** The viewer app has an open-source torrent engine built in (MonoTorrent, MIT).
+- **Host knows who's ready.** The host keeps a quiet helper in Syncplay that fills each night's room playlist (so everyone moves to the next episode together) and shows, per friend, what's downloaded and who's in the room.
+- **Proper installer with auto-update.** `Setup.exe` installs per user with no admin prompt, registers movie night links, and updates itself from GitHub Releases. Signing slots into CI once the host picks a route (see [Signing](#signing)).
 - **Status:**
-  - 62 automated tests on Linux, including a group torrent between the real host app and two friends.
+  - 75 automated tests on Linux, including a group torrent between the real host app and two friends.
+  - The room helper filled a real Syncplay 1.7.6 room's playlist, here and in CI.
   - The host runs in Docker.
   - On every push, GitHub Actions builds the Windows zip and runs the real `TheLastPiece.exe` on a Windows machine. It opens the window, downloads a test torrent, and starts the bundled Syncplay and mpv, which must join a real Syncplay server with the file open (see CI for the latest result).
   - **A person hasn't used it on a Windows PC yet.** The checklist at the end is for that first try.
@@ -169,6 +172,11 @@ Host app:
 - [x] Group torrents: tracker and web seed. PROVEN (see P2P).
 - [x] "Post to Discord" button for a night, through a channel webhook. The post shows the start time in each reader's own time zone and never pings anyone. PROVEN for the message format; INFERRED against real Discord.
 - [x] Can start and restart a native Syncplay server. INFERRED, not run against a real `syncplayServer`.
+- [x] Room helper: fills each active night's Syncplay room playlist, so the room goes to the next episode together. PROVEN against real Syncplay 1.7.6 (locally and in the `server` CI run).
+  - It only steps into a room while it's empty, because Syncplay pauses a room when anyone leaves it, the helper included. "Fill room playlist now" on the admin page can force it, which pauses people in the room once.
+  - It never sends a play position and has no file open, so Syncplay leaves it out of "wait for the slowest viewer" and of the ready count (PROVEN in Syncplay's source).
+  - Turn it off with `TLP_ROOM_HELPER=false`.
+- [x] "Who's ready" on each night: per friend, files done out of total, app open or away, in the room, and what they're playing. PROVEN with tests and real Syncplay; the viewer side is INFERRED on Windows.
 
 Viewer app (Windows):
 - [x] Paste a link or click "Open in The Last Piece" (`tlp://`, registered for the current user on first run). INFERRED on Windows.
@@ -180,6 +188,9 @@ Viewer app (Windows):
   - CI checks this on Windows: the bundled Syncplay has to join a real server with the file open, which it can't do if the window stopped it.
 - [x] One window: a second link clicked while the app is open goes to the open window. PROVEN for the hand-over; INFERRED for the browser-to-app step on Windows.
 - [x] Zip with `TheLastPiece.exe`, portable mpv with our `mpv.conf`, and portable Syncplay, built by GitHub Actions. Download it from the latest `dotnet` run under Actions.
+- [x] Reports download progress to the host every few seconds while open (name, files, percent; nothing else). A "Share my progress" box turns it off.
+- [x] Installer and auto-update (see [Installer and updates](#installer-and-updates)). CI installs, checks and uninstalls the real `Setup.exe` on Windows.
+- [x] All colours, fonts and corners come from one theme file, ready for theme drafts (see [Themes](#themes)).
 - [ ] Tried by a person on a real Windows PC.
 
 Phone:
@@ -188,11 +199,11 @@ Phone:
 ## Roadmap after the MVP
 
 **Phase 2: polish, after the first real night**
-- Show on the admin page who has downloaded what (the viewer reports progress to the host).
-- Discord bot (a real bot, beyond the webhook post):
-  - Shows who's downloaded and who's in the room.
+- Theme drafts to pick from (see [Themes](#themes)).
+- Discord bot (a real bot, beyond the webhook post), if wanted:
+  - Shows the "who's ready" board in Discord.
   - Bridges Discord text into the on-screen chat.
-- Signed installer and auto-update. Until then Windows SmartScreen warns on the unsigned `.exe` ("More info, Run anyway").
+- Signing, once the host picks a route. Until then Windows SmartScreen warns on the unsigned `Setup.exe` ("More info, Run anyway").
 - Smaller download (see [Download size](#download-size)).
 
 **Phase 3: going public**
@@ -218,17 +229,51 @@ The Windows zip is about 88 MB (it was about 120 MB before trimming). Each frien
 
 Already removed: mpv's installer and updater scripts. For comparison, one 1080p anime episode is usually 1 to 1.5 GB, so the zip is well under the size of a single episode (INFERRED, typical release sizes).
 
+## Installer and updates
+
+CI builds a Velopack installer (MIT) next to the zip, in the `TheLastPiece-installer` artifact:
+- `TheLastPiece-win-Setup.exe` installs to `%LOCALAPPDATA%\TheLastPiece` with no admin prompt, adds a Start menu entry, and registers `tlp://` links. Uninstalling from Windows Settings removes the link registration too.
+- The installed app checks GitHub Releases in the background. A new version downloads quietly and installs the next time the app opens, or straight away with "Restart to update". It never restarts while a download is running.
+- Releases are made by pushing a tag like `v0.3.0`. CI then builds, signs if set up, tests the installer and publishes the release. Nothing is published from ordinary pushes, and only the host pushes tags.
+- The zip stays for anyone who'd rather not install.
+
+`Setup.exe` is about 104 MB, a little more than the 88 MB zip because Velopack compresses less tightly.
+
+PROVEN on a Windows CI machine: silent install, `tlp://` registered to the installed app, uninstall removing both. INFERRED until two releases exist: a real update from one version to the next.
+
+## Signing
+
+Without a signature Windows shows "Windows protected your PC" on first run. Every option below needs the host's own account and identity, and most cost money, so nothing has been signed up for. The CI already has a slot for Azure Artifact Signing: add three repository variables (`SIGN_ENDPOINT`, `SIGN_ACCOUNT`, `SIGN_PROFILE`) and three secrets (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`) and the next build is signed. mpv and Syncplay are left exactly as their projects ship them.
+
+| Route | Cost | Who can use it | Warning goes away? |
+|---|---|---|---|
+| Microsoft Store | Free for individual developers | Anyone with a Microsoft account and ID check | Yes, straight away. Microsoft signs it. Needs extra work: an MSIX package, and Syncplay settings moved out of the read-only install folder. |
+| Azure Artifact Signing | About $10 a month | Individuals in the US and Canada, companies in more places; Azure account and ID check | Not at first. It fades as downloads build reputation. |
+| SignPath Foundation | Free | Open-source projects with an OSI licence, a published release, and a short signing policy page | Same as Azure. The certificate is in SignPath's name. |
+| OV certificate | About $150 to $300 a year | Anyone, with ID check | Same as Azure. |
+| EV certificate | $400 or more a year | Companies mostly | Same as Azure since 2024; it no longer skips the warning. |
+
+Costs and rules are from the providers' pages in late 2026 (INFERRED that they hold when the host signs up).
+
+## Themes
+
+Every colour, font, size and corner in the viewer app comes from one theme file (`src/Tlp.Viewer/Themes/Default.axaml`), with light and dark variants. A theme picker appears in Settings as soon as there's more than one theme. The app's self-test checks each theme defines every setting.
+
+Planned drafts for the host to choose from once the core is tested: anime, movie and fantasy, tech, cyberpunk, synthwave, and a retro green terminal look inspired by 1950s-future computer terminals. The drafts use our own colours and fonts, with no artwork, logos or names from any game or film.
+
 ## First test checklist
 
 For the host and one friend before a real night. Each step says what to look for.
 
 1. **Host.** Start the host (Docker or native), open the admin page, and create a night with one episode from the shelf. The night should show a "Group torrent" button after a minute (the torrent file is made in the background).
-2. **Zip.** Download `TheLastPiece-win-x64` from the latest green `dotnet` run under Actions, unzip it, and run `TheLastPiece.exe`. Expect a SmartScreen warning ("More info", "Run anyway").
+2. **Install.** Download `TheLastPiece-installer` from the latest green `dotnet` run under Actions and run `TheLastPiece-win-Setup.exe`. Expect a SmartScreen warning until signing is set up ("More info", "Run anyway"). The app should open by itself.
 3. **Link.** Click the night link in a browser and choose "Open in The Last Piece". The app should open on that night. Click a second link while it's open: the same window should switch to it, with no second window.
 4. **Download.** Press "Download all". It should say "group torrent" and finish with a green check. If you have two friends, start the second one after the first finishes and see that it's quick.
-5. **Join.** Press "Join movie night". mpv should open straight into the room, with no Syncplay window. Pause on one PC: the other should pause.
-6. **Look.** Check subtitles look right on an anime MKV, and press Enter in mpv to send a chat message.
-7. **Discord (optional).** Set `TLP_DISCORD_WEBHOOK` and press "Post to Discord" on the night. Check the time shows in your own time zone.
+5. **Who's ready.** On the admin page, open "Who's ready" on the night. Each friend should show their files done and "app open".
+6. **Join.** Press "Join movie night". mpv should open straight into the room, with no Syncplay window. Pause on one PC: the other should pause. "Who's ready" should now show both in the room.
+7. **Next episode.** With a two-episode night, let the first end (or seek near the end). Both should move to episode 2 together.
+8. **Look.** Check subtitles look right on an anime MKV, and press Enter in mpv to send a chat message.
+9. **Discord (optional).** Set `TLP_DISCORD_WEBHOOK` and press "Post to Discord" on the night. Check the time shows in your own time zone.
 
 If something goes wrong, the useful things to send back are a screenshot and which step it was.
 
@@ -258,6 +303,7 @@ Optional settings in `server/.env`:
 - `TLP_DISCORD_WEBHOOK`: a Discord channel webhook (channel settings, Integrations, Webhooks). Adds a "Post to Discord" button to each night. Nothing is posted until you press it.
 - `TLP_BEHIND_PROXY=true`: set this when using the Caddy HTTPS profile, so the group torrent sees friends' real addresses.
 - `TLP_GROUP_TORRENTS=false`: turns group torrents off; friends then download from the host's copy or a magnet.
+- `TLP_ROOM_HELPER=false`: turns off the room helper (room playlists and the in-room part of "who's ready").
 
 Checking the Syncplay server: `python3 tools/smoketest.py --password '<password>' --room movienight`.
 
@@ -278,11 +324,11 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 | `src/Tlp.Core` | Pack format, magnet parsing, magnet finder, safe filenames |
 | `src/Tlp.Host` | Host app: API, admin page (`wwwroot`), cleanup, hashing, Dockerfile |
 | `src/Tlp.Viewer.Core` | Viewer logic: pack client, downloads, torrent, verify, Syncplay launch |
-| `src/Tlp.Viewer` | Windows app window (Avalonia) |
-| `tests/Tlp.Tests` | 62 tests, including a group torrent through the real host app |
+| `src/Tlp.Viewer` | Windows app window (Avalonia), themes, installer hooks and updates |
+| `tests/Tlp.Tests` | 75 tests, including a group torrent through the real host app and a fake Syncplay server |
 | `server/` | Compose file, Syncplay image, Caddy |
 | `viewer/mpv.conf` | VLC look for the bundled mpv |
-| `tools/` | Syncplay smoke test, viewer zip packager |
+| `tools/` | Syncplay smoke test, viewer zip packager, installer builder |
 | `docs/options.md` | Every option considered and why |
 
 ## Open decisions
@@ -290,4 +336,7 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 1. **Where does the first real night run?** WSL on your PC or the Linux server. Both are supported; this decides which gets tried first.
 2. **A domain for HTTPS?** Friends can start on `http://<ip>:8080`. A domain gives HTTPS and a nicer link.
 3. **Who's the test friend?** One person runs the zip on Windows before a real night.
-4. **License** for the public release. MIT or Apache-2.0 is the usual choice.
+4. **License** for the public release. MIT or Apache-2.0 is the usual choice. SignPath's free signing needs one of these.
+5. **Signing route** (see [Signing](#signing)): Store, Azure, SignPath, or unsigned for now.
+6. **Name on the installer.** It says "The Last Piece" as both app and publisher. A different publisher name, or your own, can go there.
+7. **Discord bot.** Worth building beyond the webhook post, or is the admin page enough?
