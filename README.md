@@ -20,7 +20,7 @@ Remote movie and anime night that looks as good as watching alone, without Disco
 - **Host knows who's ready.** The host keeps a quiet helper in Syncplay that fills each night's room playlist (so everyone moves to the next episode together) and shows, per friend, what's downloaded and who's in the room.
 - **Proper installer with auto-update.** `Setup.exe` installs per user with no admin prompt, registers movie night links, and updates itself from GitHub Releases. Signing slots into CI once the host picks a route (see [Signing](#signing)).
 - **Status:**
-  - 75 automated tests on Linux, including a group torrent between the real host app and two friends.
+  - 77 automated tests on Linux, including a group torrent between the real host app and two friends.
   - The room helper filled a real Syncplay 1.7.6 room's playlist, here and in CI.
   - The host runs in Docker.
   - On every push, GitHub Actions builds the Windows zip and runs the real `TheLastPiece.exe` on a Windows machine. It opens the window, downloads a test torrent, and starts the bundled Syncplay and mpv, which must join a real Syncplay server with the file open (see CI for the latest result).
@@ -203,10 +203,11 @@ Phone:
 - [x] Subtitle and audio switching: menus in the player (S and A, or right-click), VLC's V and B keys, and a default choice in Settings. PROVEN in tests; INFERRED in the real player until CI's mpv check and a person confirm it.
 - [x] Volume up to 130, 200 or 300% (Settings, "Loudest volume"). Mouse wheel and arrow keys change volume rather than seeking, so a stray key doesn't move the whole room.
 - [x] App name and publisher in one place (`Directory.Build.props`).
-- [ ] Theme drafts for the host to pick from, then the chosen one finished (see [Themes](#themes)).
-- [ ] Logo.
+- [x] Six theme drafts in the app (see [Themes](#themes)).
+- [ ] The host picks one; it gets finished (hover states, admin page, player look) and the others come out.
+- [ ] Logo: three concepts drafted in `docs/logo` for the host to pick from.
 - [ ] Polished README: centred logo and name, a one-line tagline, links to Quick start, Setup guide, Contributing and Roadmap, build status badges, and a large framed screenshot of the app, with more screenshots further down. Real screenshots, taken once the theme is picked.
-- [ ] Setup guide and contributing guide, for those README links.
+- [x] [Setup guide](docs/setup.md) and [contributing guide](CONTRIBUTING.md), for those README links.
 - [ ] Licence file (the host leans MIT).
 - [ ] First person-tested night (the checklist below).
 
@@ -337,11 +338,14 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 | `src/Tlp.Host` | Host app: API, admin page (`wwwroot`), cleanup, hashing, Dockerfile |
 | `src/Tlp.Viewer.Core` | Viewer logic: pack client, downloads, torrent, verify, Syncplay launch |
 | `src/Tlp.Viewer` | Windows app window (Avalonia), themes, installer hooks and updates |
-| `tests/Tlp.Tests` | 75 tests, including a group torrent through the real host app and a fake Syncplay server |
+| `tests/Tlp.Tests` | 77 tests, including a group torrent through the real host app and a fake Syncplay server |
 | `server/` | Compose file, Syncplay image, Caddy |
 | `viewer/mpv.conf` | VLC look for the bundled mpv |
 | `tools/` | Syncplay smoke test, viewer zip packager, installer builder |
 | `docs/options.md` | Every option considered and why |
+| `docs/setup.md` | Setup guide for the host and viewers |
+| `docs/themes`, `docs/logo` | Theme draft pictures, logo concepts |
+| `CONTRIBUTING.md` | Building, testing, conventions, releases |
 
 ## Open decisions
 
