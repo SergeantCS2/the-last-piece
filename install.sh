@@ -252,7 +252,7 @@ if [ -z "$PUBLIC_URL" ]; then
   fi
   say "  Other PCs open movie night links at this address. For PCs at home, use this computer's"
   say "  network address$([ "$IN_WSL" = 1 ] && printf ' (the Windows PC'"'"'s, not WSL'"'"'s)')${detected:+, which looks like $detected}."
-  say "  For friends elsewhere, use your public IP or a domain, with ports $PORT and 8999 forwarded on the router."
+  say "  For viewers outside your home, use your public IP or a domain, with ports $PORT and 8999 forwarded on the router."
   PUBLIC_URL="$(ask "Address other PCs use" "$suggestion")"
 fi
 case "$PUBLIC_URL" in http://*|https://*) ;; *) PUBLIC_URL="http://$PUBLIC_URL" ;; esac
@@ -265,8 +265,15 @@ current_shelf="$(getenv SHELF_DIR)"
 case "$SHELF" in /*) SHELF_ABS="$SHELF" ;; *) SHELF_ABS="$SERVER/${SHELF#./}" ;; esac
 setenv SHELF_DIR "$SHELF"
 run mkdir -p "$SHELF_ABS"
-# The host app runs as user 1654 in its container, and needs to write there to clean up old episodes.
-run $SUDO chown -R 1654 "$SHELF_ABS" 2>/dev/null || warn "couldn't hand $SHELF_ABS to the app's user (1654); cleanup may not be able to delete old episodes"
+# The host app runs as user and group 1654 in its container, and needs to write there to clean up
+# old episodes. You keep owning the folder so you can still copy files in (from Windows Explorer
+# too); group 1654 gets write access, and new files and folders inside inherit that group.
+if run $SUDO chown -R "$(id -u):1654" "$SHELF_ABS" 2>/dev/null && run $SUDO chmod -R g+rwX "$SHELF_ABS" \
+   && run $SUDO find "$SHELF_ABS" -type d -exec chmod g+s {} +; then
+  command -v setfacl >/dev/null && { run $SUDO setfacl -R -d -m g:1654:rwX "$SHELF_ABS" 2>/dev/null || true; }
+else
+  warn "couldn't give the app's group (1654) access to $SHELF_ABS; cleanup may not be able to delete old episodes"
+fi
 ok "episodes folder: $SHELF_ABS"
 case "$SHELF_ABS" in /mnt/[a-z]/*) [ "$IN_WSL" = 1 ] && warn "a folder on a Windows drive works, but is slow from WSL and cleanup may not be able to delete there. A folder inside WSL is better." ;; esac
 

@@ -168,7 +168,7 @@ Motion pauses when the window isn't active, and a box in Settings turns it off. 
 | Hosting in WSL and other PCs can't reach it | Run the installer again and say yes to the Windows step. The setup check's **Windows to WSL** line says whether it was done. |
 | Downloads only come from the host | Normal when only one person has the file. Sharing kicks in once two people download at once. |
 | Viewers all show up as one inside address | Docker or WSL is hiding their real addresses. See [Running in WSL](docs/setup.md#running-in-wsl-on-windows). |
-| Old episodes aren't cleaned up | The shelf folder must be writable by user 1654 (`sudo chown 1654 shelf`). |
+| Old episodes aren't cleaned up | The shelf folder must be writable by the app's group, 1654. Run the installer again, or `sudo chown -R "$(id -u):1654" shelf && sudo chmod -R g+rwX shelf`. |
 | Something else in the app | Settings, **Copy details for a bug report**, and paste it into an issue. **Open log folder** shows the app's log. |
 
 More in the [setup guide](docs/setup.md#troubleshooting). Still stuck? [Open a bug report](https://github.com/SergeantCS2/the-last-piece/issues/new?template=bug_report.yml) with a screenshot.

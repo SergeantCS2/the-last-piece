@@ -57,7 +57,7 @@ git clone https://github.com/SergeantCS2/the-last-piece
 cd the-last-piece/server
 cp .env.example .env        # then edit it, see below
 mkdir -p shelf              # episodes go here
-sudo chown 1654 shelf       # the host app runs as user 1654 and needs to delete old episodes
+sudo chown "$(id -u):1654" shelf && chmod 2775 shelf   # the host app (group 1654) can delete old episodes; you can still copy files in
 docker compose up -d --build
 docker compose logs host | grep -i token
 ```
@@ -206,6 +206,6 @@ Copy button. Use Synkplay's mpv engine for proper anime subtitles. Phone support
 | Downloads only come from the host | Normal when only one person has the file. Group torrents need two people downloading at once, or a viewer who finished. |
 | The setup check says viewers show up as an inside address | Docker or WSL is hiding their real addresses, so they can't share pieces. See "Running in WSL on Windows", or on a Linux server run the host with `network_mode: host`. |
 | The app says it can't reach the room server | Port 8999 isn't reachable: Syncplay isn't running, or the port isn't forwarded. The host's setup check shows which. |
-| Cleanup doesn't delete anything | The shelf folder must be writable by user 1654 (`sudo chown 1654 shelf`). |
+| Cleanup doesn't delete anything | The shelf folder must be writable by the app's group, 1654. Run the installer again, or `sudo chown -R "$(id -u):1654" shelf && sudo chmod -R g+rwX shelf`. |
 | "Who's ready" shows nobody in the room | `TLP_ROOM_HELPER` must be on, and Syncplay must not run with `--isolate-rooms`. |
 | Anything in the viewer app | **Settings**, **Copy details for a bug report**, and paste it into a [bug report](https://github.com/SergeantCS2/the-last-piece/issues/new?template=bug_report.yml). **Open log folder** shows the app's log. |
