@@ -32,3 +32,22 @@ public class NightPageTests
         Assert.DoesNotContain("<span>Password</span>", html);
     }
 }
+
+public class GroupNameTests
+{
+    [Fact]
+    public void Group_name_survives_the_trimmed_pack_json_and_old_packs_have_none()
+    {
+        var pack = new Pack
+        {
+            Title = "Friday",
+            Group = "Friday crew",
+            Syncplay = new SyncplayInfo { Host = "h", Room = "r" },
+            Items = [],
+        };
+        var json = PackJson.SerializePack(pack);
+        Assert.Contains("\"group\": \"Friday crew\"", json);
+        Assert.Equal("Friday crew", PackJson.DeserializePack(json)!.Group);
+        Assert.Null(PackJson.DeserializePack("""{"title":"x","syncplay":{"host":"h","room":"r"},"items":[]}""")!.Group);
+    }
+}

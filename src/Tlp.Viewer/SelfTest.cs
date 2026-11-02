@@ -90,7 +90,13 @@ internal static class SelfTest
             window.MotionBox.IsChecked = true;
             log.Add("motion setting: ok");
 
+            // The big title is the host's group name, and back to the default without one.
+            window.ShowPack(pack with { Group = "Friday crew" });
+            if (window.Brand.Content as string != "Friday crew") throw new InvalidDataException("the group name didn't become the title");
             window.ShowPack(pack);
+            if (window.Brand.Content as string != MainWindow.DefaultTitle) throw new InvalidDataException("the title didn't go back to the default");
+            log.Add("title: ok");
+
             window.Rows[0].Status = "Downloading (the group torrent) · 600 MB of 1.30 GB · 9.8 MB/s";
             window.Rows[0].Percent = 45;
             log.Add("window: ok");

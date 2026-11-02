@@ -362,6 +362,7 @@ Ports friends need to reach:
 | 80 and 443/TCP | Host app over HTTPS | With `--profile https` and `TLP_DOMAIN` set. |
 
 Optional settings in `server/.env`:
+- `TLP_GROUP_NAME`: your group's name, shown as the big title in everyone's viewer app (it arrives with each night link). Empty shows "Movie night".
 - `TLP_DISCORD_WEBHOOK`: a Discord channel webhook (channel settings, Integrations, Webhooks). Adds a "Post to Discord" button to each night. Nothing is posted until you press it.
 - `TLP_BEHIND_PROXY=true`: set this when using the Caddy HTTPS profile, so the group torrent sees friends' real addresses.
 - `TLP_GROUP_TORRENTS=false`: turns group torrents off; friends then download from the host's copy or a magnet.

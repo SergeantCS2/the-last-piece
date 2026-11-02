@@ -23,6 +23,7 @@ services:
       Tlp__Syncplay__Password: ${SYNCPLAY_PASSWORD:-}
       Tlp__Syncplay__DefaultRoom: ${SYNCPLAY_ROOM:-movienight}
       Tlp__DiscordWebhookUrl: ${TLP_DISCORD_WEBHOOK:-}
+      Tlp__GroupName: ${TLP_GROUP_NAME:-}
       Tlp__BehindProxy: ${TLP_BEHIND_PROXY:-false}
       Tlp__GroupTorrents: ${TLP_GROUP_TORRENTS:-true}
       # The room helper reaches Syncplay over the compose network.

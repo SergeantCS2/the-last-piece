@@ -87,16 +87,9 @@
   </Style>
 
   <!-- ===== Header ===== -->
+  <!-- No kicker line in this look (2026-11-02): the title stands alone. -->
   <Style Selector="ContentControl.kicker">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <StackPanel Orientation="Horizontal" Spacing="8" Margin="2,0,0,0">
-          <TextBlock Text="▚▚▚" Foreground="{DynamicResource TlpText}" FontSize="12" VerticalAlignment="Center"/>
-          <TextBlock Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}, ConverterParameter='{}{0}  //  VIEWER TERMINAL'}"
-                     FontFamily="{DynamicResource TlpMonoFont}" FontSize="11" LetterSpacing="3" Foreground="{DynamicResource TlpMutedText}" VerticalAlignment="Center"/>
-        </StackPanel>
-      </ControlTemplate>
-    </Setter>
+    <Setter Property="IsVisible" Value="False"/>
   </Style>
   <Style Selector="ContentControl.brand">
     <Setter Property="Template">

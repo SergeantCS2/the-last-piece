@@ -1,0 +1,12 @@
+{
+  "name": "root",
+  "movieNightFolder": "Movie Night",
+  "sourcePreference": "auto",
+  "seedWhileOpen": true,
+  "chatStyle": "Chatroom",
+  "shareProgress": true,
+  "maxVolume": 300,
+  "tracks": "original",
+  "theme": "Default",
+  "motion": true
+}

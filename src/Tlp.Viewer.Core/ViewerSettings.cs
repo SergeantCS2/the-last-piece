@@ -52,6 +52,8 @@ public sealed record ViewerSettings
     public string Theme { get; set; } = "Default";
     /// <summary>Let the look animate (glow, glitch, flicker). Off keeps it still.</summary>
     public bool Motion { get; set; } = true;
+    /// <summary>The group name from the last night opened, so the title stays put between nights.</summary>
+    public string? GroupName { get; set; }
 
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TheLastPiece", "settings.json");

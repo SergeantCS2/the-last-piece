@@ -14,6 +14,11 @@ public sealed record Pack
 
     public int Version { get; init; } = CurrentVersion;
     public required string Title { get; init; }
+    /// <summary>
+    /// The group's name, shown as the viewer app's big title (e.g. "Friday crew"). Set by the
+    /// host; null means the app's default, "Movie night".
+    /// </summary>
+    public string? Group { get; init; }
     /// <summary>When the night starts, with offset. Null if not scheduled.</summary>
     public DateTimeOffset? StartsAt { get; init; }
     public required SyncplayInfo Syncplay { get; init; }

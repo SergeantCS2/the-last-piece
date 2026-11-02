@@ -6,7 +6,7 @@
     ContentControl.backdrop / .overlay   decor layers behind / above the app, mouse-transparent
     ContentControl.side                  the header's right-hand corner (clock, stamp, ticket...)
     ContentControl.kicker / .brand       the small line above the title, and the title
-    HeaderedContentControl.panel         the "Tonight" and "Files" boxes, and Settings (an Expander
+    HeaderedContentControl.panel         the "Queue" and "Files" boxes, and Settings (an Expander
                                          drawn as a panel with a ToggleButton.exphead header)
     ContentControl.statusbar             the status line with the Join button
     Border.item                          one file in the list
@@ -15,6 +15,10 @@
 -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <!-- Name of the top panel (this night's files). A look can give its own in its Styles.Resources. -->
+    <x:String x:Key="TlpNightLabel">Queue</x:String>
+  </Styles.Resources>
   <Style Selector="Window">
     <Setter Property="Background" Value="{DynamicResource TlpWindowBackground}"/>
     <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>

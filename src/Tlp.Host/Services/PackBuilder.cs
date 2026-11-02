@@ -35,6 +35,7 @@ public static class PackBuilder
         return new Pack
         {
             Title = night.Title,
+            Group = string.IsNullOrWhiteSpace(opts.GroupName) ? null : opts.GroupName.Trim(),
             StartsAt = night.StartsAt,
             Syncplay = new SyncplayInfo
             {

@@ -34,6 +34,9 @@ public sealed class TlpOptions
     /// </summary>
     public bool BehindProxy { get; set; }
 
+    /// <summary>Your group's name, shown as the big title in friends' viewer apps. Empty shows "Movie night".</summary>
+    public string? GroupName { get; set; }
+
     /// <summary>Optional Discord webhook URL; the admin page can post a night's link there.</summary>
     public string? DiscordWebhookUrl { get; set; }
 

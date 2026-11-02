@@ -28,6 +28,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         Title = Tlp.Core.AppInfo.Name;
         Kicker.Content = Tlp.Core.AppInfo.Name;
+        ShowGroup(_settings.GroupName);
         // The looks' motion (Themes/) pauses while the window is in the background, so a look
         // never costs anything while the movie plays.
         Activated += (_, _) => SetStill(false);
@@ -162,9 +163,21 @@ public partial class MainWindow : Window
         ShowPack(_pack);
     }
 
+    public const string DefaultTitle = "Movie night";
+
+    /// <summary>The big title: the host's group name, or "Movie night".</summary>
+    private void ShowGroup(string? group) =>
+        Brand.Content = string.IsNullOrWhiteSpace(group) ? DefaultTitle : group.Trim();
+
     public void ShowPack(Pack pack)
     {
         _pack = pack;
+        ShowGroup(pack.Group);
+        if (pack.Group != _settings.GroupName)
+        {
+            _settings = _settings with { GroupName = pack.Group };
+            try { _settings.Save(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
         NightTitle.Text = pack.Title;
         NightInfo.Text = (pack.StartsAt is { } at ? $"Starts {at.ToLocalTime():dddd d MMM, h:mm tt}. " : "")
                          + $"{pack.Items.Count} file(s). Room \"{pack.Syncplay.Room}\".";
