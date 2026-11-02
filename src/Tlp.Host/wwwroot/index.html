@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>The Last Piece host</title>
+<style>
+:root{color-scheme:light dark;--bg:#fafafa;--fg:#1a1a1a;--muted:#666;--card:#fff;--line:#ddd;--accent:#c0392b;--ok:#27ae60}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--fg:#eee;--muted:#999;--card:#1e1e1e;--line:#333;--accent:#e74c3c;--ok:#2ecc71}}
+*{box-sizing:border-box}
+body{font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--fg);margin:0;padding:16px}
+main{max-width:860px;margin:auto}
+h1{margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+.muted{color:var(--muted);font-size:13px}
+input,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+input[type=text],input[type=url],input[type=password],input[type=datetime-local]{width:100%}
+button{background:var(--accent);color:#fff;border:none;cursor:pointer;font-weight:600}
+button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 200px}
+table{width:100%;border-collapse:collapse}
+td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+td.num{white-space:nowrap}
+.path{word-break:break-all}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar>div{height:100%;background:var(--accent)}
+.err{color:var(--accent)}
+code{word-break:break-all}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>The Last Piece</h1>
+  <div class="muted">Host page: share files for movie night and keep the disk tidy.</div>
+
+  <div id="login" class="card">
+    <label>Admin token<input id="token" type="password" autocomplete="current-password"></label>
+    <div class="muted">Printed in the host logs on first start and saved as admin-token.txt in the data folder.</div>
+    <p><button id="loginBtn">Sign in</button> <span id="loginErr" class="err"></span></p>
+  </div>
+
+  <div id="app" class="hidden">
+    <section class="card">
+      <h2>New movie night</h2>
+      <div class="row">
+        <label>Title<input id="title" type="text" placeholder="Friday anime night"></label>
+        <label>Starts<input id="startsAt" type="datetime-local"></label>
+        <label>Room<input id="room" type="text" placeholder="movienight"></label>
+      </div>
+      <h3>Add from a page or magnet</h3>
+      <div class="row">
+        <input id="pageUrl" type="url" placeholder="Paste a torrent page address or a magnet link">
+        <button id="findBtn" class="ghost" style="flex:0 0 auto">Find magnets</button>
+      </div>
+      <div id="found"></div>
+      <h3>Picked for this night</h3>
+      <table><tbody id="picked"><tr><td class="muted">Tick shelf files below or add magnets above.</td></tr></tbody></table>
+      <p><button id="createBtn">Create night and get link</button> <span id="createErr" class="err"></span></p>
+      <div id="created"></div>
+    </section>
+
+    <section class="card">
+      <h2>Shelf</h2>
+      <div id="disk" class="muted"></div>
+      <table><thead><tr><th></th><th>File</th><th>Size</th><th>Used by</th><th>Auto-delete</th><th></th></tr></thead>
+        <tbody id="shelf"></tbody></table>
+      <p class="row"><button id="cleanupPreview" class="ghost" style="flex:0 0 auto">Preview cleanup</button>
+        <button id="cleanupRun" style="flex:0 0 auto">Run cleanup now</button></p>
+      <div id="cleanupOut" class="muted"></div>
+    </section>
+
+    <section class="card">
+      <h2>Movie nights</h2>
+      <div id="nights"></div>
+    </section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let token = '';
+try { token = localStorage.getItem('tlp-admin') || ''; } catch {}
+const picked = [];
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gb = n => n == null ? '?' : (n / 1024 ** 3).toFixed(2) + ' GB';
+
+async function api(method, path, body) {
+  const res = await fetch('/api/admin' + path, {
+    method,
+    headers: { 'Authorization': 'Bearer ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 401) { showLogin('Wrong token.'); throw new Error('unauthorized'); }
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error(data?.error || res.statusText);
+  return data;
+}
+
+function showLogin(msg) { $('login').classList.remove('hidden'); $('app').classList.add('hidden'); $('loginErr').textContent = msg || ''; }
+function showApp() { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); }
+
+$('loginBtn').onclick = async () => {
+  token = $('token').value.trim();
+  try { localStorage.setItem('tlp-admin', token); } catch {}
+  await refresh();
+};
+
+async function refresh() {
+  try {
+    const [shelf, nights] = await Promise.all([api('GET', '/shelf'), api('GET', '/nights')]);
+    showApp();
+    renderShelf(shelf);
+    renderNights(nights);
+  } catch (e) { if (e.message !== 'unauthorized') showLogin(e.message); }
+}
+
+function renderShelf(s) {
+  const pct = s.diskTotalBytes ? Math.round(100 * (s.diskTotalBytes - s.diskFreeBytes) / s.diskTotalBytes) : null;
+  $('disk').innerHTML = `Shelf uses ${gb(s.usedBytes)}. ` +
+    (pct != null ? `Disk ${pct}% full, ${gb(s.diskFreeBytes)} free.<div class="bar"><div style="width:${pct}%"></div></div>` : '') +
+    `Files are deleted ${s.retentionDays} days after their last movie night unless pinned.` +
+    (s.cleanupEnabled ? '' : ' <strong>Cleanup is switched off.</strong>');
+  $('shelf').innerHTML = s.files.length ? s.files.map(f => `
+    <tr>
+      <td><input type="checkbox" data-pick="${esc(f.path)}" ${picked.some(p => p.shelfPath === f.path) ? 'checked' : ''}></td>
+      <td class="path">${esc(f.path)}</td>
+      <td class="num">${gb(f.size)}</td>
+      <td>${f.usedBy.length ? esc(f.usedBy.join(', ')) : '<span class="muted">none</span>'}</td>
+      <td class="num">${f.pinned ? 'Pinned' : f.deleteAfter ? new Date(f.deleteAfter).toLocaleDateString() : '<span class="muted">manual</span>'}</td>
+      <td class="row" style="flex-wrap:nowrap">
+        <button class="ghost" data-pin="${esc(f.path)}" data-pinned="${f.pinned}">${f.pinned ? 'Unpin' : 'Pin'}</button>
+        <button class="ghost" data-del="${esc(f.path)}">Delete</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="6" class="muted">The shelf folder is empty.</td></tr>';
+}
+
+function renderPicked() {
+  $('picked').innerHTML = picked.length ? picked.map((p, i) => `
+    <tr><td class="path">${esc(p.fileName || p.shelfPath)}<div class="muted">${p.shelfPath ? 'shelf' : ''}${p.shelfPath && p.magnet ? ' + ' : ''}${p.magnet ? 'magnet' : ''}</div></td>
+    <td><button class="ghost" data-unpick="${i}">Remove</button></td></tr>`).join('')
+    : '<tr><td class="muted">Tick shelf files below or add magnets above.</td></tr>';
+}
+
+function renderNights(list) {
+  $('nights').innerHTML = list.length ? list.slice().reverse().map(n => `
+    <div class="card">
+      <strong>${esc(n.title)}</strong> <span class="muted">${n.startsAt ? new Date(n.startsAt).toLocaleString() : 'no date'} · room ${esc(n.room)} · ${n.items.length} file(s)</span>
+      <div>Share link: <code>${esc(n.shareUrl)}</code></div>
+      <p class="row"><button class="ghost" data-copy="${esc(n.shareUrl)}" style="flex:0 0 auto">Copy link</button>
+        <button class="ghost" data-delnight="${esc(n.id)}" style="flex:0 0 auto">Delete night</button></p>
+    </div>`).join('') : '<div class="muted">No movie nights yet.</div>';
+}
+
+document.addEventListener('click', async e => {
+  const t = e.target;
+  if (t.dataset.pin) { await api('POST', '/shelf/pin', { path: t.dataset.pin, pinned: t.dataset.pinned !== 'true' }); refresh(); }
+  if (t.dataset.del && confirm('Delete ' + t.dataset.del + ' from the shelf?')) { await api('DELETE', '/shelf?path=' + encodeURIComponent(t.dataset.del)); refresh(); }
+  if (t.dataset.delnight && confirm('Delete this movie night? Its link stops working.')) { await api('DELETE', '/nights/' + t.dataset.delnight); refresh(); }
+  if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = 'Copied'; } catch { prompt('Copy this link', t.dataset.copy); } }
+  if (t.dataset.unpick) { picked.splice(+t.dataset.unpick, 1); renderPicked(); refresh(); }
+  if (t.dataset.addmagnet) {
+    const m = JSON.parse(t.dataset.addmagnet);
+    picked.push({ magnet: m.uri, fileName: m.name || '' });
+    renderPicked();
+    t.disabled = true; t.textContent = 'Added';
+  }
+});
+
+document.addEventListener('change', e => {
+  const path = e.target.dataset.pick;
+  if (!path) return;
+  const i = picked.findIndex(p => p.shelfPath === path);
+  if (e.target.checked && i < 0) picked.push({ shelfPath: path });
+  if (!e.target.checked && i >= 0) picked.splice(i, 1);
+  renderPicked();
+});
+
+$('findBtn').onclick = async () => {
+  $('found').innerHTML = '<p class="muted">Looking…</p>';
+  try {
+    const links = await api('POST', '/magnets/from-page', { url: $('pageUrl').value.trim() });
+    const magnets = links.filter(l => l.kind === 'magnet');
+    const torrents = links.filter(l => l.kind === 'torrent');
+    $('found').innerHTML = (magnets.length ? '<table>' + magnets.map(m => `
+      <tr><td class="path">${esc(m.name || '(no name in magnet)')}</td>
+      <td><button class="ghost" data-addmagnet='${esc(JSON.stringify(m))}'>Add</button></td></tr>`).join('') + '</table>'
+      : '<p class="muted">No magnet links on that page.</p>') +
+      (torrents.length ? `<p class="muted">Also found ${torrents.length} .torrent file link(s); .torrent support comes with the group torrent feature.</p>` : '');
+  } catch (err) { $('found').innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+};
+
+$('createBtn').onclick = async () => {
+  $('createErr').textContent = '';
+  for (const p of picked) if (p.magnet && !p.fileName) { $('createErr').textContent = 'A magnet has no file name; remove it or add a magnet that names its file.'; return; }
+  try {
+    const startsAt = $('startsAt').value ? new Date($('startsAt').value).toISOString() : null;
+    const n = await api('POST', '/nights', { title: $('title').value, startsAt, room: $('room').value || null, items: picked });
+    picked.length = 0; renderPicked();
+    $('created').innerHTML = `<div class="card">Send this to your friends:<br><code>${esc(n.shareUrl)}</code>
+      <p><button class="ghost" data-copy="${esc(n.shareUrl)}">Copy link</button></p></div>`;
+    refresh();
+  } catch (err) { $('createErr').textContent = err.message; }
+};
+
+$('cleanupPreview').onclick = async () => {
+  const due = await api('GET', '/cleanup');
+  $('cleanupOut').textContent = due.length ? 'Would delete: ' + due.map(d => d.path).join(', ') : 'Nothing is due for deletion.';
+};
+$('cleanupRun').onclick = async () => {
+  if (!confirm('Delete every file that is past its keep date?')) return;
+  const deleted = await api('POST', '/cleanup');
+  $('cleanupOut').textContent = deleted.length ? 'Deleted: ' + deleted.map(d => d.path).join(', ') : 'Nothing was due.';
+  refresh();
+};
+
+if (token) refresh(); else showLogin();
+renderPicked();
+</script>
+</body>
+</html>

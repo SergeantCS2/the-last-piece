@@ -4,13 +4,27 @@ Remote movie and anime night that looks as good as watching alone, without Disco
 
 ## TLDR
 
-- **Sync the players, don't stream the picture.** Everyone plays the real MKV on their own machine and [Syncplay](https://syncplay.pl) keeps play, pause and seek in step. Original quality, proper anime subtitles, and each viewer has their own volume, window size, subtitle and audio track. Discord stays for voice.
-- **Two apps of our own, built around Syncplay:**
-  - **Host app** (the host): a shelf of tonight's files, share links and magnets for them, automatic cleanup so disk doesn't fill up, and the Syncplay server. Runs in Docker (Linux or WSL), or natively on Windows or Linux.
-  - **Viewer app** (friends, Windows): paste or click a movie night link, it downloads the files, then one Join button opens a bundled player already connected to the room.
-- **Bundled player is mpv, set up to look like VLC.** Anime MKV subtitles are styled ASS, which VLC and mpv both draw with the same library (libass), so they look the same. Plain subtitles get VLC's default look. mpv instead of VLC because Syncplay's on-screen chat only works in mpv.
-- **Phones:** Synkplay, an unofficial Syncplay app for Android and iOS. It's third-party and untested here, so it gets tested in the MVP before we rely on it.
-- **Status:** the Syncplay server runs in Docker and passes an automated test. Host and viewer apps are planned, not started.
+- **Sync the players, don't stream the picture.** Everyone plays the real MKV on their own machine and [Syncplay](https://syncplay.pl) keeps play, pause and seek in step. You get original quality and proper anime subtitles, and each viewer has their own volume, window size, subtitle and audio track. Discord stays for voice.
+- **Two apps of our own, built around Syncplay (MVP code is in this repo):**
+  - **Host app** (`src/Tlp.Host`, for the host):
+    - A shelf of episodes and movie night links.
+    - A magnet finder that takes a page link and pulls the magnets off it.
+    - Automatic cleanup.
+    - Runs in Docker (Linux or WSL), or natively on Windows or Linux.
+  - **Viewer app** (`src/Tlp.Viewer`, for friends on Windows):
+    - Click a movie night link and it downloads each file, either from the host or by torrent with its built-in engine.
+    - It checks every file against the host's copy.
+    - Then one button opens the bundled player, already in the room.
+- **Bundled player is mpv, set up to look like VLC.** Anime subtitles are styled ASS, which VLC and mpv both draw with libass. mpv rather than VLC because Syncplay's on-screen chat only works in mpv.
+- **No more uTorrent needed.** The viewer app has an open-source torrent engine built in (MonoTorrent, MIT).
+- **Status:**
+  - Host and viewer logic are tested on Linux, including a real torrent download between two peers (47 automated tests).
+  - The host runs in Docker.
+  - The Windows app and the zip with mpv and Syncplay build in GitHub Actions but **have not been run on a Windows PC yet**.
+
+![Viewer app preview](docs/viewer-preview.png)
+
+*Viewer window rendered off-screen on Linux with sample data. The real Windows look is UNKNOWN until someone runs it.*
 
 Labels: **PROVEN** (tested here or confirmed in a source), **INFERRED** (reasoned, not verified), **UNKNOWN**.
 
@@ -18,145 +32,219 @@ Labels: **PROVEN** (tested here or confirmed in a source), **INFERRED** (reasone
 
 From the host, 2026-11-02:
 
-- Files are MKV with soft (not burned-in) subtitles, mostly Japanese anime.
-- Everyone uses Windows PCs or phones. The group uses VLC today.
-- Discord's problems: picture quality, and stream volume tied to voice volume. Voice and chat are fine.
-- Getting files to people has to be easy: links or magnets they can import, and a tool to make those links.
-- Hosting: ideally the host's Windows PC, possibly a Linux server. Support Docker/WSL, native Linux and native Windows. Storage cleanup has to be easy.
-- Eventually public, so others can run their own movie nights.
+- Files are MKV with soft subtitles, mostly Japanese anime, from torrents.
+- Everyone uses Windows PCs or phones. The group uses VLC and mostly uTorrent today.
+- Discord's problems:
+  - Picture quality.
+  - Stream volume is tied to voice volume.
+  - Voice and chat are fine as they are.
+- Getting files to people has to be easy:
+  - Links or magnets they can import.
+  - A generator that takes a page link and grabs the magnet from it.
+- Two ways to get files, both supported:
+  - Friends download from the original source themselves, for best quality.
+  - Or they download from the host's copy.
+  - Either way, the app checks they have the same file.
+- P2P between friends wanted.
+- Hosting is Linux or WSL: the host's Windows PC (Docker/WSL) or a Linux server. Native Windows and Linux are nice to have. Cleanup has to be easy.
+- A text chat that pops up on screen would be fun.
+- A custom Android app later is fine.
+- Eventually public.
 
 ## Design
 
 ```
                                Discord (voice, unchanged)
 
- ┌──────────────────────── Host (the host's PC or Linux server) ─────────────────────────┐
- │  Host app                                        Syncplay server                    │
- │  - shelf: files for upcoming nights              - rooms, shared playlist           │
- │  - movie night page + pack link                  - play/pause/seek sync             │
- │  - magnets: paste originals, or generate         - on-screen chat                   │
- │  - cleanup: keep N days, pin, disk usage                                            │
- └───────────▲───────────────────────────────────────────────▲───────────────────────────┘
-             │ HTTPS: pack + file downloads (resume)         │ Syncplay protocol, TCP 8999
-             │ or magnet → torrent                            │
+ ┌──────────────────────── Host (the host's PC in WSL, or Linux server) ──────────────────┐
+ │  Host app (:8080, HTTPS via Caddy)              Syncplay server (:8999)             │
+ │  - admin page: shelf, nights, cleanup           - rooms, shared playlist            │
+ │  - movie night link → pack.json + web page      - play/pause/seek sync              │
+ │  - files served with resume                     - on-screen chat (mpv)              │
+ │  - "find magnets on this page"                                                      │
+ └───────────▲───────────────────────────────────────────────▲──────────────────────────┘
+             │ pack + shelf downloads                         │ Syncplay protocol
+             │                                                │
  ┌───────────┴───────────────────────────────┐   ┌───────────┴───────────────┐
  │ Windows viewer app                         │   │ Phone: Synkplay            │
- │ 1. open pack link → downloads into folder  │   │ streams the file from the  │
- │ 2. Join → Syncplay + bundled mpv           │   │ shelf URL (UNKNOWN, test)  │
- │    (VLC-style subs, own volume/size/tracks)│   │                            │
- └────────────────────────────────────────────┘   └────────────────────────────┘
+ │ 1. tlp:// link → reads the pack            │   │ (third-party, untested)    │
+ │ 2. each file: torrent swarm or host copy   │   └───────────────────────────┘
+ │    → size + SHA-256 check against host     │
+ │ 3. Join → bundled Syncplay + mpv           │◀──── torrent swarm (public, and
+ └────────────────────────────────────────────┘      friends seeding to each other)
 ```
+
+### Movie night pack
+
+One link per night. The host app turns it into a page with an "Open in The Last Piece" button, and into `pack.json` for the app:
+
+- Title and start time.
+- Syncplay server, room and password, so friends never type them.
+- For each episode:
+  - The exact filename. Syncplay's shared playlist matches files by name (PROVEN, client guide).
+  - Size, and SHA-256 if the host has the file.
+  - Sources: a shelf download link, a magnet, or both.
+
+### Getting files: both ways, verified
+
+| Source | When | Cost to the host |
+|---|---|---|
+| **Magnet** (built-in torrent) | The episode came from a public torrent. The host pastes the magnet, or pastes the page and the host app finds it. | None: friends download from the public swarm. |
+| **Shelf** (download from host) | The host has the file and there's no torrent, or the swarm is slow. | Upload once per friend, ahead of time. |
+
+- **Picking a source.** Each friend chooses Auto, Prefer torrent, or Prefer host in settings. Auto takes the host's copy when there is one, because it's the most reliable, and the torrent otherwise. If the torrent fails, the app doesn't switch to the host's copy by itself yet.
+- **Verifying.** After any download, the app checks size and SHA-256 against the host's copy, so a different release with the same name is caught. Without a hash it checks size only.
+  - PROVEN: unit tests cover this, including a deliberately wrong file.
+  - INFERRED: the check only runs when the host has the file on the shelf. A magnet-only entry gets a size check only.
+- **Seeding while open.** While the app is open, finished torrent files keep seeding, so friends who started late get pieces from friends, not just strangers (on by default, can be turned off).
+
+### P2P: yes
+
+- **What works now:**
+  - Magnets download inside the app.
+  - Friends who have the file seed to each other and the public swarm.
+  - PROVEN: a test does a real magnet download between two local peers through a tracker.
+- **Group torrent (next phase), for files only the host has:**
+  - The host app makes a private `.torrent` for the shelf file.
+  - It runs its own tracker, and uses the shelf link as a web seed.
+  - the host's upload then gets shared out: each friend pulls some pieces from the host and the rest from each other.
+  - The pack format already reserves a `torrent` source type for this.
+  - MonoTorrent has a tracker server and web seed support (PROVEN for the tracker, used in our tests; INFERRED for web seeds until tested).
+- **Sync stays on the Syncplay server.** Peer-to-peer sync without a server is possible but would mean rewriting Syncplay for little gain.
+
+### Why not uTorrent
+
+- uTorrent is closed source and has a history of bundled adware and, in 2015, a bundled cryptocurrency miner (INFERRED: widely reported, not re-verified here).
+- The app's built-in engine is MonoTorrent: MIT licensed, open source, and only downloads what's in the pack.
+- Anyone who wants an external client can still copy the magnet from the night page. qBittorrent is the open-source pick there.
+- **Note:** a torrent shows your IP to everyone in the swarm. That's the same as uTorrent today, but worth knowing before going public.
 
 ### Player: bundled mpv with a VLC look
 
-- Syncplay supports VLC 3, so anyone can keep VLC (PROVEN, Syncplay 1.7.6 player list). But chat over the video is mpv-only (PROVEN, Syncplay client guide), so the viewer app bundles mpv.
-- Styled anime subtitles: VLC 3 decodes ASS/SSA with its libass module (PROVEN, VLC source), mpv uses libass too, so styled subs should look identical (INFERRED: same library, versions may differ).
-- Plain subtitles: VLC 3 defaults on Windows are Arial, white, black outline, 50% black shadow down-right, about 6.25% of video height (PROVEN, VLC 3.0 source). `viewer/mpv.conf` approximates that (INFERRED until compared side by side).
-
-### Getting files to people
-
-A **movie night pack** is one link per night. It lists each episode's exact filename, size and where to get it. The exact filename matters because Syncplay's shared playlist finds files by name (PROVEN, client guide).
-
-Each file in a pack can have one or both sources:
-
-1. **Shelf link (default).** The host drops the file in the shelf, and the host app serves it over HTTPS with resume. Simplest for friends, nothing to install. Costs the host upload once per friend, ahead of time.
-2. **Magnet.** Best when the file came from a public torrent: The host pastes the magnet he already has, and friends download from the public swarm, not from the host.
-
-Pushback on generating magnets for the host's own files: a bare magnet only holds a hash, and clients get the file details from other peers. If the host's PC is the only copy, a magnet adds a step without saving bandwidth (INFERRED from how magnets work). The useful version is a private group torrent: a `.torrent` with the shelf as an HTTPS web seed, so friends who finish early share with the rest. That needs the torrent engine inside the viewer app, so it's phase 2, not MVP.
+- Syncplay supports VLC 3, so anyone can keep VLC (PROVEN, Syncplay player list). Chat over the video is mpv-only (PROVEN, Syncplay client guide).
+- Styled anime subtitles: VLC 3 and mpv both use libass, so they should look the same (INFERRED: same library, versions differ).
+- Plain subtitles: `viewer/mpv.conf` approximates VLC 3's Windows default (Arial, white, black outline, soft shadow). INFERRED until compared side by side.
+- mpv reads `mpv/portable_config/mpv.conf` next to `mpv.exe` (PROVEN, mpv docs), so the bundled player doesn't touch anyone's own mpv setup.
 
 ### Hosting and cleanup
 
-| How | Host app | Syncplay server |
-|---|---|---|
-| Docker (Linux server, or WSL on Windows) | container | container (PROVEN, built and tested here) |
-| Native Windows | single `.exe` | `syncplayServer.exe` from the official Syncplay download (PROVEN it ships, per server guide), started by the host app |
-| Native Linux | single binary + systemd unit | Syncplay from source, started by the host app |
+| How | Host app | Syncplay server | Status |
+|---|---|---|---|
+| Docker (Linux server, or WSL on Windows) | `server/docker-compose.yml` | same compose file | PROVEN: both images built and tested here |
+| Native Linux | `dotnet publish` binary | Syncplay from source, started by the host app (`Tlp__Syncplay__ServerCommand`) | INFERRED |
+| Native Windows | `dotnet publish` `.exe` | `syncplayServer.exe` from the Syncplay download, started by the host app | INFERRED |
 
-Cleanup rule for the MVP: files are deleted a set number of days after their movie night (default 7) unless pinned. The host page shows disk used and free space, with a delete button per file.
+Cleanup:
 
-Network: friends need to reach TCP 8999 (Syncplay) and 443 (shelf) on the host. At home that means two router port forwards. If the domain is on Cloudflare, these records need to be DNS-only (grey cloud), since Cloudflare's normal proxy doesn't carry raw TCP like Syncplay's (INFERRED).
-
-### Tech choice
-
-**.NET (C#) for both apps**, with Syncplay kept as a separate process:
-
-- One language for host and viewer, sharing the pack format.
-- Builds a single native `.exe` for Windows and a single binary for Linux, plus a Docker image, all from GitHub Actions (INFERRED, standard `dotnet publish`).
-- Viewer UI in Avalonia, which also runs on macOS and Linux for the public release (INFERRED).
-- MonoTorrent (MIT) for magnets and group torrents in phase 2 (INFERRED: not yet checked that it does web seeds the way we need).
-- The host already writes C# for CounterStrikeSharp plugins.
-
-The alternative is Python/FastAPI for the host, which is quick to write but awkward to ship as a Windows app.
+- A shelf file is deleted a set number of days (default 7) after the last movie night that uses it, unless pinned.
+- Files no night uses are never deleted automatically. The admin page lists them with a delete button and shows disk space.
+- Cleanup has a preview, and can be switched to report-only (`Tlp__CleanupEnabled=false`).
+- PROVEN: logic unit-tested, and delete works in Docker.
+- Docker detail: the host app runs as user id 1654. The shelf folder has to be writable by it for cleanup (for example `sudo chown -R 1654 shelf`).
 
 ## MVP (v0.1): the first real movie night
 
 Done when the host and one friend watch an episode this way and it beats Discord.
 
 Host app:
-- [ ] Shelf folder scanned on start and on change; files listed with size and date.
-- [ ] Create a movie night: pick files, optionally paste a magnet per file, set the date. Produces a pack link and a simple web page with download buttons.
-- [ ] Shelf downloads over HTTPS with resume, protected by the night's link (no account system yet).
-- [ ] Cleanup: keep N days after the night, pin, delete, disk usage.
-- [ ] Starts and supervises the Syncplay server natively, or sits next to it in Docker Compose.
-- [ ] Ships as a Docker image, a Windows `.exe` and a Linux binary, built in GitHub Actions.
+- [x] Shelf listed with size, date, which nights use each file, pin and delete, disk usage. PROVEN (tests and Docker).
+- [x] Create a movie night from shelf files and/or magnets. Gives a share link, a web page and `pack.json`. PROVEN.
+- [x] "Find magnets on a page": paste a release page link and pick from the magnets and `.torrent` links on it. PROVEN on test HTML.
+  - It refuses addresses on your own network, so a shared host can't be used to probe it.
+  - Real tracker sites may block it or need a login (UNKNOWN until tried on the sites you use). Pasting the magnet directly always works.
+- [x] Shelf downloads with resume, protected by the night's secret link. PROVEN (range requests tested).
+- [x] SHA-256 of shelf files, computed in the background and cached. PROVEN.
+- [x] Cleanup: keep N days after the night, pin, preview, run. PROVEN.
+- [x] Admin page protected by a token. A token is generated and saved if not set. PROVEN.
+- [x] Docker image plus compose with Syncplay. Optional Caddy for automatic HTTPS. PROVEN for the host image, INFERRED for Caddy.
+- [x] Can start and restart a native Syncplay server. INFERRED, not run against a real `syncplayServer`.
 
 Viewer app (Windows):
-- [ ] Zip or installer containing the app, portable mpv with our `mpv.conf`, and Syncplay.
-- [ ] First run: your name, movie night folder.
-- [ ] Paste or click a pack link: downloads with progress and resume, checks sizes. Magnet entries open in the user's torrent client for now.
-- [ ] Join: writes Syncplay's config (server, room, password, folder, mpv path, shelf as trusted domain, skip the setup dialog) and launches it.
+- [x] Paste a link or click "Open in The Last Piece" (`tlp://`, registered for the current user on first run). INFERRED on Windows.
+- [x] Downloads each file by torrent or from the host, with progress and resume, then verifies. PROVEN on Linux.
+- [x] Settings: your name, movie night folder, source preference, chat style, seed while open.
+- [x] Join: writes Syncplay's per-folder `.syncplay` config and opens the bundled Syncplay with the server, room, password, name, mpv and the first episode. PROVEN that the command line and config are what Syncplay 1.7.6's source expects; INFERRED that it all works together on Windows.
+- [x] Zip with `TheLastPiece.exe`, portable mpv with our `mpv.conf`, and portable Syncplay, built by GitHub Actions. See CI for the current state.
+- [ ] Tried on a real Windows PC.
+- [ ] Single instance: clicking a second link while the app is open currently opens a second window.
 
 Phone:
-- [ ] The host tests Synkplay on Android: connect to our server, play an ASS-heavy MKV from a shelf link, check sync and subtitles.
-
-Already done (phase 0):
-
-| Path | What | Status |
-|---|---|---|
-| `server/` | Syncplay 1.7.6 Docker image, compose file, optional Caddy shelf | PROVEN: built, ran, tested |
-| `tools/smoketest.py` | Two fake viewers: wrong password, join, pause sync, chat | PROVEN: passes locally and in CI |
-| `.github/workflows/server-ci.yml` | Builds the image and runs the smoke test on every push | PROVEN: green on GitHub Actions |
-| `viewer/` | Setup guide, `syncplay.ini` starter, `mpv.conf` with the VLC look | INFERRED: not tried on a real client |
-| `docs/options.md` | Survey of every option and why | Sources linked |
-
-The Caddy shelf in `server/` is a stopgap. The host app replaces it in the MVP.
+- [ ] The host tests Synkplay on Android: connect to our server, open an ASS-heavy MKV from a shelf link, check sync and subtitles.
 
 ## Roadmap after the MVP
 
-**Phase 2: files without the host's upload**
-- Torrent engine in the viewer app: magnets download inside the app.
-- Group torrents generated by the host app from shelf files, with the shelf as web seed, so friends share pieces with each other.
-- Discord bot: posts the night's pack link, shows who's downloaded and who's in the room, bridges Discord text into the on-screen chat.
+**Phase 2: P2P and polish**
+- Group torrent for shelf files: host tracker plus web seed (see P2P above).
+- Skip Syncplay's own connect window. Syncplay 1.7.6 shows it every launch by default, with our values filled in, so friends just press "Run Syncplay". The fix is a small settings file we ship with Syncplay; it needs testing on Windows first.
+- Single instance, so a second link goes to the open window.
+- Discord bot:
+  - Posts the night's link.
+  - Shows who's downloaded and who's in the room.
+  - Bridges Discord text into the on-screen chat.
+- Signed installer and auto-update. Until then Windows SmartScreen warns on the unsigned `.exe` ("More info, Run anyway").
 
 **Phase 3: going public**
 - Accounts or invite links, several groups per host, per-room passwords.
 - Setup wizard for hosts (ports, domain, HTTPS).
-- macOS and Linux viewer builds.
-- License and third-party notices for bundled mpv and Syncplay (Syncplay is Apache-2.0, PROVEN; mpv's license depends on the build, UNKNOWN which we'd bundle).
-- The tool stays content-neutral: no built-in search or index of torrents.
+- macOS and Linux viewer builds (Avalonia and MonoTorrent run there; mpv and Syncplay bundling differs).
+- License for our code, and third-party notices (Syncplay is Apache-2.0; the mpv Windows build bundles GPL parts, so we ship it unmodified with its license and a source link).
+- Stays content-neutral: no built-in torrent search or index.
 
 **Phase 4: only if needed**
 - Our own Android app if Synkplay falls short.
-- Zero-install browser fallback: OBS → MediaMTX stream, or a web player using JASSUB for subtitles.
+- Zero-install browser fallback: a web player using JASSUB for subtitles, or an OBS → MediaMTX stream.
 
-## Running the Syncplay server today
+## Running the host
+
+Docker (Linux server, or WSL on Windows):
 
 ```bash
 cd server
-cp .env.example .env          # set SYNCPLAY_PASSWORD at least
+cp .env.example .env      # set SYNCPLAY_PASSWORD and TLP_PUBLIC_URL at least
+mkdir -p shelf            # put episodes here
 docker compose up -d --build
-python3 ../tools/smoketest.py --password 'your-password' --room movienight
+docker compose logs host | grep -i token    # first admin login, if TLP_ADMIN_TOKEN is empty
 ```
 
-Notes from building it:
+Then open `http://<host>:8080`, log in with the token, and create a movie night.
+
+Ports friends need to reach:
+
+| Port | What | Notes |
+|---|---|---|
+| 8999/TCP | Syncplay | Router port forward. If the domain is on Cloudflare, these records must be DNS-only (grey cloud), since Cloudflare's normal proxy doesn't carry raw TCP like Syncplay's (INFERRED). |
+| 8080/TCP | Host app | For a first test. |
+| 80 and 443/TCP | Host app over HTTPS | With `--profile https` and `TLP_DOMAIN` set. |
+
+Checking the Syncplay server: `python3 tools/smoketest.py --password '<password>' --room movienight`.
+
+Native (no Docker): `dotnet publish src/Tlp.Host -c Release -r linux-x64` (or `win-x64`). Settings go in `appsettings.json` or `Tlp__...` environment variables (see `src/Tlp.Host/TlpOptions.cs`).
+
+Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
+
+### Notes from building it
 
 - Syncplay isn't on PyPI, so the image installs from the tagged GitHub release (PROVEN).
-- `--isolate-rooms` silently disables the saved-rooms database in 1.7.6 (PROVEN, read in `server.py` and confirmed by testing). Isolation is off by default; opt in with `SYNCPLAY_ISOLATE_ROOMS=true`.
-- Docker's port proxy accepts connections before Syncplay is listening, so the smoke test waits for a real handshake (`--wait`).
+- `--isolate-rooms` silently disables the saved-rooms database in 1.7.6 (PROVEN). Isolation is opt-in with `SYNCPLAY_ISOLATE_ROOMS=true`.
+- Docker's port proxy accepts connections before Syncplay listens, so the smoke test waits for a real handshake.
+
+## Repo map
+
+| Path | What |
+|---|---|
+| `src/Tlp.Core` | Pack format, magnet parsing, magnet finder, safe filenames |
+| `src/Tlp.Host` | Host app: API, admin page (`wwwroot`), cleanup, hashing, Dockerfile |
+| `src/Tlp.Viewer.Core` | Viewer logic: pack client, downloads, torrent, verify, Syncplay launch |
+| `src/Tlp.Viewer` | Windows app window (Avalonia) |
+| `tests/Tlp.Tests` | 47 tests, including a real two-peer torrent transfer |
+| `server/` | Compose file, Syncplay image, Caddy |
+| `viewer/mpv.conf` | VLC look for the bundled mpv |
+| `tools/` | Syncplay smoke test, viewer zip packager |
+| `docs/options.md` | Every option considered and why |
 
 ## Open decisions
 
-1. **.NET for both apps?** Default if no answer: yes.
-2. **Where does the first real night run:** your Windows PC (Docker in WSL) or the Linux server? Both get supported. This decides which one gets tested first.
-3. **Do your friends have a torrent client installed?** If not, MVP magnets mean installing one, and shelf links stay the main path until phase 2.
-4. **Project name and license** for the public release. MIT or Apache-2.0 for our own code is the usual choice; the bundled players keep their own licenses.
+1. **Where does the first real night run?** WSL on your PC or the Linux server. Both are supported; this decides which gets tried first.
+2. **A domain for HTTPS?** Friends can start on `http://<ip>:8080`. A domain gives HTTPS and a nicer link.
+3. **Who's the test friend?** One person runs the zip on Windows before a real night.
+4. **License** for the public release. MIT or Apache-2.0 is the usual choice.

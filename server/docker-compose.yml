@@ -1,7 +1,32 @@
-# Movie night backend.
-#   docker compose up -d                      -> Syncplay server only
-#   docker compose --profile shelf up -d      -> plus the HTTPS file shelf
+# Movie night host: the host app (shelf, links, cleanup, admin page) and the
+# Syncplay server. Run from this folder.
+#
+#   docker compose up -d --build                  -> host app on :8080, Syncplay on :8999
+#   docker compose --profile https up -d --build  -> plus Caddy with automatic HTTPS on :443
+#
+# First admin login: the token is printed in `docker compose logs host`
+# (or set TLP_ADMIN_TOKEN in .env).
 services:
+  host:
+    build:
+      context: ..
+      dockerfile: src/Tlp.Host/Dockerfile
+    image: the-last-piece/host:dev
+    restart: unless-stopped
+    ports:
+      - "${TLP_HTTP_PORT:-8080}:8080"
+    environment:
+      Tlp__PublicBaseUrl: ${TLP_PUBLIC_URL:-http://localhost:8080}
+      Tlp__AdminToken: ${TLP_ADMIN_TOKEN:-}
+      Tlp__RetentionDays: ${TLP_RETENTION_DAYS:-7}
+      Tlp__Syncplay__PublicHost: ${SYNCPLAY_PUBLIC_HOST:-}
+      Tlp__Syncplay__Password: ${SYNCPLAY_PASSWORD:-}
+      Tlp__Syncplay__DefaultRoom: ${SYNCPLAY_ROOM:-movienight}
+    volumes:
+      # Read-write so cleanup can delete old episodes. Put tonight's files here.
+      - ${SHELF_DIR:-./shelf}:/shelf
+      - host-data:/data
+
   syncplay:
     build: .
     image: the-last-piece/syncplay-server:1.7.6
@@ -21,20 +46,20 @@ services:
       - ./permanent-rooms.txt:/config/permanent-rooms.txt:ro
       # - /etc/letsencrypt/live/sync.example.com:/certs:ro
 
-  shelf:
+  https:
     image: caddy:2
-    profiles: ["shelf"]
+    profiles: ["https"]
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
-    env_file: .env
+    environment:
+      TLP_DOMAIN: ${TLP_DOMAIN:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ${SHELF_DIR:-./shelf}:/srv/shelf:ro
       - caddy-data:/data
 
 volumes:
+  host-data:
   syncplay-data:
   caddy-data:

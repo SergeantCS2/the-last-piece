@@ -2,3 +2,9 @@
 server/shelf/
 __pycache__/
 *.pyc
+bin/
+obj/
+*.user
+.vs/
+/publish/
+/dist/

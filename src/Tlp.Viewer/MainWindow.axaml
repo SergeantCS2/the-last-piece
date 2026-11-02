@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Tlp.Viewer.MainWindow"
+        Title="The Last Piece"
+        Width="760" Height="640" MinWidth="520" MinHeight="460">
+  <DockPanel Margin="16">
+    <StackPanel DockPanel.Dock="Top" Spacing="8">
+      <TextBlock Text="Movie night" FontSize="24" FontWeight="SemiBold"/>
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox x:Name="LinkBox" Watermark="Paste the movie night link from the host"/>
+        <Button x:Name="LoadButton" Grid.Column="1" Margin="8,0,0,0" Content="Open"/>
+      </Grid>
+      <TextBlock x:Name="NightTitle" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+      <TextBlock x:Name="NightInfo" Opacity="0.7" TextWrapping="Wrap"/>
+    </StackPanel>
+
+    <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,8,0,0">
+      <Expander Header="Settings">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto" >
+            <TextBlock Text="Your name" VerticalAlignment="Center"/>
+            <TextBox x:Name="NameBox" Grid.Column="1" Margin="0,0,0,6"/>
+            <TextBlock Grid.Row="1" Text="Movie night folder" VerticalAlignment="Center"/>
+            <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+              <TextBox x:Name="FolderBox"/>
+              <Button x:Name="BrowseButton" Grid.Column="1" Margin="6,0,0,0" Content="Browse"/>
+            </Grid>
+            <TextBlock Grid.Row="2" Text="Get files from" VerticalAlignment="Center"/>
+            <ComboBox x:Name="SourceBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6" HorizontalAlignment="Stretch">
+              <ComboBoxItem Content="Host if offered, otherwise torrent"/>
+              <ComboBoxItem Content="Torrent if offered (download it myself)"/>
+              <ComboBoxItem Content="Host if offered"/>
+            </ComboBox>
+            <TextBlock Grid.Row="3" Text="On-screen chat" VerticalAlignment="Center"/>
+            <ComboBox x:Name="ChatBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
+              <ComboBoxItem Content="Chatroom (stacked, fades out)"/>
+              <ComboBoxItem Content="Scrolling (flies across the screen)"/>
+            </ComboBox>
+          </Grid>
+          <CheckBox x:Name="SeedBox" Content="Share finished torrents with the group while this app is open"/>
+          <Button x:Name="SaveButton" Content="Save settings"/>
+        </StackPanel>
+      </Expander>
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap" Opacity="0.8"/>
+        <Button x:Name="DownloadButton" Grid.Column="1" Margin="8,0,0,0" Content="Download all" IsEnabled="False"/>
+        <Button x:Name="JoinButton" Grid.Column="2" Margin="8,0,0,0" Content="Join movie night" IsEnabled="False" Classes="accent"/>
+      </Grid>
+    </StackPanel>
+
+    <ScrollViewer Margin="0,12,0,0">
+      <ItemsControl x:Name="ItemsList">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Margin="0,0,0,8" Padding="12" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding Detail}" Opacity="0.6" FontSize="12"/>
+                <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100" Height="6"/>
+                <TextBlock Text="{Binding Status}" FontSize="12" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

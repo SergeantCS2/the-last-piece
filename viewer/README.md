@@ -1,26 +1,29 @@
 # Joining movie night (viewer setup)
 
-Untested draft: fix anything that trips you up and tell the host.
+Draft: nobody has run this on Windows yet. Tell the host anything that trips you up.
 
-## Windows
+## Windows (The Last Piece app)
 
-1. Install **Syncplay** from https://syncplay.pl (Download page).
-2. Install **mpv** (see https://mpv.io/installation/) or **mpv.net**.
-3. Copy `syncplay.ini.example` to `%APPDATA%\syncplay.ini` and fill in the server, your name and your movie night folder.
-4. Copy `mpv.conf` to `%APPDATA%\mpv\mpv.conf`.
-5. Open Syncplay, type the password the host gave you, pick mpv as the player, connect.
+1. Download `TheLastPiece-win-x64.zip` from the host, unzip it anywhere (Documents is fine), and run `TheLastPiece.exe`.
+   - Windows may warn that the app is unrecognised, because it isn't signed yet. Click "More info", then "Run anyway".
+2. Open Settings in the app and set your name and your movie night folder.
+3. Click the movie night link the host sends, then "Open in The Last Piece". Or paste the link into the app and press Open.
+4. Press "Download all". Each file comes by torrent or from the host's copy, and the app checks it matches his.
+5. At showtime press "Join movie night". Syncplay opens with everything filled in, so just press "Run Syncplay" if it asks.
 
-## macOS
+Nothing else to install: mpv and Syncplay are inside the zip.
 
-Syncplay plus IINA or mpv. Same settings, entered in the Syncplay window.
+## Already use VLC or your own Syncplay?
+
+That still works. Copy the file names from the night page, put the files in your Syncplay folder, and connect to the server and room on the page. On-screen chat only shows in mpv.
 
 ## Android / iOS
 
-**Synkplay** from the Play Store or App Store. Use the mpv engine for proper anime subtitles.
+**Synkplay** from the Play Store or App Store. Use the mpv engine for proper anime subtitles. Not tested yet.
 
 ## During the night
 
 - Pause, seek, play: everyone follows.
 - Your volume, window size, subtitles and audio track are yours alone.
-- Press **Enter** in mpv to type a chat message; it shows on everyone's screen.
+- Press **Enter** in the player to type a chat message; it shows on everyone's screen.
 - Voice stays on Discord.
