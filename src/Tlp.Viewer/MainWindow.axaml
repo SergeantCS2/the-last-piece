@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Tlp.Viewer"
         x:Class="Tlp.Viewer.MainWindow"
         Title="The Last Piece"
         Width="760" Height="640" MinWidth="520" MinHeight="460">
@@ -27,9 +28,9 @@
             </Grid>
             <TextBlock Grid.Row="2" Text="Get files from" VerticalAlignment="Center"/>
             <ComboBox x:Name="SourceBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6" HorizontalAlignment="Stretch">
-              <ComboBoxItem Content="Host if offered, otherwise torrent"/>
-              <ComboBoxItem Content="Torrent if offered (download it myself)"/>
-              <ComboBoxItem Content="Host if offered"/>
+              <ComboBoxItem Content="Best available (group torrent, then the host's copy)"/>
+              <ComboBoxItem Content="Torrents first (download it myself)"/>
+              <ComboBoxItem Content="The host's copy first"/>
             </ComboBox>
             <TextBlock Grid.Row="3" Text="On-screen chat" VerticalAlignment="Center"/>
             <ComboBox x:Name="ChatBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
@@ -51,7 +52,7 @@
     <ScrollViewer Margin="0,12,0,0">
       <ItemsControl x:Name="ItemsList">
         <ItemsControl.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="local:ItemRow">
             <Border Margin="0,0,0,8" Padding="12" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
               <StackPanel Spacing="4">
                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>

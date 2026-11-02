@@ -164,6 +164,31 @@ async def run(host: str, port: int, password: str | None, room: str, wait: float
     await bob.close()
 
 
+async def expect_user(host: str, port: int, password: str | None, room: str, user: str, wait: float,
+                      need_file: bool = False) -> None:
+    """Join as an observer and wait until `user` is in `room` (used to check a real client got in).
+    With need_file, also wait until that user's player has a file open."""
+    checker = await Viewer.connect(host, port, "checker")
+    await checker.hello(room, password)
+    await checker.wait_for("Hello")
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + wait
+    while True:
+        await checker.send({"List": None})
+        try:
+            listing = await checker.wait_for("List", timeout=3.0)
+        except asyncio.TimeoutError:
+            listing = {}
+        users = listing.get(room, {})
+        if user in users and (not need_file or (users[user].get("file") or {}).get("name")):
+            print(f"PASS  {user} is in room '{room}': {json.dumps(users[user])}")
+            await checker.close()
+            return
+        if loop.time() >= deadline:
+            raise AssertionError(f"{user} never joined room '{room}' (saw {sorted(users)})")
+        await asyncio.sleep(2.0)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--host", default="127.0.0.1")
@@ -172,10 +197,18 @@ def main() -> int:
     parser.add_argument("--room", default="smoketest-temp")
     parser.add_argument("--wait", type=float, default=30.0,
                         help="seconds to wait for the server to answer before testing (0 = don't wait)")
+    parser.add_argument("--expect-user", default=None,
+                        help="instead of the smoke test, wait until this user is in --room")
+    parser.add_argument("--expect-file", action="store_true",
+                        help="with --expect-user, also wait until that user's player has a file open")
     args = parser.parse_args()
 
     try:
-        asyncio.run(run(args.host, args.port, args.password, args.room, args.wait))
+        if args.expect_user:
+            asyncio.run(expect_user(args.host, args.port, args.password, args.room, args.expect_user, max(args.wait, 10),
+                                    args.expect_file))
+        else:
+            asyncio.run(run(args.host, args.port, args.password, args.room, args.wait))
     except Exception as exc:  # noqa: BLE001 - report any failure plainly
         print(f"FAIL  {type(exc).__name__}: {exc}")
         return 1

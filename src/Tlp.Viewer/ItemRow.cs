@@ -16,8 +16,9 @@ public sealed class ItemRow(PackItem item) : INotifyPropertyChanged
     public string Detail =>
         $"{NightSession.Human(Item.Size)} · " + string.Join(" or ", Item.Sources.Select(s => s.Kind switch
         {
-            PackSourceKind.Http => "from host",
-            PackSourceKind.Magnet => "torrent",
+            PackSourceKind.Http => "host's copy",
+            PackSourceKind.Magnet => "public torrent",
+            PackSourceKind.Torrent => "group torrent",
             _ => s.Kind.ToString(),
         }));
 

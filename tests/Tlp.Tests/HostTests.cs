@@ -97,7 +97,7 @@ public class HostTests(HostFixture fx) : IClassFixture<HostFixture>
         Assert.Equal(PackSourceKind.Magnet, Assert.Single(pack.Items[1].Sources).Kind);
 
         // Range requests work, so downloads can resume and mpv can seek in a streamed file.
-        var fileUrl = new Uri(Assert.Single(pack.Items[0].Sources).Uri).PathAndQuery;
+        var fileUrl = new Uri(pack.Items[0].Sources.Single(s => s.Kind == PackSourceKind.Http).Uri).PathAndQuery;
         var req = new HttpRequestMessage(HttpMethod.Get, fileUrl);
         req.Headers.Range = new RangeHeaderValue(1000, 1999);
         var part = await anon.SendAsync(req);

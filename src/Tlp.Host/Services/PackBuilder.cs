@@ -4,7 +4,7 @@ namespace Tlp.Host.Services;
 
 public static class PackBuilder
 {
-    public static Pack Build(Night night, TlpOptions opts, Shelf shelf, HashCache hashes)
+    public static Pack Build(Night night, TlpOptions opts, Shelf shelf, HashCache hashes, GroupTorrents? torrents = null)
     {
         var baseUrl = opts.PublicBaseUrl.TrimEnd('/');
         var items = night.Items.Select((item, i) =>
@@ -16,6 +16,8 @@ public static class PackBuilder
             {
                 size = new FileInfo(full).Length;
                 sha = hashes.Get(item.ShelfPath);
+                if (torrents?.Get(item.ShelfPath) is not null)
+                    sources.Add(new PackSource { Kind = PackSourceKind.Torrent, Uri = $"{baseUrl}/n/{night.Token}/files/{i}/group.torrent" });
                 sources.Add(new PackSource
                 {
                     Kind = PackSourceKind.Http,

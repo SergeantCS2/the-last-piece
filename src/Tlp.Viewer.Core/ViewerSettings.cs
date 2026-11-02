@@ -1,15 +1,17 @@
-using Tlp.Core;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Tlp.Viewer.Core;
 
+[JsonConverter(typeof(JsonStringEnumConverter<SourcePreference>))]
 public enum SourcePreference
 {
-    /// <summary>Shelf download when the host offers one, otherwise the magnet.</summary>
-    Auto,
-    /// <summary>Use the magnet (download it yourself from the swarm) when there is one.</summary>
-    PreferTorrent,
-    /// <summary>Use the host's shelf when there is one.</summary>
-    PreferShelf,
+    /// <summary>Group torrent, then the host's copy, then the public torrent.</summary>
+    [JsonStringEnumMemberName("auto")] Auto,
+    /// <summary>Torrents first (download it yourself), the host's copy last.</summary>
+    [JsonStringEnumMemberName("preferTorrent")] PreferTorrent,
+    /// <summary>The host's copy first.</summary>
+    [JsonStringEnumMemberName("preferShelf")] PreferShelf,
 }
 
 public sealed record ViewerSettings
@@ -34,7 +36,7 @@ public sealed record ViewerSettings
         path ??= DefaultPath;
         try
         {
-            return File.Exists(path) ? PackJson.Deserialize<ViewerSettings>(File.ReadAllText(path)) ?? new() : new();
+            return File.Exists(path) ? JsonSerializer.Deserialize(File.ReadAllText(path), ViewerJsonContext.Default.ViewerSettings) ?? new() : new();
         }
         catch (System.Text.Json.JsonException)
         {
@@ -46,6 +48,10 @@ public sealed record ViewerSettings
     {
         path ??= DefaultPath;
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, PackJson.Serialize(this));
+        File.WriteAllText(path, JsonSerializer.Serialize(this, ViewerJsonContext.Default.ViewerSettings));
     }
 }
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web, WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(ViewerSettings))]
+internal sealed partial class ViewerJsonContext : JsonSerializerContext;

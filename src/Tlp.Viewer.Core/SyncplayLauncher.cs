@@ -6,13 +6,39 @@ namespace Tlp.Viewer.Core;
 
 /// <summary>
 /// Starts Syncplay already pointed at the movie night room, with mpv as the player.
-/// Nothing is written to the user's own Syncplay settings: the room-specific settings go
-/// in a ".syncplay" file inside the movie night folder (Syncplay reads it for files
-/// opened from that folder) and the rest are command-line arguments with --no-store.
+/// Nothing is written to the user's own Syncplay settings:
+/// - The bundled Syncplay gets a portable syncplay.ini next to Syncplay.exe. Syncplay 1.7.6
+///   reads that instead of %APPDATA%\syncplay.ini (ConfigurationGetter._checkForPortableFile),
+///   and it turns off the connect window and update pop-ups.
+/// - Room-specific settings go in a ".syncplay" file in the movie night folder, which Syncplay
+///   reads for files opened from that folder.
+/// - Server, room, name and password are command-line arguments, with --no-store.
 /// </summary>
 public static class SyncplayLauncher
 {
     public const string RelativeConfigName = ".syncplay";
+    public const string PortableConfigName = "syncplay.ini";
+
+    /// <summary>
+    /// Settings for the bundled Syncplay. forceGuiPrompt = False skips the "connect" window when a
+    /// file is given (Syncplay still shows it if a setting is missing). Update checks are off
+    /// because the app ships a known Syncplay version.
+    /// </summary>
+    public static string PortableConfig(string chatStyle = "Chatroom")
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("; Written by The Last Piece. Settings for the Syncplay bundled with it only.");
+        sb.AppendLine("[client_settings]");
+        sb.AppendLine("forceGuiPrompt = False");
+        sb.AppendLine("pauseOnLeave = True");
+        sb.AppendLine("[gui]");
+        sb.AppendLine("chatInputEnabled = True");
+        sb.AppendLine("chatOutputEnabled = True");
+        sb.AppendLine($"chatOutputMode = {(chatStyle == "Scrolling" ? "Scrolling" : "Chatroom")}");
+        sb.AppendLine("[general]");
+        sb.AppendLine("checkForUpdatesAutomatically = False");
+        return sb.ToString();
+    }
 
     public static string RelativeConfig(Pack pack, string folder, string chatStyle = "Chatroom")
     {
@@ -54,11 +80,24 @@ public static class SyncplayLauncher
         return args;
     }
 
-    public static Process Launch(Pack pack, string folder, string name, string syncplayPath, string mpvPath, string chatStyle = "Chatroom")
+    /// <param name="bundled">True for the Syncplay inside the app folder, which gets the portable settings file.
+    /// False for someone's own Syncplay install, which is left untouched (its connect window will show).</param>
+    public static Process Launch(Pack pack, string folder, string name, string syncplayPath, string mpvPath, string chatStyle = "Chatroom", bool bundled = true)
     {
         var first = pack.Items.Select(i => FileCheck.TargetPath(folder, i)).FirstOrDefault(File.Exists)
                     ?? throw new FileNotFoundException("None of tonight's files are downloaded yet.");
         File.WriteAllText(Path.Combine(folder, RelativeConfigName), RelativeConfig(pack, folder, chatStyle));
+        if (bundled)
+        {
+            try
+            {
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(syncplayPath)!, PortableConfigName), PortableConfig(chatStyle));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Read-only app folder (e.g. Program Files): Syncplay shows its connect window, filled in.
+            }
+        }
 
         var psi = new ProcessStartInfo(syncplayPath) { UseShellExecute = false, WorkingDirectory = folder };
         foreach (var a in Arguments(pack, name, mpvPath, first)) psi.ArgumentList.Add(a);

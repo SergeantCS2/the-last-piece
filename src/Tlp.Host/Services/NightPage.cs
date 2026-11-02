@@ -50,6 +50,8 @@ public static class NightPage
                     sb.Append($"<a class=\"button\" href=\"{h(src.Uri)}\">Download</a>");
                 else if (src.Kind == PackSourceKind.Magnet)
                     sb.Append($"<a class=\"button secondary\" href=\"{h(src.Uri)}\">Magnet</a>");
+                else if (src.Kind == PackSourceKind.Torrent)
+                    sb.Append($"<a class=\"button secondary\" href=\"{h(src.Uri)}\">Group torrent</a>");
             }
             if (item.Sha256 is not null) sb.Append($"<div class=\"muted\">SHA-256 <code>{h(item.Sha256)}</code></div>");
             sb.Append("<div class=\"muted\">Keep the file name exactly as shown so the shared playlist finds it.</div></div>");

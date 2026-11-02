@@ -22,6 +22,9 @@ services:
       Tlp__Syncplay__PublicHost: ${SYNCPLAY_PUBLIC_HOST:-}
       Tlp__Syncplay__Password: ${SYNCPLAY_PASSWORD:-}
       Tlp__Syncplay__DefaultRoom: ${SYNCPLAY_ROOM:-movienight}
+      Tlp__DiscordWebhookUrl: ${TLP_DISCORD_WEBHOOK:-}
+      Tlp__BehindProxy: ${TLP_BEHIND_PROXY:-false}
+      Tlp__GroupTorrents: ${TLP_GROUP_TORRENTS:-true}
     volumes:
       # Read-write so cleanup can delete old episodes. Put tonight's files here.
       - ${SHELF_DIR:-./shelf}:/shelf

@@ -121,7 +121,7 @@ public class DownloadTests(HostFixture fx) : IClassFixture<HostFixture>
             await File.WriteAllBytesAsync(Path.Combine(folder, item.FileName + FileCheck.PartSuffix), original[..100_000]);
             Assert.Equal(FileState.Partial, FileCheck.Quick(folder, item));
 
-            var source = new Uri(new Uri("http://localhost"), new Uri(item.Sources[0].Uri).PathAndQuery);
+            var source = new Uri(new Uri("http://localhost"), new Uri(item.Sources.Single(s => s.Kind == PackSourceKind.Http).Uri).PathAndQuery);
             await new HttpDownloader(client).DownloadAsync(source, folder, item);
 
             Assert.Equal(original, await File.ReadAllBytesAsync(Path.Combine(folder, item.FileName)));

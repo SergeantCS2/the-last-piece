@@ -25,6 +25,18 @@ public sealed class TlpOptions
     /// <summary>When false, cleanup only reports what it would delete.</summary>
     public bool CleanupEnabled { get; set; } = true;
 
+    /// <summary>Make private group torrents for shelf files so friends share pieces (host is the web seed and tracker).</summary>
+    public bool GroupTorrents { get; set; } = true;
+
+    /// <summary>
+    /// Set when the host app sits behind a reverse proxy (e.g. the Caddy in docker-compose), so the
+    /// tracker sees friends' real addresses from X-Forwarded-For instead of the proxy's.
+    /// </summary>
+    public bool BehindProxy { get; set; }
+
+    /// <summary>Optional Discord webhook URL; the admin page can post a night's link there.</summary>
+    public string? DiscordWebhookUrl { get; set; }
+
     public SyncplayOptions Syncplay { get; set; } = new();
 }
 

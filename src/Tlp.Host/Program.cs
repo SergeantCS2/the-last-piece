@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
@@ -14,7 +15,10 @@ builder.Services.AddSingleton<HashCache>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<HashCache>());
 builder.Services.AddSingleton<CleanupService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<CleanupService>());
+builder.Services.AddSingleton<GroupTorrents>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<GroupTorrents>());
 builder.Services.AddHostedService<SyncplayProcess>();
+builder.Services.AddHttpClient<DiscordAnnouncer>();
 builder.Services.ConfigureHttpJsonOptions(o =>
 {
     o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
@@ -24,6 +28,15 @@ var app = builder.Build();
 var opts = app.Services.GetRequiredService<IOptions<TlpOptions>>().Value;
 var adminToken = AdminToken.Resolve(opts, app.Logger);
 
+if (opts.BehindProxy)
+{
+    // Trust X-Forwarded-For from the reverse proxy so the tracker hands out friends' real addresses.
+    var fwd = new ForwardedHeadersOptions { ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto };
+    fwd.KnownIPNetworks.Clear();
+    fwd.KnownProxies.Clear();
+    app.UseForwardedHeaders(fwd);
+}
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
@@ -31,10 +44,31 @@ app.MapGet("/healthz", () => Results.Ok(new { ok = true }));
 
 // ---------- Viewer-facing: everything is keyed by the night's secret token ----------
 
-app.MapGet("/n/{token}/pack.json", (string token, NightStore store, Shelf shelf, HashCache hashes) =>
+app.MapGet("/n/{token}/pack.json", (string token, NightStore store, Shelf shelf, HashCache hashes, GroupTorrents torrents) =>
 {
     var night = store.FindByToken(token);
-    return night is null ? Results.NotFound() : Results.Json(PackBuilder.Build(night, opts, shelf, hashes), PackJson.Options);
+    return night is null ? Results.NotFound() : Results.Json(PackBuilder.Build(night, opts, shelf, hashes, torrents), PackJson.Options);
+});
+
+// Group torrent for one file of a night: tracker and web seed both sit behind the night's link.
+app.MapGet("/n/{token}/files/{index:int}/group.torrent", (string token, int index, NightStore store, Shelf shelf, GroupTorrents torrents) =>
+{
+    var night = store.FindByToken(token);
+    if (night is null || index < 0 || index >= night.Items.Count || night.Items[index].ShelfPath is not { } path) return Results.NotFound();
+    var bare = torrents.Get(path);
+    if (bare is null) return Results.NotFound();
+    var baseUrl = opts.PublicBaseUrl.TrimEnd('/');
+    var bytes = GroupTorrents.ForNight(bare, $"{baseUrl}/n/{token}/announce",
+        $"{baseUrl}/n/{token}/files/{index}/{Uri.EscapeDataString(night.Items[index].FileName)}");
+    return Results.File(bytes, "application/x-bittorrent", Path.GetFileNameWithoutExtension(night.Items[index].FileName) + ".torrent");
+});
+
+app.MapGet("/n/{token}/announce", (HttpContext ctx, string token, NightStore store, GroupTorrents torrents) =>
+{
+    var body = store.FindByToken(token) is null
+        ? GroupTorrents.Failure("Unknown movie night link.")
+        : torrents.Announce(ctx.Request.QueryString.Value?.TrimStart('?') ?? "", ctx.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+    return Results.Bytes(body, "text/plain");
 });
 
 app.MapGet("/n/{token}/files/{index:int}/{name}", (string token, int index, string name, NightStore store, Shelf shelf) =>
@@ -46,11 +80,11 @@ app.MapGet("/n/{token}/files/{index:int}/{name}", (string token, int index, stri
     return Results.File(full, "application/octet-stream", night.Items[index].FileName, enableRangeProcessing: true);
 });
 
-app.MapGet("/n/{token}", (string token, NightStore store, Shelf shelf, HashCache hashes) =>
+app.MapGet("/n/{token}", (string token, NightStore store, Shelf shelf, HashCache hashes, GroupTorrents torrents) =>
 {
     var night = store.FindByToken(token);
     if (night is null) return Results.NotFound();
-    var pack = PackBuilder.Build(night, opts, shelf, hashes);
+    var pack = PackBuilder.Build(night, opts, shelf, hashes, torrents);
     var packUrl = $"{opts.PublicBaseUrl.TrimEnd('/')}/n/{token}/pack.json";
     return Results.Content(NightPage.Render(pack, packUrl), "text/html; charset=utf-8");
 });
@@ -94,7 +128,7 @@ admin.MapPost("/cleanup", (CleanupService cleanup) => Results.Ok(cleanup.Run()))
 
 admin.MapGet("/nights", (NightStore store) => Results.Ok(store.Nights.Select(n => NightView.From(n, opts))));
 
-admin.MapPost("/nights", async (CreateNightRequest req, NightStore store, Shelf shelf, HashCache hashes) =>
+admin.MapPost("/nights", async (CreateNightRequest req, NightStore store, Shelf shelf, HashCache hashes, GroupTorrents torrents) =>
 {
     if (string.IsNullOrWhiteSpace(req.Title)) return Results.BadRequest(new { error = "Title is required." });
     if (req.Items is null || req.Items.Count == 0) return Results.BadRequest(new { error = "Add at least one file or magnet." });
@@ -109,6 +143,7 @@ admin.MapPost("/nights", async (CreateNightRequest req, NightStore store, Shelf 
             shelfPath = raw.ShelfPath.Replace('\\', '/');
             fileName ??= Path.GetFileName(shelfPath);
             hashes.Get(shelfPath); // start hashing now so the pack has it soon
+            torrents.Get(shelfPath); // and the group torrent
         }
         if (!string.IsNullOrWhiteSpace(raw.Magnet))
         {
@@ -126,6 +161,24 @@ admin.MapPost("/nights", async (CreateNightRequest req, NightStore store, Shelf 
     var night = await store.AddAsync(req.Title.Trim(), req.StartsAt, room, items);
     return Results.Ok(NightView.From(night, opts));
 });
+
+admin.MapPost("/nights/{id}/announce", async (string id, NightStore store, DiscordAnnouncer discord, CancellationToken ct) =>
+{
+    var night = store.Nights.FirstOrDefault(n => n.Id == id);
+    if (night is null) return Results.NotFound();
+    if (!discord.Configured) return Results.BadRequest(new { error = "Set Tlp:DiscordWebhookUrl (TLP_DISCORD_WEBHOOK in .env) first." });
+    try
+    {
+        await discord.AnnounceAsync(night, ct);
+        return Results.NoContent();
+    }
+    catch (HttpRequestException ex)
+    {
+        return Results.BadRequest(new { error = $"Discord didn't take it: {ex.Message}" });
+    }
+});
+
+admin.MapGet("/settings", (DiscordAnnouncer discord) => Results.Ok(new { discord = discord.Configured, groupTorrents = opts.GroupTorrents }));
 
 admin.MapDelete("/nights/{id}", async (string id, NightStore store) =>
     await store.RemoveAsync(id) ? Results.NoContent() : Results.NotFound());

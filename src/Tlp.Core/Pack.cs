@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -45,17 +46,18 @@ public sealed record PackItem
     public required IReadOnlyList<PackSource> Sources { get; init; }
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<PackSourceKind>))]
 public enum PackSourceKind
 {
     /// <summary>Direct HTTPS download from the host's shelf (supports resume).</summary>
-    Http,
+    [JsonStringEnumMemberName("http")] Http,
     /// <summary>A magnet link, downloaded with the viewer's built-in torrent client.</summary>
-    Magnet,
+    [JsonStringEnumMemberName("magnet")] Magnet,
     /// <summary>
-    /// Reserved for the group torrent (P2P between friends, host shelf as web seed).
-    /// Uri points at a .torrent file served by the host. Not produced yet.
+    /// The host's private group torrent: friends share pieces, the host's shelf link is the
+    /// web seed and the host runs the tracker. Uri points at the .torrent file.
     /// </summary>
-    Torrent,
+    [JsonStringEnumMemberName("torrent")] Torrent,
 }
 
 public sealed record PackSource
@@ -73,7 +75,19 @@ public static class PackJson
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
+    [RequiresUnreferencedCode("Reflection-based; the trimmed viewer uses SerializePack.")]
+    [RequiresDynamicCode("Reflection-based; the trimmed viewer uses SerializePack.")]
     public static string Serialize<T>(T value) => JsonSerializer.Serialize(value, Options);
 
+    [RequiresUnreferencedCode("Reflection-based; the trimmed viewer uses DeserializePack.")]
+    [RequiresDynamicCode("Reflection-based; the trimmed viewer uses DeserializePack.")]
     public static T? Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, Options);
+
+    // Reflection-free versions for the viewer app, which is trimmed to keep the download small.
+    public static string SerializePack(Pack pack) => JsonSerializer.Serialize(pack, CoreJsonContext.Default.Pack);
+    public static Pack? DeserializePack(string json) => JsonSerializer.Deserialize(json, CoreJsonContext.Default.Pack);
 }
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web, WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(Pack))]
+internal sealed partial class CoreJsonContext : JsonSerializerContext;

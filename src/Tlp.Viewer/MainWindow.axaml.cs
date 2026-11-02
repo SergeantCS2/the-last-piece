@@ -24,7 +24,6 @@ public partial class MainWindow : Window
         InitializeComponent();
         ItemsList.ItemsSource = _rows;
         ShowSettings();
-        ProtocolHandler.EnsureRegistered();
 
         LoadButton.Click += async (_, _) => await LoadAsync(LinkBox.Text);
         DownloadButton.Click += async (_, _) => await DownloadAllAsync();
@@ -97,12 +96,35 @@ public partial class MainWindow : Window
             return;
         }
 
-        NightTitle.Text = _pack.Title;
-        NightInfo.Text = (_pack.StartsAt is { } at ? $"Starts {at.ToLocalTime():dddd d MMM, h:mm tt}. " : "")
-                         + $"{_pack.Items.Count} file(s). Room \"{_pack.Syncplay.Room}\".";
+        ShowPack(_pack);
+    }
+
+    public void ShowPack(Pack pack)
+    {
+        _pack = pack;
+        NightTitle.Text = pack.Title;
+        NightInfo.Text = (pack.StartsAt is { } at ? $"Starts {at.ToLocalTime():dddd d MMM, h:mm tt}. " : "")
+                         + $"{pack.Items.Count} file(s). Room \"{pack.Syncplay.Room}\".";
         _rows.Clear();
-        foreach (var item in _pack.Items) _rows.Add(new ItemRow(item));
+        foreach (var item in pack.Items) _rows.Add(new ItemRow(item));
         RefreshStatus();
+    }
+
+    internal IList<ItemRow> Rows => _rows;
+
+    /// <summary>A link clicked while the app was already open.</summary>
+    public void OpenFromOutside(string link)
+    {
+        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        Activate();
+        if (string.IsNullOrWhiteSpace(link)) return;
+        LinkBox.Text = link;
+        if (_downloading is not null)
+        {
+            StatusText.Text = "Downloads are running for this night. Press Open on the new link once they finish.";
+            return;
+        }
+        _ = LoadAsync(link);
     }
 
     private void RefreshStatus()
@@ -165,8 +187,9 @@ public partial class MainWindow : Window
         }
         try
         {
-            SyncplayLauncher.Launch(_pack, _settings.MovieNightFolder, _settings.Name, SyncplayPath, MpvPath, _settings.ChatStyle);
-            StatusText.Text = "Syncplay is starting. Press \"Run Syncplay\" if it asks; voice stays on Discord.";
+            SyncplayLauncher.Launch(_pack, _settings.MovieNightFolder, _settings.Name, SyncplayPath, MpvPath, _settings.ChatStyle,
+                bundled: _settings.SyncplayPath is null);
+            StatusText.Text = "Syncplay is starting with the player. Press Enter in the player to chat; voice stays on Discord.";
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {

@@ -10,6 +10,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      AVALONIA_TELEMETRY_OPTOUT: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -57,6 +59,44 @@ jobs:
             if (-not (Test-Path "check/$p")) { throw "missing $p" }
           }
           & check/TheLastPiece/mpv/mpv.exe --version
+          # Syncplay looks for its portable syncplay.ini next to Syncplay.exe only if its code sits in lib/libsync.zip.
+          if (-not (Test-Path "check/TheLastPiece/syncplay/lib/libsync.zip")) { Write-Warning "syncplay/lib/libsync.zip not found; the portable settings file may not be read" }
+          Get-ChildItem check/TheLastPiece/syncplay | Select-Object Name, Length | Format-Table -AutoSize
+
+      - name: Self-test the real exe (window, pack, torrent, Syncplay join)
+        shell: pwsh
+        run: |
+          $app = Resolve-Path check/TheLastPiece
+          # CI only: no screen or speakers for mpv.
+          Add-Content "$app/mpv/portable_config/mpv.conf" "`nvo=null`nao=null"
+          # A short test video, made by the bundled mpv itself.
+          & "$app/mpv/mpv.exe" "av://lavfi:testsrc=duration=600:size=320x240:rate=5" --o="$PWD/selftest.mkv" --of=matroska --ovc=mpeg4 --length=5 --really-quiet
+          if (-not (Test-Path selftest.mkv)) { throw "could not make the test video" }
+          # Syncplay's own server from the same download.
+          $server = Get-ChildItem -Recurse -File "$app/syncplay" -Filter syncplayServer.exe | Select-Object -First 1
+          if (-not $server) { throw "syncplayServer.exe isn't in the Syncplay download" }
+          $srv = Start-Process $server.FullName -ArgumentList "--port","8999","--password","ci-pw" -PassThru -WindowStyle Hidden
+          python tools/smoketest.py --host 127.0.0.1 --port 8999 --password ci-pw --room warmup --wait 60
+          $env:TLP_SELFTEST_SYNCPLAY = "127.0.0.1:8999:ci-pw"
+          $env:TLP_SELFTEST_MEDIA = "$PWD/selftest.mkv"
+          # WaitForExit on the app only; -Wait would also wait for the Syncplay it starts.
+          $p = Start-Process "$app/TheLastPiece.exe" -ArgumentList "--self-test","$PWD/selftest-out" -PassThru
+          if (-not $p.WaitForExit(180000)) { $p.Kill(); throw "self-test didn't finish in 3 minutes" }
+          Get-Content selftest-out/self-test.txt
+          if ($p.ExitCode -ne 0) { throw "self-test exited with $($p.ExitCode)" }
+          # Syncplay was started without its connect window; it should now be in the room with the file.
+          python tools/smoketest.py --host 127.0.0.1 --port 8999 --password ci-pw --room ci --expect-user selftest --expect-file --wait 90
+          Copy-Item "$app/syncplay/syncplay.ini" selftest-out/ -ErrorAction SilentlyContinue
+          Get-Process Syncplay, mpv -ErrorAction SilentlyContinue | Stop-Process -Force
+          Stop-Process -Id $srv.Id -Force
+
+      - name: Self-test output (window picture and log)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: viewer-self-test
+          path: selftest-out/
+
       - uses: actions/upload-artifact@v4
         with:
           name: TheLastPiece-win-x64

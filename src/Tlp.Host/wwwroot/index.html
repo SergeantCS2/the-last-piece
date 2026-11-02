@@ -111,7 +111,8 @@ $('loginBtn').onclick = async () => {
 
 async function refresh() {
   try {
-    const [shelf, nights] = await Promise.all([api('GET', '/shelf'), api('GET', '/nights')]);
+    const [shelf, nights, settings] = await Promise.all([api('GET', '/shelf'), api('GET', '/nights'), api('GET', '/settings')]);
+    discordOn = settings.discord;
     showApp();
     renderShelf(shelf);
     renderNights(nights);
@@ -145,12 +146,14 @@ function renderPicked() {
     : '<tr><td class="muted">Tick shelf files below or add magnets above.</td></tr>';
 }
 
+let discordOn = false;
 function renderNights(list) {
   $('nights').innerHTML = list.length ? list.slice().reverse().map(n => `
     <div class="card">
       <strong>${esc(n.title)}</strong> <span class="muted">${n.startsAt ? new Date(n.startsAt).toLocaleString() : 'no date'} · room ${esc(n.room)} · ${n.items.length} file(s)</span>
       <div>Share link: <code>${esc(n.shareUrl)}</code></div>
       <p class="row"><button class="ghost" data-copy="${esc(n.shareUrl)}" style="flex:0 0 auto">Copy link</button>
+        ${discordOn ? `<button class="ghost" data-discord="${esc(n.id)}" style="flex:0 0 auto">Post to Discord</button>` : ''}
         <button class="ghost" data-delnight="${esc(n.id)}" style="flex:0 0 auto">Delete night</button></p>
     </div>`).join('') : '<div class="muted">No movie nights yet.</div>';
 }
@@ -160,6 +163,11 @@ document.addEventListener('click', async e => {
   if (t.dataset.pin) { await api('POST', '/shelf/pin', { path: t.dataset.pin, pinned: t.dataset.pinned !== 'true' }); refresh(); }
   if (t.dataset.del && confirm('Delete ' + t.dataset.del + ' from the shelf?')) { await api('DELETE', '/shelf?path=' + encodeURIComponent(t.dataset.del)); refresh(); }
   if (t.dataset.delnight && confirm('Delete this movie night? Its link stops working.')) { await api('DELETE', '/nights/' + t.dataset.delnight); refresh(); }
+  if (t.dataset.discord) {
+    t.disabled = true;
+    try { await api('POST', '/nights/' + t.dataset.discord + '/announce'); t.textContent = 'Posted'; }
+    catch (err) { t.textContent = 'Failed: ' + err.message; t.disabled = false; }
+  }
   if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = 'Copied'; } catch { prompt('Copy this link', t.dataset.copy); } }
   if (t.dataset.unpick) { picked.splice(+t.dataset.unpick, 1); renderPicked(); refresh(); }
   if (t.dataset.addmagnet) {

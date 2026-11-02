@@ -17,17 +17,32 @@ public sealed class NightSession(Pack pack, ViewerSettings settings, HttpDownloa
             return new ItemStatus(i, state, Describe(state), state is FileState.SizeMatches ? 1 : 0);
         }).ToList();
 
-    /// <summary>Picks the download route for an item, honouring the viewer's preference.</summary>
-    public static PackSource? ChooseSource(PackItem item, SourcePreference preference)
+    /// <summary>Picks the first download route for an item, honouring the viewer's preference.</summary>
+    public static PackSource? ChooseSource(PackItem item, SourcePreference preference) => OrderSources(item, preference).FirstOrDefault();
+
+    /// <summary>
+    /// Every download route for an item, best first. If one fails or stalls the next is tried.
+    /// Auto: the group torrent (friends share, the host fills gaps), then the host's copy, then
+    /// the public torrent. Prefer torrent: the two torrents, then the host's copy. Prefer host:
+    /// the host's copy first.
+    /// </summary>
+    public static IReadOnlyList<PackSource> OrderSources(PackItem item, SourcePreference preference)
     {
-        var http = item.Sources.FirstOrDefault(s => s.Kind == PackSourceKind.Http);
-        var magnet = item.Sources.FirstOrDefault(s => s.Kind == PackSourceKind.Magnet);
-        return preference switch
+        PackSourceKind[] order = preference switch
         {
-            SourcePreference.PreferTorrent => magnet ?? http,
-            _ => http ?? magnet,
+            SourcePreference.PreferTorrent => [PackSourceKind.Torrent, PackSourceKind.Magnet, PackSourceKind.Http],
+            SourcePreference.PreferShelf => [PackSourceKind.Http, PackSourceKind.Torrent, PackSourceKind.Magnet],
+            _ => [PackSourceKind.Torrent, PackSourceKind.Http, PackSourceKind.Magnet],
         };
+        return order.SelectMany(k => item.Sources.Where(s => s.Kind == k)).ToList();
     }
+
+    public static string SourceName(PackSourceKind kind) => kind switch
+    {
+        PackSourceKind.Http => "the host",
+        PackSourceKind.Torrent => "the group torrent",
+        _ => "the public torrent",
+    };
 
     public async Task<ItemStatus> FetchAsync(PackItem item, IProgress<ItemStatus>? progress = null, CancellationToken ct = default)
     {
@@ -37,15 +52,41 @@ public sealed class NightSession(Pack pack, ViewerSettings settings, HttpDownloa
 
         if (state != FileState.SizeMatches)
         {
-            var source = ChooseSource(item, settings.SourcePreference)
-                         ?? throw new InvalidDataException($"No way to download {item.FileName}.");
-            var p = new Progress<DownloadProgress>(d => progress?.Report(new ItemStatus(item, FileState.Partial,
-                $"{d.Status} · {Human(d.Done)} of {Human(d.Total)} · {Human((long)d.BytesPerSecond)}/s",
-                d.Total is > 0 ? (double)d.Done / d.Total.Value : 0)));
-            if (source.Kind == PackSourceKind.Http)
-                await http.DownloadAsync(new Uri(source.Uri), Folder, item, p, ct);
-            else
-                await torrents.DownloadAsync(source.Uri, Folder, item, p, ct);
+            var sources = OrderSources(item, settings.SourcePreference);
+            if (sources.Count == 0) throw new InvalidDataException($"No way to download {item.FileName}.");
+            var problems = new List<string>();
+            var done = false;
+            foreach (var source in sources)
+            {
+                var name = SourceName(source.Kind);
+                var p = new Progress<DownloadProgress>(d => progress?.Report(new ItemStatus(item, FileState.Partial,
+                    $"{d.Status} ({name}) · {Human(d.Done)} of {Human(d.Total)} · {Human((long)d.BytesPerSecond)}/s",
+                    d.Total is > 0 ? (double)d.Done / d.Total.Value : 0)));
+                try
+                {
+                    switch (source.Kind)
+                    {
+                        case PackSourceKind.Http:
+                            await http.DownloadAsync(new Uri(source.Uri), Folder, item, p, ct);
+                            break;
+                        case PackSourceKind.Torrent:
+                            var file = await http.GetSmallAsync(new Uri(source.Uri), 10 * 1024 * 1024, ct);
+                            await torrents.DownloadTorrentAsync(file, Folder, item, p, ct);
+                            break;
+                        default:
+                            await torrents.DownloadAsync(source.Uri, Folder, item, p, ct);
+                            break;
+                    }
+                    done = true;
+                    break;
+                }
+                catch (Exception ex) when (!ct.IsCancellationRequested)
+                {
+                    // Stalled, unreachable or a different release: note why and try the next route.
+                    problems.Add($"From {name}: {ex.Message}");
+                }
+            }
+            if (!done) throw new IOException(string.Join(" ", problems));
         }
 
         progress?.Report(new ItemStatus(item, FileState.SizeMatches, "Checking it's the same file as everyone else…", 1));
