@@ -38,7 +38,7 @@ public partial class MainWindow : Window
 
         LoadButton.Click += async (_, _) => await LoadAsync(LinkBox.Text);
         DownloadButton.Click += async (_, _) => await DownloadAllAsync();
-        JoinButton.Click += (_, _) => Join();
+        JoinButton.Click += async (_, _) => await JoinAsync();
         SaveButton.Click += (_, _) => SaveSettings();
         // Picking a look previews it straight away; Save settings keeps it.
         ThemeBox.SelectionChanged += (_, _) =>
@@ -155,7 +155,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or System.Text.Json.JsonException or TaskCanceledException)
         {
-            StatusText.Text = "Couldn't open that movie night: " + ex.Message;
+            StatusText.Text = "Couldn't open that movie night. " + NetCheck.ExplainLinkFailure(ex, uri);
             return;
         }
 
@@ -246,7 +246,9 @@ public partial class MainWindow : Window
         if (failures > 0) StatusText.Text = $"{failures} file(s) didn't download. Press Download all to retry; finished parts are kept.";
     }
 
-    private void Join()
+    private DateTime _joinWarnedAt = DateTime.MinValue;
+
+    private async Task JoinAsync()
     {
         if (_pack is null) return;
         if (!File.Exists(SyncplayPath) || !File.Exists(MpvPath))
@@ -254,6 +256,23 @@ public partial class MainWindow : Window
             StatusText.Text = "Syncplay or mpv is missing from the app folder. Re-download the viewer zip.";
             return;
         }
+        // Check the room server answers first, so a closed port gets a clear message here rather
+        // than Syncplay retrying on its own. A second press within a minute starts it anyway.
+        var sp = _pack.Syncplay;
+        if (DateTime.UtcNow - _joinWarnedAt > TimeSpan.FromMinutes(1))
+        {
+            StatusText.Text = "Checking the room server…";
+            JoinButton.IsEnabled = false;
+            var ok = await NetCheck.PortAnswersAsync(sp.Host, sp.Port, TimeSpan.FromSeconds(4));
+            JoinButton.IsEnabled = true;
+            if (!ok)
+            {
+                _joinWarnedAt = DateTime.UtcNow;
+                StatusText.Text = $"Can't reach the room server at {sp.Host}:{sp.Port}. The host may not have started it yet, or the port isn't open on their router. Press Join again to try anyway.";
+                return;
+            }
+        }
+        _joinWarnedAt = DateTime.MinValue;
         try
         {
             SyncplayLauncher.Launch(_pack, _settings.MovieNightFolder, _settings.Name, SyncplayPath, MpvPath, _settings.ChatStyle,
