@@ -24,7 +24,7 @@ The deciding fact: in model A every viewer receives a separate copy of the strea
 | Tool | What it is | Fit | Notes |
 |---|---|---|---|
 | **Syncplay** | Sync server + client that drives mpv, MPC-HC/BE, VLC, IINA | **Primary pick** | 1.7.6 released 2026-08-04 (PROVEN). Shared playlists, rooms, readiness, TLS (PROVEN). Chat typed in mpv and drawn over the video, in "Chatroom" or "Scrolling" style (PROVEN, client guide). Files don't need to be identical if durations match (PROVEN, client guide). Server tested here in Docker: join, pause propagation and chat all work (PROVEN, `tools/smoketest.py`). |
-| **Synkplay** (formerly Syncplay Mobile) | Unofficial Syncplay client for Android and iOS | Phone viewers | mpv/libass engine by default, shared playlists, on Play Store and App Store (PROVEN, project README). Not tested here. |
+| **Synkplay** (formerly Syncplay Mobile) | Unofficial Syncplay client for Android and iOS | Phone viewers | mpv/libass engine by default, shared playlists, chat, can load a video from a pasted URL, on Play Store and App Store (PROVEN, project README). Whether it plays URL entries from a shared playlist is UNKNOWN. The IzzyOnDroid build has only ExoPlayer (basic subtitles), so use the Play Store build. Not tested here. |
 | **Jellyfin SyncPlay** | Media server with group watch | Considered, not picked | Works in web-wrapper clients, not the Android TV app; transcoding can cause drift (PROVEN, Android Authority). Long-running reports of ASS/SRT subtitle desync after seeking in web clients (PROVEN, jellyfin-web issue 4346). It would also mean running a full media server and remote access for it. Worth revisiting if the host already runs Jellyfin. |
 | **Plex Watch Together** | Plex's group watch | Ruled out | Dropped from Plex's new apps, web only (PROVEN, AlternativeTo / PCWorld). |
 | **OBS → MediaMTX → browser** | Self-hosted WebRTC streaming | **Fallback** | OBS has had WHIP output since 30.0, simulcast since 32.1 (PROVEN, obs-versions.com). MediaMTX accepts OBS and serves WebRTC (PROVEN at the "supports WebRTC" level; WHIP/WHEP specifics and codecs UNKNOWN). Good for a friend who can't install anything. |
@@ -33,6 +33,12 @@ The deciding fact: in model A every viewer receives a separate copy of the strea
 | **Sunshine / Moonlight** | Low-latency game streaming | Ruled out | Made for one remote player controlling a PC, not a watch party (INFERRED; multi-viewer behaviour UNKNOWN). |
 | **Watch2Gether, Hyperbeam, Kosmi** | Hosted watch-party sites | Ruled out | Built around web video or a cloud browser, not local MKV files with full subtitle styling (INFERRED). |
 | **JASSUB** | libass compiled to WebAssembly for browsers | Building block for a later web client | Full libass feature set incl. embedded fonts, MIT licensed (PROVEN, README). Lets a browser player render ASS properly. |
+
+## VLC versus mpv
+
+- Syncplay drives VLC 3 and mpv (PROVEN). Chat drawn over the video is mpv-only (PROVEN, client guide).
+- VLC 3 renders ASS/SSA through its libass module (PROVEN, `modules/codec/libass.c`); mpv also uses libass, so styled anime subtitles should match (INFERRED).
+- VLC 3 plain-text subtitle defaults on Windows (PROVEN, `modules/text_renderer/freetype/`): Arial, white, not bold, black outline thickness 4 ("normal"), black shadow at opacity 128, angle -45°, distance 0.06, no background, relative size 6.25.
 
 ## Why not build from scratch
 
@@ -50,3 +56,5 @@ Syncplay already solves the hard part (keeping players in step across network ji
 - OBS WHIP status: https://obs-versions.com/blog/obs-webrtc-whip-streaming
 - MediaMTX: https://github.com/bluenviron/mediamtx
 - JASSUB: https://github.com/ThaUnknown/jassub
+- VLC 3.0 freetype renderer: https://github.com/videolan/vlc/tree/3.0.x/modules/text_renderer/freetype
+- mpv options manual: https://github.com/mpv-player/mpv/blob/master/DOCS/man/options.rst
