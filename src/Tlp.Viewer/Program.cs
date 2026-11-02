@@ -12,6 +12,14 @@ internal static class Program
     /// <summary>Folder for --self-test output (CI): the app opens, checks itself, saves a picture and exits.</summary>
     public static string? SelfTestDir { get; private set; }
 
+    /// <summary>
+    /// --showcase LOOK [settings] [dark]: opens the window on the self-test's sample night in that look
+    /// and stays open, so a screen grab shows the look exactly as Windows draws it, glow and
+    /// motion included (the self-test's own pictures can't show effects). For the README and
+    /// for comparing looks.
+    /// </summary>
+    public static (string Look, bool SettingsOpen, bool Dark)? Showcase { get; private set; }
+
     public static SingleInstance? Instance { get; private set; }
 
     [STAThread]
@@ -33,6 +41,12 @@ internal static class Program
             return BuildAvaloniaApp().StartWithClassicDesktopLifetime([]);
         }
 
+        if (args.Length >= 2 && args[0] == "--showcase")
+        {
+            Showcase = (args[1], args.Skip(2).Contains("settings"), args.Skip(2).Contains("dark"));
+            return BuildAvaloniaApp().StartWithClassicDesktopLifetime([]);
+        }
+
         StartupLink = args.FirstOrDefault();
         // A copy is already open: hand it the link and quit, so links reuse one window.
         Instance = SingleInstance.TryStart(SingleInstance.DefaultName, link => App.OnLinkFromAnotherCopy(link));
@@ -50,5 +64,7 @@ internal static class Program
     }
 
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTrace();
+        Environment.GetEnvironmentVariable("TLP_LOG") is { Length: > 0 } log
+            ? AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTextWriter(new StreamWriter(log) { AutoFlush = true }, Avalonia.Logging.LogEventLevel.Warning)
+            : AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTrace();
 }

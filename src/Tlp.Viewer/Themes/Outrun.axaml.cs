@@ -1,8 +1,8 @@
-using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
 namespace Tlp.Viewer.Themes;
 
-public partial class OutrunTheme : ResourceDictionary
+public partial class OutrunLook : Avalonia.Styling.Styles
 {
-    public OutrunTheme() => Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
+    public OutrunLook() => AvaloniaXamlLoader.Load(this);
 }

@@ -1,46 +1,73 @@
 <!--
-  The default look. Every colour, font and corner the app uses comes from these keys, so a new
-  theme is a copy of this file with different values (see Themes/README.md). Nothing in
-  MainWindow.axaml sets a colour directly.
+  The default look: clean and calm, follows Windows light or dark mode. Every colour, font and
+  size the shared styles use comes from these keys (see Themes/README.md); DefaultLook
+  (DefaultLook.axaml) adds its cards, header and buttons.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:Class="Tlp.Viewer.Themes.DefaultTheme">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
-      <SolidColorBrush x:Key="TlpWindowBackground" Color="#FAFAFA"/>
+      <SolidColorBrush x:Key="TlpWindowBackground" Color="#F6F5F3"/>
       <SolidColorBrush x:Key="TlpSurface" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="TlpBorder" Color="#DDDDDD"/>
-      <SolidColorBrush x:Key="TlpText" Color="#1A1A1A"/>
-      <SolidColorBrush x:Key="TlpMutedText" Color="#666666"/>
-      <SolidColorBrush x:Key="TlpAccent" Color="#C0392B"/>
+      <SolidColorBrush x:Key="TlpBorder" Color="#E4E1DC"/>
+      <SolidColorBrush x:Key="TlpBorderHi" Color="#C9C4BC"/>
+      <SolidColorBrush x:Key="TlpText" Color="#1C1A17"/>
+      <SolidColorBrush x:Key="TlpTextHi" Color="#000000"/>
+      <SolidColorBrush x:Key="TlpMutedText" Color="#6F6A62"/>
+      <SolidColorBrush x:Key="TlpAccent" Color="#D93A3F"/>
+      <SolidColorBrush x:Key="TlpAccentHover" Color="#BF2F35"/>
       <SolidColorBrush x:Key="TlpAccentText" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="TlpProgress" Color="#C0392B"/>
-      <SolidColorBrush x:Key="TlpInput" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="TlpTitleForeground" Color="#1A1A1A"/>
+      <SolidColorBrush x:Key="TlpAccentSoft" Color="#14D93A3F"/>
+      <SolidColorBrush x:Key="TlpProgress" Color="#D93A3F"/>
+      <SolidColorBrush x:Key="TlpProgressTrack" Color="#ECE9E4"/>
+      <SolidColorBrush x:Key="TlpInput" Color="#FBFAF8"/>
+      <SolidColorBrush x:Key="TlpHover" Color="#F1EEEA"/>
+      <SolidColorBrush x:Key="TlpTitleForeground" Color="#14120F"/>
+      <BoxShadows x:Key="TlpCardShadow">0 1 2 0 #0F000000, 0 6 20 0 #0A000000</BoxShadows>
+      <RadialGradientBrush x:Key="TlpGlowBrush" Center="0%,0%" GradientOrigin="0%,0%" RadiusX="70%" RadiusY="60%">
+        <GradientStop Color="#1AD93A3F" Offset="0"/>
+        <GradientStop Color="#00D93A3F" Offset="1"/>
+      </RadialGradientBrush>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <SolidColorBrush x:Key="TlpWindowBackground" Color="#121212"/>
-      <SolidColorBrush x:Key="TlpSurface" Color="#1E1E1E"/>
-      <SolidColorBrush x:Key="TlpBorder" Color="#333333"/>
-      <SolidColorBrush x:Key="TlpText" Color="#EEEEEE"/>
-      <SolidColorBrush x:Key="TlpMutedText" Color="#999999"/>
-      <SolidColorBrush x:Key="TlpAccent" Color="#E74C3C"/>
+      <SolidColorBrush x:Key="TlpWindowBackground" Color="#111113"/>
+      <SolidColorBrush x:Key="TlpSurface" Color="#1A1A1D"/>
+      <SolidColorBrush x:Key="TlpBorder" Color="#2B2B30"/>
+      <SolidColorBrush x:Key="TlpBorderHi" Color="#3E3E45"/>
+      <SolidColorBrush x:Key="TlpText" Color="#ECECEE"/>
+      <SolidColorBrush x:Key="TlpTextHi" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="TlpMutedText" Color="#9A9AA3"/>
+      <SolidColorBrush x:Key="TlpAccent" Color="#E5484D"/>
+      <SolidColorBrush x:Key="TlpAccentHover" Color="#F16A6E"/>
       <SolidColorBrush x:Key="TlpAccentText" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="TlpProgress" Color="#E74C3C"/>
-      <SolidColorBrush x:Key="TlpInput" Color="#262626"/>
-      <SolidColorBrush x:Key="TlpTitleForeground" Color="#EEEEEE"/>
+      <SolidColorBrush x:Key="TlpAccentSoft" Color="#1FE5484D"/>
+      <SolidColorBrush x:Key="TlpProgress" Color="#E5484D"/>
+      <SolidColorBrush x:Key="TlpProgressTrack" Color="#2B2B30"/>
+      <SolidColorBrush x:Key="TlpInput" Color="#141416"/>
+      <SolidColorBrush x:Key="TlpHover" Color="#232327"/>
+      <SolidColorBrush x:Key="TlpTitleForeground" Color="#FFFFFF"/>
+      <BoxShadows x:Key="TlpCardShadow">0 1 2 0 #33000000, 0 8 24 0 #26000000</BoxShadows>
+      <RadialGradientBrush x:Key="TlpGlowBrush" Center="0%,0%" GradientOrigin="0%,0%" RadiusX="70%" RadiusY="60%">
+        <GradientStop Color="#26E5484D" Offset="0"/>
+        <GradientStop Color="#00E5484D" Offset="1"/>
+      </RadialGradientBrush>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
   <FontFamily x:Key="TlpBodyFont">fonts:Inter#Inter, $Default</FontFamily>
-  <FontFamily x:Key="TlpTitleFont">fonts:Inter#Inter, $Default</FontFamily>
-  <x:Double x:Key="TlpTitleSize">24</x:Double>
-  <x:Double x:Key="TlpTitleSpacing">0</x:Double>
-  <x:Double x:Key="TlpHeadingSize">18</x:Double>
+  <FontFamily x:Key="TlpTitleFont">avares://TheLastPiece/Assets/Fonts#Space Grotesk, $Default</FontFamily>
+  <FontFamily x:Key="TlpHeadFont">fonts:Inter#Inter, $Default</FontFamily>
+  <x:Double x:Key="TlpTitleSize">36</x:Double>
+  <x:Double x:Key="TlpTitleSpacing">-0.5</x:Double>
+  <x:Double x:Key="TlpHeadingSize">20</x:Double>
   <x:Double x:Key="TlpSmallSize">12</x:Double>
   <x:Double x:Key="TlpBodySize">14</x:Double>
-  <!-- Optional: <DropShadowEffect x:Key="TlpTitleEffect" .../> gives the title a glow. -->
-  <CornerRadius x:Key="TlpCorner">8</CornerRadius>
+  <x:Double x:Key="TlpHeadSize">11</x:Double>
+  <CornerRadius x:Key="TlpCorner">10</CornerRadius>
+  <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+  <Color x:Key="SystemAccentColor">#E5484D</Color>
+  <Color x:Key="SystemAccentColorDark1">#D93A3F</Color>
+  <Color x:Key="SystemAccentColorLight1">#F16A6E</Color>
   <!-- Light, Dark or Default (follow Windows). A theme with fixed colours picks one. -->
   <x:String x:Key="TlpVariant">Default</x:String>
 </ResourceDictionary>

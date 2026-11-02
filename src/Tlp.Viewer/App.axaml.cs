@@ -23,6 +23,12 @@ public partial class App : Application
                 desktop.MainWindow = window;
                 window.Opened += async (_, _) => desktop.Shutdown(await SelfTest.RunAsync(window, dir));
             }
+            else if (Program.Showcase is { } showcase)
+            {
+                var window = new MainWindow(null);
+                desktop.MainWindow = window;
+                window.Opened += (_, _) => SelfTest.Showcase(window, showcase.Look, showcase.SettingsOpen, showcase.Dark);
+            }
             else
             {
                 ProtocolHandler.EnsureRegistered();

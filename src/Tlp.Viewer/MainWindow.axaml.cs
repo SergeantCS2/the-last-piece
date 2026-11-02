@@ -27,6 +27,11 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Title = Tlp.Core.AppInfo.Name;
+        Kicker.Content = Tlp.Core.AppInfo.Name;
+        // The looks' motion (Themes/) pauses while the window is in the background, so a look
+        // never costs anything while the movie plays.
+        Activated += (_, _) => SetStill(false);
+        Deactivated += (_, _) => SetStill(true);
         ItemsList.ItemsSource = _rows;
         ShowSettings();
 
@@ -50,7 +55,7 @@ public partial class MainWindow : Window
         };
         Opened += async (_, _) =>
         {
-            if (Program.SelfTestDir is not null) return;
+            if (Program.SelfTestDir is not null || Program.Showcase is not null) return;
             if (await AppUpdates.DownloadInBackgroundAsync() is { } version)
             {
                 UpdateText.Text = $"Version {version} is ready. It installs next time you open the app, or now if you restart.";
@@ -73,6 +78,12 @@ public partial class MainWindow : Window
     private string MpvPath => _settings.MpvPath ?? BundledPath("mpv", "mpv.exe");
     private string SyncplayPath => _settings.SyncplayPath ?? BundledPath("syncplay", "Syncplay.exe");
 
+    private void SetStill(bool still)
+    {
+        foreach (var part in new Control[] { Backdrop, Overlay, Brand, Kicker, HeaderSide })
+            part.Classes.Set("still", still);
+    }
+
     private void ShowSettings()
     {
         NameBox.Text = _settings.Name;
@@ -87,7 +98,7 @@ public partial class MainWindow : Window
             PlayerOptions.VolumeChoices.LastOrDefault(v => v <= _settings.MaxVolume, PlayerOptions.VolumeChoices[0])));
         PlayerKeys.Text = PlayerHelp(_settings.MaxVolume);
         ThemeBox.ItemsSource = ThemeManager.Available;
-        ThemeBox.SelectedItem = ThemeManager.Available.Contains(_settings.Theme) ? _settings.Theme : ThemeManager.DefaultTheme;
+        ThemeBox.SelectedItem = ThemeManager.Normalize(_settings.Theme);
         // Only one look so far; the choice appears once there are more.
         ThemeLabel.IsVisible = ThemeBox.IsVisible = ThemeManager.Available.Count > 1;
     }

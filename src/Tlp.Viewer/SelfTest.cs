@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using System.Net;
 using System.Net.Sockets;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Tlp.Core;
@@ -33,6 +34,24 @@ internal static class SelfTest
         }
         """;
 
+    /// <summary>The window on the sample night in one look, left open (see Program.Showcase).</summary>
+    public static void Showcase(MainWindow window, string look, bool settingsOpen, bool dark)
+    {
+        var pack = PackJson.DeserializePack(SamplePack)! with { Title = "Friday anime night" };
+        window.ShowPack(pack);
+        window.Rows[0].Status = "Downloading (the group torrent) · 600 MB of 1.30 GB · 9.8 MB/s";
+        window.Rows[0].Percent = 45;
+        var name = ThemeManager.Apply(Avalonia.Application.Current!, look);
+        window.ThemeBox.SelectedItem = name;
+        if (dark) Avalonia.Application.Current!.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
+        if (settingsOpen && window.FindControl<Expander>("SettingsExpander") is { } settings)
+        {
+            settings.IsExpanded = true;
+            window.Height = 1080;
+        }
+        window.Position = new PixelPoint(0, 0);
+    }
+
     public static async Task<int> RunAsync(MainWindow window, string dir)
     {
         Directory.CreateDirectory(dir);
@@ -44,12 +63,22 @@ internal static class SelfTest
             if (pack.Items[0].Sources[0].Kind != PackSourceKind.Torrent) throw new InvalidDataException("enum names didn't survive trimming");
             log.Add("pack json: ok");
 
-            // Every theme must define every key the styles use, or that part of the window loses its colour.
+            // Every theme must define every key the styles use, or that part of the window loses its
+            // colour, and every font it names must load from the app (not fall back to a system font).
             foreach (var name in ThemeManager.Available)
             {
                 ThemeManager.Apply(Avalonia.Application.Current!, name);
                 foreach (var key in new[] { "TlpWindowBackground", "TlpSurface", "TlpBorder", "TlpText", "TlpMutedText", "TlpAccent", "TlpAccentText", "TlpProgress", "TlpTitleFont", "TlpBodyFont", "TlpTitleSize", "TlpCorner", "TlpInput", "TlpTitleForeground", "TlpTitleSpacing", "TlpBodySize", "TlpHeadingSize", "TlpSmallSize", "TlpVariant" })
                     if (!window.TryFindResource(key, window.ActualThemeVariant, out _)) throw new InvalidDataException($"theme {name} has no {key}");
+                foreach (var key in new[] { "TlpTitleFont", "TlpBodyFont", "TlpHeadFont", "TlpMonoFont" })
+                {
+                    if (!window.TryFindResource(key, window.ActualThemeVariant, out var f) || f is not FontFamily family) continue;
+                    var wanted = family.FamilyNames.Where(n => n != "$Default").ToList();
+                    var got = FontManager.Current.TryGetGlyphTypeface(new Typeface(family), out var glyphs) ? glyphs.FamilyName : "(none)";
+                    if (!wanted.Any(w => w.EndsWith(got, StringComparison.OrdinalIgnoreCase) || got.StartsWith(w.Split('#').Last(), StringComparison.OrdinalIgnoreCase)))
+                        throw new InvalidDataException($"theme {name}: {key} wants {string.Join(" or ", wanted)} but got {got}");
+                    log.Add($"font {name} {key}: {got}");
+                }
             }
             ThemeManager.Apply(Avalonia.Application.Current!, ThemeManager.DefaultTheme);
             log.Add($"themes: ok ({string.Join(", ", ThemeManager.Available)})");
@@ -78,21 +107,26 @@ internal static class SelfTest
             bitmap.Save(Path.Combine(dir, "viewer.png"));
             log.Add("screenshot: ok");
 
-            // One picture per theme, for choosing between the drafts.
+            // Two pictures per theme, for choosing between the drafts: the window as it opens, and
+            // taller with Settings open.
             var settings = window.FindControl<Expander>("SettingsExpander");
-            if (settings is not null) settings.IsExpanded = true;
             var oldHeight = window.Height;
-            window.Height = 1040;
             foreach (var name in ThemeManager.Available)
             {
                 ThemeManager.Apply(Avalonia.Application.Current!, name);
                 window.ThemeBox.SelectedItem = name;
-                await Task.Delay(100);
-                Dispatcher.UIThread.RunJobs();
-                window.UpdateLayout();
-                using var themed = new RenderTargetBitmap(new PixelSize((int)window.Bounds.Width, (int)window.Bounds.Height));
-                themed.Render(window);
-                themed.Save(Path.Combine(dir, $"theme-{name.Replace(' ', '-').ToLowerInvariant()}.png"));
+                var file = name.Replace(' ', '-').ToLowerInvariant();
+                foreach (var (open, height, suffix) in new[] { (false, oldHeight, ""), (true, 1080d, "-settings") })
+                {
+                    if (settings is not null) settings.IsExpanded = open;
+                    window.Height = height;
+                    await Task.Delay(150);
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    using var themed = new RenderTargetBitmap(new PixelSize((int)window.Bounds.Width, (int)window.Bounds.Height));
+                    themed.Render(window);
+                    themed.Save(Path.Combine(dir, $"theme-{file}{suffix}.png"));
+                }
             }
             if (settings is not null) settings.IsExpanded = false;
             window.ThemeBox.SelectedItem = ThemeManager.DefaultTheme;

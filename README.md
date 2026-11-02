@@ -190,7 +190,7 @@ Viewer app (Windows):
 - [x] Zip with `TheLastPiece.exe`, portable mpv with our `mpv.conf`, and portable Syncplay, built by GitHub Actions. Download it from the latest `dotnet` run under Actions.
 - [x] Reports download progress to the host every few seconds while open (name, files, percent; nothing else). A "Share my progress" box turns it off.
 - [x] Installer and auto-update (see [Installer and updates](#installer-and-updates)). CI installs, checks and uninstalls the real `Setup.exe` on Windows.
-- [x] All colours, fonts and corners come from one theme file, ready for theme drafts (see [Themes](#themes)).
+- [x] All colours, fonts, shapes and decoration come from swappable looks (see [Themes](#themes)).
 - [ ] Tried by a person on a real Windows PC.
 
 Phone:
@@ -203,8 +203,8 @@ Phone:
 - [x] Subtitle and audio switching: menus in the player (S and A, or right-click), VLC's V and B keys, and a default choice in Settings. PROVEN in tests; INFERRED in the real player until CI's mpv check and a person confirm it.
 - [x] Volume up to 130, 200 or 300% (Settings, "Loudest volume"). Mouse wheel and arrow keys change volume rather than seeking, so a stray key doesn't move the whole room.
 - [x] App name and publisher in one place (`Directory.Build.props`).
-- [x] Six theme drafts in the app (see [Themes](#themes)).
-- [ ] The host picks one; it gets finished (hover states, admin page, player look) and the others come out.
+- [x] Four looks in the app, redesigned as full designs rather than colour swaps: Default, Phosphor (amber or green), Breach and Outrun (see [Themes](#themes)).
+- [ ] The host picks which looks ship and which is the default; the admin page follows the pick.
 - [ ] Logo: three concepts drafted in `docs/logo` for the host to pick from.
 - [ ] Polished README: centred logo and name, a one-line tagline, links to Quick start, Setup guide, Contributing and Roadmap, build status badges, and a large framed screenshot of the app, with more screenshots further down. Real screenshots, taken once the theme is picked.
 - [x] [Setup guide](docs/setup.md) and [contributing guide](CONTRIBUTING.md), for those README links.
@@ -266,13 +266,22 @@ Costs and rules are from the providers' pages in late 2026 (INFERRED that they h
 
 ## Themes
 
-Every colour, font, size and corner in the viewer app comes from one theme file (`src/Tlp.Viewer/Themes/Default.axaml`), with light and dark variants. A theme picker appears in Settings as soon as there's more than one theme. The app's self-test checks each theme defines every setting.
+Every colour, font, shape and bit of decoration in the viewer app comes from the selected look. The app's self-test checks each look defines every setting and that its fonts load.
 
-Six drafts are in the app now for the host to pick from (Settings, "Look"; picking one previews it). Sakura (anime), Marquee (movie and fantasy), Console (tech), Neon City (cyberpunk), Outrun (synthwave) and Green Screen (a retro terminal inspired by 1950s-future computer terminals). They use our own colours and freely licensed fonts, with no artwork, logos or names from any game or film. Once one is picked it gets finished (hover and focus states, the admin page, the player's on-screen look) and the rest come out.
+Four looks are in the app now (Settings, "Look"; picking one previews it). Each is a full design with its own shapes, decoration and motion, not just colours:
 
-![Theme drafts](docs/themes/all-drafts.png)
+- **Default.** Clean, warm neutral cards with a red accent. Follows Windows light or dark.
+- **Phosphor** (amber or green ink). A retro-future terminal: curved CRT glass, scanlines, glow, `[ BRACKET ]` buttons and a blinking cursor.
+- **Breach.** A cyberpunk hacking HUD: chamfered panels, a glitching title, a hex buffer readout and hazard stripes.
+- **Outrun.** Synthwave: a neon sign title, a striped sun over a perspective grid, and a VHS tracking line.
 
-*Rendered by the app's self-test on Linux. Single pictures are in `docs/themes`.*
+They use our own colours and art and freely licensed fonts, with no artwork, logos, fonts or names from any game or film. Motion pauses when the window isn't active. How looks are built is in [`src/Tlp.Viewer/Themes/README.md`](src/Tlp.Viewer/Themes/README.md).
+
+| Default | Phosphor | Breach | Outrun |
+|---|---|---|---|
+| ![Default](docs/themes/default.png) | ![Phosphor](docs/themes/phosphor-amber.png) | ![Breach](docs/themes/breach.png) | ![Outrun](docs/themes/outrun.png) |
+
+*Captured from the app on Linux (`--showcase`). INFERRED to look the same on Windows; not yet seen there.*
 
 ## First test checklist
 
@@ -344,7 +353,7 @@ Development: .NET 10 SDK, `dotnet test TheLastPiece.sln`.
 | `tools/` | Syncplay smoke test, viewer zip packager, installer builder |
 | `docs/options.md` | Every option considered and why |
 | `docs/setup.md` | Setup guide for the host and viewers |
-| `docs/themes`, `docs/logo` | Theme draft pictures, logo concepts |
+| `docs/themes`, `docs/logo` | Pictures of the looks, logo concepts |
 | `CONTRIBUTING.md` | Building, testing, conventions, releases |
 
 ## Open decisions
@@ -356,4 +365,5 @@ Open:
 2. **A domain for HTTPS?** Friends can start on `http://<ip>:8080`.
 3. **Who's the test friend?**
 4. **Licence.** MIT is the likely pick. It isn't in the repo yet because, once published, a licence can't be taken back for that code.
-5. **Theme drafts.** Pick one once the drafts are ready.
+5. **Looks.** Which of the four ship, and which is the default.
+6. **Logo.** One of the three concepts in `docs/logo`, or a new direction.

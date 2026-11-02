@@ -2,49 +2,62 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:Tlp.Viewer"
         x:Class="Tlp.Viewer.MainWindow"
-        Width="760" Height="640" MinWidth="520" MinHeight="460">
-  <DockPanel Margin="16">
-    <StackPanel DockPanel.Dock="Top" Spacing="8">
-      <TextBlock Text="Movie night" Classes="title"/>
-      <Grid ColumnDefinitions="*,Auto">
-        <TextBox x:Name="LinkBox" Watermark="Paste the movie night link from the host"/>
-        <Button x:Name="LoadButton" Grid.Column="1" Margin="8,0,0,0" Content="Open"/>
+        Width="780" Height="700" MinWidth="560" MinHeight="520">
+  <!-- Three layers: the look's backdrop (pictures, patterns, motion), the app, and the look's
+       overlay (scanlines, glare). Both decor layers ignore the mouse. Themes/ fills them. -->
+  <Panel>
+    <ContentControl x:Name="Backdrop" Classes="backdrop" IsHitTestVisible="False" Focusable="False"/>
+    <DockPanel Margin="22,16,22,16">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+        <StackPanel VerticalAlignment="Bottom">
+          <ContentControl x:Name="Kicker" Classes="kicker" Focusable="False"/>
+          <ContentControl x:Name="Brand" Classes="brand" Content="Movie night" Focusable="False"/>
+        </StackPanel>
+        <ContentControl x:Name="HeaderSide" Grid.Column="1" Classes="side" VerticalAlignment="Center" Focusable="False" IsHitTestVisible="False"/>
       </Grid>
-      <TextBlock x:Name="NightTitle" Classes="heading" TextWrapping="Wrap"/>
-      <TextBlock x:Name="NightInfo" Classes="muted" TextWrapping="Wrap"/>
-    </StackPanel>
 
-    <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,8,0,0">
+      <HeaderedContentControl DockPanel.Dock="Top" Classes="panel" Header="Tonight">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox x:Name="LinkBox" Watermark="Paste the movie night link from the host"/>
+            <Button x:Name="LoadButton" Grid.Column="1" Margin="8,0,0,0" Content="Open"/>
+          </Grid>
+          <TextBlock x:Name="NightTitle" Classes="heading" TextWrapping="Wrap"/>
+          <TextBlock x:Name="NightInfo" Classes="muted" TextWrapping="Wrap"/>
+        </StackPanel>
+      </HeaderedContentControl>
+
+      <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,12,0,0">
       <Expander x:Name="SettingsExpander" Header="Settings">
         <StackPanel Spacing="8">
-          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-            <TextBlock Text="Your name" VerticalAlignment="Center"/>
+          <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+            <TextBlock Text="Your name" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <TextBox x:Name="NameBox" Grid.Column="1" Margin="0,0,0,6"/>
-            <TextBlock Grid.Row="1" Text="Movie night folder" VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="1" Text="Movie night folder" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
               <TextBox x:Name="FolderBox"/>
               <Button x:Name="BrowseButton" Grid.Column="1" Margin="6,0,0,0" Content="Browse"/>
             </Grid>
-            <TextBlock Grid.Row="2" Text="Get files from" VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="2" Text="Get files from" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <ComboBox x:Name="SourceBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6" HorizontalAlignment="Stretch">
               <ComboBoxItem Content="Best available (group torrent, then the host's copy)"/>
               <ComboBoxItem Content="Torrents first (download it myself)"/>
               <ComboBoxItem Content="The host's copy first"/>
             </ComboBox>
-            <TextBlock Grid.Row="3" Text="On-screen chat" VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="3" Text="On-screen chat" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <ComboBox x:Name="ChatBox" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6" HorizontalAlignment="Stretch">
               <ComboBoxItem Content="Chatroom (stacked, fades out)"/>
               <ComboBoxItem Content="Scrolling (flies across the screen)"/>
             </ComboBox>
-            <TextBlock Grid.Row="4" Text="Audio and subtitles" VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="4" Text="Audio and subtitles" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <ComboBox x:Name="TracksBox" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6" HorizontalAlignment="Stretch">
               <ComboBoxItem Content="Original audio, English subtitles"/>
               <ComboBoxItem Content="English dub (signs and songs subtitles only)"/>
               <ComboBoxItem Content="Original audio, no subtitles"/>
             </ComboBox>
-            <TextBlock Grid.Row="5" Text="Loudest volume" VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="5" Text="Loudest volume" VerticalAlignment="Center" Margin="0,0,16,6"/>
             <ComboBox x:Name="VolumeBox" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch"/>
-            <TextBlock x:Name="ThemeLabel" Grid.Row="6" Text="Look" VerticalAlignment="Center" Margin="0,6,0,0"/>
+            <TextBlock x:Name="ThemeLabel" Grid.Row="6" Text="Look" VerticalAlignment="Center" Margin="0,6,16,0"/>
             <ComboBox x:Name="ThemeBox" Grid.Row="6" Grid.Column="1" Margin="0,6,0,0" HorizontalAlignment="Stretch"/>
           </Grid>
           <TextBlock Classes="muted small" TextWrapping="Wrap"
@@ -61,28 +74,34 @@
         </Grid>
       </Border>
       <TextBlock x:Name="PlayerKeys" Classes="muted small" TextWrapping="Wrap"/>
-      <Grid ColumnDefinitions="*,Auto,Auto">
-        <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap"/>
-        <Button x:Name="DownloadButton" Grid.Column="1" Margin="8,0,0,0" Content="Download all" IsEnabled="False"/>
-        <Button x:Name="JoinButton" Grid.Column="2" Margin="8,0,0,0" Content="Join movie night" IsEnabled="False" Classes="accent"/>
-      </Grid>
-    </StackPanel>
+      <ContentControl Classes="statusbar" Focusable="False">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+          <TextBlock x:Name="StatusText" VerticalAlignment="Center" TextWrapping="Wrap"/>
+          <Button x:Name="DownloadButton" Grid.Column="1" Margin="8,0,0,0" Content="Download all" IsEnabled="False"/>
+          <Button x:Name="JoinButton" Grid.Column="2" Margin="8,0,0,0" Content="Join movie night" IsEnabled="False" Classes="accent"/>
+        </Grid>
+      </ContentControl>
+      </StackPanel>
 
-    <ScrollViewer Margin="0,12,0,0">
-      <ItemsControl x:Name="ItemsList">
+      <HeaderedContentControl Classes="panel" Header="Files" Margin="0,12,0,0">
+        <ScrollViewer>
+          <ItemsControl x:Name="ItemsList">
         <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="local:ItemRow">
-            <Border Margin="0,0,0,8" Padding="12" Classes="card">
-              <StackPanel Spacing="4">
-                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                <TextBlock Text="{Binding Detail}" Classes="muted small"/>
-                <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100" Height="6"/>
-                <TextBlock Text="{Binding Status}" Classes="small" TextWrapping="Wrap"/>
-              </StackPanel>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
-  </DockPanel>
+              <DataTemplate x:DataType="local:ItemRow">
+                <Border Classes="item">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Detail}" Classes="muted small"/>
+                    <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100"/>
+                    <TextBlock Text="{Binding Status}" Classes="small" TextWrapping="Wrap"/>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </HeaderedContentControl>
+    </DockPanel>
+    <ContentControl x:Name="Overlay" Classes="overlay" IsHitTestVisible="False" Focusable="False"/>
+  </Panel>
 </Window>

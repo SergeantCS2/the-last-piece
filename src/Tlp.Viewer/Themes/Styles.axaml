@@ -1,6 +1,17 @@
 <!--
-  How the app's parts use the theme keys. Themes change the keys (Themes/Default.axaml),
-  not this file, so every theme gets the same layout.
+  The parts every look shares, and the plain look's templates. A theme (Themes/README.md) brings
+  its own keys and can override any of these styles, including whole templates.
+
+  Parts of the window a theme can restyle (all in MainWindow.axaml):
+    ContentControl.backdrop / .overlay   decor layers behind / above the app, mouse-transparent
+    ContentControl.side                  the header's right-hand corner (clock, stamp, ticket...)
+    ContentControl.kicker / .brand       the small line above the title, and the title
+    HeaderedContentControl.panel         the "Tonight" and "Files" boxes, and Settings (an Expander
+                                         drawn as a panel with a ToggleButton.exphead header)
+    ContentControl.statusbar             the status line with the Join button
+    Border.item                          one file in the list
+  Those parts carry the class "still" while the window is in the background: a theme's motion
+  goes in styles that say :not(.still), so it stops when nobody is looking.
 -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -28,14 +39,107 @@
   <Style Selector="TextBlock.muted">
     <Setter Property="Foreground" Value="{DynamicResource TlpMutedText}"/>
   </Style>
+
+  <!-- Header: the app's name small, then the title. -->
+  <Style Selector="ContentControl.kicker">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <TextBlock Classes="small muted" Text="{TemplateBinding Content}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ContentControl.brand">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <TextBlock Classes="title" Text="{TemplateBinding Content}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- A panel: a box with its name at the top. -->
+  <Style Selector="HeaderedContentControl.panel">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{DynamicResource TlpSurface}" BorderBrush="{DynamicResource TlpBorder}" BorderThickness="1"
+                CornerRadius="{DynamicResource TlpCorner}" Padding="14,10,14,14">
+          <DockPanel>
+            <ContentPresenter x:Name="PART_HeaderPresenter" DockPanel.Dock="Top" Margin="0,0,0,8" Content="{TemplateBinding Header}"
+                              FontSize="{DynamicResource TlpSmallSize}" FontWeight="SemiBold" Foreground="{DynamicResource TlpMutedText}"/>
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Settings: a panel whose name opens and closes it. -->
+  <Style Selector="Expander">
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <HeaderedContentControl Classes="panel">
+          <HeaderedContentControl.Header>
+            <ToggleButton Classes="exphead" Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"/>
+          </HeaderedContentControl.Header>
+          <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            IsVisible="{TemplateBinding IsExpanded}" Margin="0,4,0,0"/>
+        </HeaderedContentControl>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ToggleButton.exphead">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource TlpMutedText}"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock x:Name="chev" Text="▸" Foreground="{TemplateBinding Foreground}"/>
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}"/>
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ToggleButton.exphead:checked /template/ TextBlock#chev">
+    <Setter Property="Text" Value="▾"/>
+  </Style>
+  <Style Selector="ToggleButton.exphead:pointerover">
+    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
+  </Style>
+
+  <Style Selector="ContentControl.statusbar">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{DynamicResource TlpBorder}" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+          <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.item">
+    <Setter Property="Background" Value="{DynamicResource TlpInput}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
+    <Setter Property="Padding" Value="12"/>
+    <Setter Property="Margin" Value="0,0,0,8"/>
+  </Style>
   <Style Selector="Border.card">
     <Setter Property="Background" Value="{DynamicResource TlpSurface}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
   </Style>
+
   <Style Selector="ProgressBar">
     <Setter Property="Foreground" Value="{DynamicResource TlpProgress}"/>
+    <Setter Property="Height" Value="6"/>
   </Style>
   <Style Selector="TextBox, ComboBox">
     <Setter Property="Background" Value="{DynamicResource TlpInput}"/>
@@ -49,17 +153,6 @@
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
     <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
-  </Style>
-  <Style Selector="Expander">
-    <Setter Property="HorizontalAlignment" Value="Stretch"/>
-    <Setter Property="Background" Value="{DynamicResource TlpSurface}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
-    <Setter Property="CornerRadius" Value="{DynamicResource TlpCorner}"/>
-  </Style>
-  <Style Selector="Expander /template/ ToggleButton#ExpanderHeader">
-    <Setter Property="Background" Value="{DynamicResource TlpSurface}"/>
-    <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource TlpBorder}"/>
   </Style>
   <Style Selector="CheckBox">
     <Setter Property="Foreground" Value="{DynamicResource TlpText}"/>

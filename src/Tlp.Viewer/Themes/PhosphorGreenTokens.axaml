@@ -1,0 +1,128 @@
+<!-- Made by tools/theme-tokens.py from the "PhosphorGreen" palette. Edit the palette there, not this file. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:Class="Tlp.Viewer.Themes.PhosphorGreenTokens">
+  <SolidColorBrush x:Key="TlpSurface" Color="#051008"/>
+  <SolidColorBrush x:Key="TlpInput" Color="#040C06"/>
+  <SolidColorBrush x:Key="TlpBorder" Color="#1A5C33"/>
+  <SolidColorBrush x:Key="TlpBorderHi" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="TlpText" Color="#45FF86"/>
+  <SolidColorBrush x:Key="TlpTextHi" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="TlpTitleForeground" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="TlpMutedText" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="TlpAccent" Color="#45FF86"/>
+  <SolidColorBrush x:Key="TlpAccentText" Color="#030A05"/>
+  <SolidColorBrush x:Key="TlpProgress" Color="#45FF86"/>
+  <SolidColorBrush x:Key="TlpAlt" Color="#26944D"/>
+  <SolidColorBrush x:Key="TlpAlt2" Color="#0B2415"/>
+  <SolidColorBrush x:Key="TlpAlert" Color="#FFB641"/>
+  <SolidColorBrush x:Key="TlpHover" Color="#0B2415"/>
+  <SolidColorBrush x:Key="TlpGlow" Color="#8045FF86"/>
+  <Color x:Key="TlpBgColor">#030A05</Color>
+  <Color x:Key="TlpAccentColor">#45FF86</Color>
+  <Color x:Key="TlpAltColor">#26944D</Color>
+  <Color x:Key="TlpAlt2Color">#0B2415</Color>
+  <Color x:Key="TlpTextColor">#45FF86</Color>
+  <Color x:Key="TlpBorderColor">#1A5C33</Color>
+  <Color x:Key="TlpGlowColor">#8045FF86</Color>
+  <FontFamily x:Key="TlpTitleFont">avares://TheLastPiece/Assets/Fonts#VT323, $Default</FontFamily>
+  <FontFamily x:Key="TlpBodyFont">avares://TheLastPiece/Assets/Fonts#IBM Plex Mono, $Default</FontFamily>
+  <FontFamily x:Key="TlpHeadFont">avares://TheLastPiece/Assets/Fonts#VT323, $Default</FontFamily>
+  <FontFamily x:Key="TlpMonoFont">avares://TheLastPiece/Assets/Fonts#IBM Plex Mono SemiBold, avares://TheLastPiece/Assets/Fonts#IBM Plex Mono, $Default</FontFamily>
+  <x:Double x:Key="TlpTitleSize">60</x:Double>
+  <x:Double x:Key="TlpTitleSpacing">2</x:Double>
+  <x:Double x:Key="TlpHeadingSize">30</x:Double>
+  <x:Double x:Key="TlpBodySize">14</x:Double>
+  <x:Double x:Key="TlpSmallSize">12</x:Double>
+  <x:Double x:Key="TlpHeadSize">22</x:Double>
+  <CornerRadius x:Key="TlpCorner">0</CornerRadius>
+  <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+  <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+  <x:String x:Key="TlpVariant">Dark</x:String>
+  <Color x:Key="SystemAccentColor">#45FF86</Color>
+  <Color x:Key="SystemAccentColorDark1">#45FF86</Color>
+  <Color x:Key="SystemAccentColorDark2">#45FF86</Color>
+  <Color x:Key="SystemAccentColorDark3">#45FF86</Color>
+  <Color x:Key="SystemAccentColorLight1">#45FF86</Color>
+  <Color x:Key="SystemAccentColorLight2">#45FF86</Color>
+  <Color x:Key="SystemAccentColorLight3">#45FF86</Color>
+  <SolidColorBrush x:Key="TextControlForeground" Color="#45FF86"/>
+  <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#45FF86"/>
+  <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="TextControlBackground" Color="#040C06"/>
+  <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#040C06"/>
+  <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#040C06"/>
+  <SolidColorBrush x:Key="TextControlBorderBrush" Color="#1A5C33"/>
+  <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#45FF86"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#2FBF62"/>
+  <Color x:Key="TextControlSelectionHighlightColor">#45FF86</Color>
+  <SolidColorBrush x:Key="ComboBoxBackground" Color="#040C06"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#0B2415"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#0B2415"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundUnfocused" Color="#040C06"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundBorderBrushFocused" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxBackgroundBorderBrushUnfocused" Color="#1A5C33"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#1A5C33"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxForeground" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxForegroundFocused" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="ComboBoxForegroundFocusedPressed" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="ComboBoxPlaceHolderForeground" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#051008"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownGlyphForeground" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownGlyphForegroundFocused" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#0B2415"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#0B2415"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPressed" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#030A05"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#030A05"/>
+  <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPressed" Color="#030A05"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundUnchecked" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundUncheckedPointerOver" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundUncheckedPressed" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundChecked" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundCheckedPointerOver" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="CheckBoxForegroundCheckedPressed" Color="#C2FFD6"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUnchecked" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUnchecked" Color="#040C06"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" Color="#0B2415"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" Color="#0B2415"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeChecked" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#45FF86"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#030A05"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#030A05"/>
+  <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#030A05"/>
+  <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#1A5C33"/>
+  <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#2FBF62"/>
+  <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#45FF86"/>
+  <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="#1A5C33"/>
+  <!-- The tube: a warm centre fading to the edges, a glow band that rolls down the screen. -->
+  <RadialGradientBrush x:Key="TlpWindowBackground" Center="50%,38%" GradientOrigin="50%,38%" RadiusX="75%" RadiusY="75%">
+    <GradientStop Color="#0B2415" Offset="0"/>
+    <GradientStop Color="#030A05" Offset="1"/>
+  </RadialGradientBrush>
+  <LinearGradientBrush x:Key="TlpBand" StartPoint="0%,0%" EndPoint="0%,100%">
+    <GradientStop Color="#0045FF86" Offset="0"/>
+    <GradientStop Color="#1245FF86" Offset="0.5"/>
+    <GradientStop Color="#0045FF86" Offset="1"/>
+  </LinearGradientBrush>
+  <DropShadowEffect x:Key="TlpTitleEffect" Color="#45FF86" BlurRadius="18" OffsetX="0" OffsetY="0" Opacity="1.0"/>
+  <DropShadowEffect x:Key="TlpSoftGlow" Color="#45FF86" BlurRadius="8" OffsetX="0" OffsetY="0" Opacity="0.8"/>
+</ResourceDictionary>

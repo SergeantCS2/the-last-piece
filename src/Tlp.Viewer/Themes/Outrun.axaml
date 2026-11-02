@@ -1,31 +1,378 @@
 <!--
-  Draft theme "Outrun". Synthwave: purple dusk sky, hot pink and cyan, sunset gradient title with a soft glow.
-  Our own colours and freely licensed fonts (SIL Open Font License, see Assets/Fonts/licenses).
-  Generated layout of keys matches Default.axaml.
+  Outrun: synthwave. Dusk purple sky with stars, a striped sun, a neon perspective grid on the
+  horizon, chrome-and-neon title with a hand-written "tonight", VHS-style tracking lines, sunset
+  gradients. Our own drawing; fonts Monoton, Mr Dafoe and Exo 2 (SIL OFL).
 -->
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    x:Class="Tlp.Viewer.Themes.OutrunTheme">
-  <LinearGradientBrush x:Key="TlpWindowBackground" StartPoint="0%,0%" EndPoint="0%,100%"><LinearGradientBrush.GradientStops><GradientStop Color="#1A0B3B" Offset="0"/><GradientStop Color="#3A0D52" Offset="0.6"/><GradientStop Color="#5A1250" Offset="1"/></LinearGradientBrush.GradientStops></LinearGradientBrush>
-  <SolidColorBrush x:Key="TlpSurface" Color="#2A1150"/>
-  <SolidColorBrush x:Key="TlpInput" Color="#1F0C3D"/>
-  <SolidColorBrush x:Key="TlpBorder" Color="#FF3EA5"/>
-  <SolidColorBrush x:Key="TlpText" Color="#FBEAFF"/>
-  <SolidColorBrush x:Key="TlpMutedText" Color="#C2A3E3"/>
-  <LinearGradientBrush x:Key="TlpAccent" StartPoint="0%,0%" EndPoint="100%,0%"><LinearGradientBrush.GradientStops><GradientStop Color="#FF3EA5" Offset="0"/><GradientStop Color="#FF8A3D" Offset="1"/></LinearGradientBrush.GradientStops></LinearGradientBrush>
-  <SolidColorBrush x:Key="TlpAccentText" Color="#FFFFFF"/>
-  <LinearGradientBrush x:Key="TlpProgress" StartPoint="0%,0%" EndPoint="100%,0%"><LinearGradientBrush.GradientStops><GradientStop Color="#FF3EA5" Offset="0"/><GradientStop Color="#00E5FF" Offset="1"/></LinearGradientBrush.GradientStops></LinearGradientBrush>
-  <LinearGradientBrush x:Key="TlpTitleForeground" StartPoint="0%,0%" EndPoint="0%,100%"><LinearGradientBrush.GradientStops><GradientStop Color="#FFD23D" Offset="0"/><GradientStop Color="#FF3EA5" Offset="0.55"/><GradientStop Color="#B23DFF" Offset="1"/></LinearGradientBrush.GradientStops></LinearGradientBrush>
-  <FontFamily x:Key="TlpBodyFont">fonts:Inter#Inter, $Default</FontFamily>
-  <FontFamily x:Key="TlpTitleFont">avares://TheLastPiece/Assets/Fonts#Audiowide, $Default</FontFamily>
-  <x:Double x:Key="TlpTitleSize">30</x:Double>
-  <x:Double x:Key="TlpTitleSpacing">2</x:Double>
-  <x:Double x:Key="TlpHeadingSize">18</x:Double>
-  <x:Double x:Key="TlpSmallSize">12</x:Double>
-  <x:Double x:Key="TlpBodySize">14</x:Double>
-  <CornerRadius x:Key="TlpCorner">10</CornerRadius>
-  <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
-  <Color x:Key="SystemAccentColor">#FF3EA5</Color>
-  <DropShadowEffect x:Key="TlpTitleEffect" Color="#FF3EA5" BlurRadius="14" OffsetX="0" OffsetY="0" Opacity="0.9"/>
-  <x:String x:Key="TlpVariant">Dark</x:String>
-</ResourceDictionary>
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="using:Tlp.Viewer.Decor"
+        x:Class="Tlp.Viewer.Themes.OutrunLook">
+  <Styles.Resources>
+    <LinearGradientBrush x:Key="OrSky" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Color="#0B0220" Offset="0"/>
+      <GradientStop Color="#1D0942" Offset="0.45"/>
+      <GradientStop Color="#3A0F5C" Offset="0.68"/>
+      <GradientStop Color="#16052D" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="OrSun" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Color="#FFE45C" Offset="0"/>
+      <GradientStop Color="#FF9A3C" Offset="0.45"/>
+      <GradientStop Color="#FF2E88" Offset="1"/>
+    </LinearGradientBrush>
+    <!-- Cuts the sun into bands that get thicker toward its foot. -->
+    <LinearGradientBrush x:Key="OrSunBands" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Color="#FF000000" Offset="0"/>
+      <GradientStop Color="#FF000000" Offset="0.50"/>
+      <GradientStop Color="#00000000" Offset="0.50"/>
+      <GradientStop Color="#00000000" Offset="0.53"/>
+      <GradientStop Color="#FF000000" Offset="0.53"/>
+      <GradientStop Color="#FF000000" Offset="0.62"/>
+      <GradientStop Color="#00000000" Offset="0.62"/>
+      <GradientStop Color="#00000000" Offset="0.66"/>
+      <GradientStop Color="#FF000000" Offset="0.66"/>
+      <GradientStop Color="#FF000000" Offset="0.73"/>
+      <GradientStop Color="#00000000" Offset="0.73"/>
+      <GradientStop Color="#00000000" Offset="0.78"/>
+      <GradientStop Color="#FF000000" Offset="0.78"/>
+      <GradientStop Color="#FF000000" Offset="0.84"/>
+      <GradientStop Color="#00000000" Offset="0.84"/>
+      <GradientStop Color="#00000000" Offset="0.90"/>
+      <GradientStop Color="#FF000000" Offset="0.90"/>
+      <GradientStop Color="#FF000000" Offset="0.94"/>
+      <GradientStop Color="#00000000" Offset="0.94"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="OrFloor" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Color="#C04A0F6B" Offset="0"/>
+      <GradientStop Color="#F0120428" Offset="0.5"/>
+      <GradientStop Color="#FF0A0218" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="OrNeon" StartPoint="0%,0%" EndPoint="100%,0%">
+      <GradientStop Color="#FF3FD2" Offset="0"/>
+      <GradientStop Color="#2DE2E6" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="OrSunset" StartPoint="0%,0%" EndPoint="100%,0%">
+      <GradientStop Color="#FFD319" Offset="0"/>
+      <GradientStop Color="#FF7A3C" Offset="0.4"/>
+      <GradientStop Color="#FF3FD2" Offset="0.75"/>
+      <GradientStop Color="#9B3CFF" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="OrButton" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Color="#FF3FD2" Offset="0"/>
+      <GradientStop Color="#FF7A3C" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="OrChrome" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Color="#FFFFFF" Offset="0"/>
+      <GradientStop Color="#9FD8FF" Offset="0.48"/>
+      <GradientStop Color="#2B1A55" Offset="0.5"/>
+      <GradientStop Color="#FF9CF0" Offset="0.75"/>
+      <GradientStop Color="#FFFFFF" Offset="1"/>
+    </LinearGradientBrush>
+    <DrawingBrush x:Key="OrScan" TileMode="Tile" DestinationRect="0,0,4,4" SourceRect="0,0,4,4" Stretch="None">
+      <DrawingBrush.Drawing>
+        <DrawingGroup>
+          <GeometryDrawing Brush="#00000000" Geometry="M0,0 H4 V3 H0 Z"/>
+          <GeometryDrawing Brush="#22000000" Geometry="M0,3 H4 V4 H0 Z"/>
+        </DrawingGroup>
+      </DrawingBrush.Drawing>
+    </DrawingBrush>
+    <RadialGradientBrush x:Key="OrVignette" RadiusX="80%" RadiusY="80%">
+      <GradientStop Color="#00000000" Offset="0.6"/>
+      <GradientStop Color="#8C05000F" Offset="1"/>
+    </RadialGradientBrush>
+    <DropShadowEffect x:Key="OrPinkGlow" Color="#FF3FD2" BlurRadius="18" OffsetX="0" OffsetY="0" Opacity="1"/>
+    <DropShadowEffect x:Key="OrCyanGlow" Color="#2DE2E6" BlurRadius="12" OffsetX="0" OffsetY="0" Opacity="1"/>
+    <DropShadowEffect x:Key="OrSunGlow" Color="#FF4F9A" BlurRadius="60" OffsetX="0" OffsetY="0" Opacity="1"/>
+    <DropShadowEffect x:Key="OrYellowGlow" Color="#FF7A3C" BlurRadius="10" OffsetX="0" OffsetY="0" Opacity="0.8"/>
+  </Styles.Resources>
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{StaticResource OrSky}"/>
+  </Style>
+
+  <!-- ===== Decor ===== -->
+  <Style Selector="ContentControl.backdrop">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="58*,42*" ClipToBounds="True">
+          <Panel>
+            <Ellipse Classes="star s0" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.42" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="273,273,0,0"/>
+            <Ellipse Classes="star s1" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.39" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="640,224,0,0"/>
+            <Ellipse Classes="star s2" Width="2.5" Height="2.5" Fill="#FFFFFF" Opacity="0.49" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="47,385,0,0"/>
+            <Ellipse Classes="star s0" Width="2.5" Height="2.5" Fill="#FFFFFF" Opacity="0.65" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="265,98,0,0"/>
+            <Ellipse Classes="star s1" Width="2.5" Height="2.5" Fill="#FFFFFF" Opacity="0.70" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="585,224,0,0"/>
+            <Ellipse Classes="star s2" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.83" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="187,112,0,0"/>
+            <Ellipse Classes="star s0" Width="1.5" Height="1.5" Fill="#FFFFFF" Opacity="0.72" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="554,182,0,0"/>
+            <Ellipse Classes="star s1" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.37" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="101,84,0,0"/>
+            <Ellipse Classes="star s2" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.61" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="62,378,0,0"/>
+            <Ellipse Classes="star s0" Width="2.5" Height="2.5" Fill="#FFFFFF" Opacity="0.57" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="757,182,0,0"/>
+            <Ellipse Classes="star s1" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.83" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="608,210,0,0"/>
+            <Ellipse Classes="star s2" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.62" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="133,28,0,0"/>
+            <Ellipse Classes="star s0" Width="2.5" Height="2.5" Fill="#FFFFFF" Opacity="0.78" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="296,315,0,0"/>
+            <Ellipse Classes="star s1" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.81" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="335,196,0,0"/>
+            <Ellipse Classes="star s2" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.67" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="608,168,0,0"/>
+            <Ellipse Classes="star s0" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.73" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="616,112,0,0"/>
+            <Ellipse Classes="star s1" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.72" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="62,133,0,0"/>
+            <Ellipse Classes="star s2" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.88" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="195,322,0,0"/>
+            <Ellipse Classes="star s0" Width="1.5" Height="1.5" Fill="#FFFFFF" Opacity="0.74" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="608,266,0,0"/>
+            <Ellipse Classes="star s1" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.50" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="250,294,0,0"/>
+            <Ellipse Classes="star s2" Width="2.5" Height="2.5" Fill="#FFFFFF" Opacity="0.82" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="156,42,0,0"/>
+            <Ellipse Classes="star s0" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.79" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="515,49,0,0"/>
+            <Ellipse Classes="star s1" Width="1.5" Height="1.5" Fill="#FFFFFF" Opacity="0.51" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="445,77,0,0"/>
+            <Ellipse Classes="star s2" Width="1.5" Height="1.5" Fill="#FFFFFF" Opacity="0.68" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="452,63,0,0"/>
+            <Ellipse Classes="star s0" Width="3" Height="3" Fill="#FFFFFF" Opacity="0.53" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="78,182,0,0"/>
+            <Ellipse Classes="star s1" Width="2" Height="2" Fill="#FFFFFF" Opacity="0.90" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="312,238,0,0"/>
+          </Panel>
+          <Panel Grid.RowSpan="2">
+            <Ellipse Classes="sun" Width="300" Height="300" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,40,-60,0"
+                     Fill="{StaticResource OrSun}" OpacityMask="{StaticResource OrSunBands}" Effect="{StaticResource OrSunGlow}"/>
+          </Panel>
+          <Panel Grid.Row="1">
+            <Rectangle Fill="{StaticResource OrFloor}"/>
+            <Viewbox Stretch="Fill">
+              <Canvas Width="1000" Height="300">
+                <Path Classes="grid" Stroke="#FF3FD2" StrokeThickness="1.6" Opacity="0.55" Data="M416,0 L-830,300 M422,0 L-735,300 M428,0 L-640,300 M434,0 L-545,300 M440,0 L-450,300 M446,0 L-355,300 M452,0 L-260,300 M458,0 L-165,300 M464,0 L-70,300 M470,0 L25,300 M476,0 L120,300 M482,0 L215,300 M488,0 L310,300 M494,0 L405,300 M500,0 L500,300 M506,0 L595,300 M512,0 L690,300 M518,0 L785,300 M524,0 L880,300 M530,0 L975,300 M536,0 L1070,300 M542,0 L1165,300 M548,0 L1260,300 M554,0 L1355,300 M560,0 L1450,300 M566,0 L1545,300 M572,0 L1640,300 M578,0 L1735,300 M584,0 L1830,300 M0,1.3 L1000,1.3 M0,5.8 L1000,5.8 M0,14.2 L1000,14.2 M0,26.8 L1000,26.8 M0,43.7 L1000,43.7 M0,65.3 L1000,65.3 M0,91.7 L1000,91.7 M0,122.9 L1000,122.9 M0,159.3 L1000,159.3 M0,200.9 L1000,200.9 M0,247.7 L1000,247.7 M0,300.0 L1000,300.0"/>
+              </Canvas>
+            </Viewbox>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource OrNeon}" Effect="{StaticResource OrPinkGlow}"/>
+          </Panel>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ContentControl.backdrop:not(.still) /template/ Ellipse.s0">
+    <Style.Animations>
+      <Animation Duration="0:0:2.2" IterationCount="Infinite" PlaybackDirection="Alternate">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.9"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.15"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ContentControl.backdrop:not(.still) /template/ Ellipse.s1">
+    <Style.Animations>
+      <Animation Duration="0:0:3.1" IterationCount="Infinite" PlaybackDirection="Alternate">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.9"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.15"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ContentControl.backdrop:not(.still) /template/ Ellipse.s2">
+    <Style.Animations>
+      <Animation Duration="0:0:4.0" IterationCount="Infinite" PlaybackDirection="Alternate">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.9"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.15"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ContentControl.backdrop:not(.still) /template/ Path.grid">
+    <Style.Animations>
+      <Animation Duration="0:0:3" IterationCount="Infinite" PlaybackDirection="Alternate">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.4"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.7"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <Style Selector="ContentControl.overlay">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel ClipToBounds="True">
+          <Rectangle Fill="{StaticResource OrScan}"/>
+          <Rectangle Fill="{StaticResource OrVignette}"/>
+          <!-- A VHS tracking line that drifts down now and then. -->
+          <Rectangle Classes="track" Height="3" VerticalAlignment="Top" Fill="#26FFFFFF">
+            <Rectangle.RenderTransform><TranslateTransform Y="-10"/></Rectangle.RenderTransform>
+          </Rectangle>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ContentControl.overlay:not(.still) /template/ Rectangle.track">
+    <Style.Animations>
+      <Animation Duration="0:0:11" IterationCount="Infinite">
+        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.Y" Value="-10"/></KeyFrame>
+        <KeyFrame Cue="30%"><Setter Property="TranslateTransform.Y" Value="1200"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.Y" Value="1200"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <!-- ===== Header ===== -->
+  <Style Selector="ContentControl.kicker">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <TextBlock Margin="4,0,0,2" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="11" LetterSpacing="5" Foreground="#2DE2E6"
+                   Effect="{StaticResource OrCyanGlow}"
+                   Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}, ConverterParameter='{}{0}  ·  AFTER DARK'}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ContentControl.brand">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid HorizontalAlignment="Left" Margin="0,0,0,10">
+          <TextBlock Classes="title" Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}"/>
+          <TextBlock Classes="script" Text="tonight" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-46,-22">
+            <TextBlock.RenderTransform><RotateTransform Angle="-9"/></TextBlock.RenderTransform>
+          </TextBlock>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="Foreground" Value="#FF6FE0"/>
+    <Setter Property="Effect" Value="{StaticResource OrPinkGlow}"/>
+  </Style>
+  <Style Selector="TextBlock.script">
+    <Setter Property="FontFamily" Value="avares://TheLastPiece/Assets/Fonts#Mr Dafoe, $Default"/>
+    <Setter Property="FontSize" Value="44"/>
+    <Setter Property="Foreground" Value="#2DE2E6"/>
+    <Setter Property="Effect" Value="{StaticResource OrCyanGlow}"/>
+  </Style>
+  <Style Selector="ContentControl.brand:not(.still) /template/ TextBlock.title">
+    <Style.Animations>
+      <Animation Duration="0:0:7" IterationCount="Infinite">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        <KeyFrame Cue="80%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        <KeyFrame Cue="81%"><Setter Property="Opacity" Value="0.55"/></KeyFrame>
+        <KeyFrame Cue="82%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        <KeyFrame Cue="84%"><Setter Property="Opacity" Value="0.7"/></KeyFrame>
+        <KeyFrame Cue="85%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <!-- The side: retro stripes and a tape counter. -->
+  <Style Selector="ContentControl.side">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Margin="0,0,8,0" Spacing="6" HorizontalAlignment="Right">
+          <StackPanel Spacing="3" HorizontalAlignment="Right">
+            <StackPanel.RenderTransform><SkewTransform AngleX="-20"/></StackPanel.RenderTransform>
+            <Rectangle Width="120" Height="5" Fill="#FFD319"/>
+            <Rectangle Width="120" Height="5" Fill="#FF7A3C"/>
+            <Rectangle Width="120" Height="5" Fill="#FF3FD2"/>
+            <Rectangle Width="120" Height="5" Fill="#9B3CFF"/>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+            <TextBlock Text="▶ PLAY" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="13" LetterSpacing="2" Foreground="#2DE2E6" VerticalAlignment="Center"/>
+            <d:Clock Format="HH:mm" FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="20" Foreground="#FFFFFF" Effect="{StaticResource OrPinkGlow}"/>
+          </StackPanel>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- ===== Panels: glassy dusk boxes with a neon edge ===== -->
+  <Style Selector="HeaderedContentControl.panel">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Border Margin="0,12,0,0" Background="#B8160629" BorderBrush="{StaticResource OrNeon}" BorderThickness="1.5" CornerRadius="10"
+                  BoxShadow="0 0 22 0 #50FF3FD2" Padding="16,20,16,14">
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Border>
+          <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="18,0,0,0" Background="#1B0A33" BorderBrush="#FF3FD2" BorderThickness="1.5"
+                  CornerRadius="12" Padding="12,2,14,3">
+            <ContentPresenter x:Name="PART_HeaderPresenter" Content="{TemplateBinding Header, Converter={x:Static d:UpperConverter.Instance}}"
+                              FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="{DynamicResource TlpHeadSize}" Foreground="#FF6FE0"/>
+          </Border>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ToggleButton.exphead">
+    <Setter Property="Foreground" Value="#FF6FE0"/>
+    <Setter Property="FontFamily" Value="{DynamicResource TlpHeadFont}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontSize" Value="{DynamicResource TlpHeadSize}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock x:Name="chev" Text="▸" Foreground="{TemplateBinding Foreground}"/>
+            <TextBlock Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}" Foreground="{TemplateBinding Foreground}"/>
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ToggleButton.exphead:pointerover">
+    <Setter Property="Foreground" Value="#FFFFFF"/>
+  </Style>
+
+  <Style Selector="ContentControl.statusbar">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="#CC120428" BorderBrush="#2DE2E6" BorderThickness="1.5" CornerRadius="10" Padding="16,8,8,8" BoxShadow="0 0 18 0 #402DE2E6">
+          <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.item">
+    <Setter Property="Background" Value="#99120428"/>
+    <Setter Property="BorderBrush" Value="#4D2DE2E6"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Padding" Value="14,9"/>
+    <Setter Property="Margin" Value="0,0,0,10"/>
+  </Style>
+
+  <!-- ===== Text ===== -->
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontFamily" Value="{DynamicResource TlpHeadFont}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontStyle" Value="Italic"/>
+    <Setter Property="Foreground" Value="#FFD319"/>
+    <Setter Property="Effect" Value="{StaticResource OrYellowGlow}"/>
+  </Style>
+
+  <!-- ===== Controls ===== -->
+  <Style Selector="ProgressBar">
+    <Setter Property="MinHeight" Value="8"/>
+    <Setter Property="Height" Value="8"/>
+    <Setter Property="CornerRadius" Value="4"/>
+    <Setter Property="Background" Value="#2B0F4A"/>
+    <Setter Property="Foreground" Value="{StaticResource OrSunset}"/>
+  </Style>
+
+  <Style Selector="Button">
+    <Setter Property="Background" Value="#33120428"/>
+    <Setter Property="BorderBrush" Value="#2DE2E6"/>
+    <Setter Property="Foreground" Value="#2DE2E6"/>
+    <Setter Property="Padding" Value="16,7"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FontFamily" Value="{DynamicResource TlpHeadFont}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontSize" Value="12.5"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="8" Padding="{TemplateBinding Padding}">
+          <TextBlock Foreground="{TemplateBinding Foreground}" LetterSpacing="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                     Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button:pointerover, Button:focus-visible">
+    <Setter Property="Background" Value="#2DE2E6"/>
+    <Setter Property="Foreground" Value="#120428"/>
+    <Setter Property="Effect" Value="{StaticResource OrCyanGlow}"/>
+  </Style>
+  <Style Selector="Button.accent">
+    <Setter Property="Background" Value="{StaticResource OrButton}"/>
+    <Setter Property="BorderBrush" Value="#FFB3EC"/>
+    <Setter Property="Foreground" Value="#FFFFFF"/>
+    <Setter Property="Effect" Value="{StaticResource OrPinkGlow}"/>
+  </Style>
+  <Style Selector="Button.accent:pointerover">
+    <Setter Property="Background" Value="#FF3FD2"/>
+    <Setter Property="Foreground" Value="#FFFFFF"/>
+  </Style>
+  <Style Selector="Button:disabled">
+    <Setter Property="Opacity" Value="0.4"/>
+    <Setter Property="Effect" Value="{x:Null}"/>
+  </Style>
+</Styles>

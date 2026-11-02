@@ -1,0 +1,332 @@
+<!--
+  Breach: a night-city hacking HUD. Inspired by cyberpunk game interfaces and their breach screens:
+  angled panels with red interface lines, name tabs, a hex grid, a split-colour glitching title,
+  a code buffer readout, hazard-yellow for the one thing to press. Our own drawing and colours;
+  fonts Chakra Petch, Rajdhani and Share Tech Mono (SIL OFL). No game names, logos or art.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="using:Tlp.Viewer.Decor"
+        x:Class="Tlp.Viewer.Themes.BreachLook">
+  <Styles.Resources>
+    <LinearGradientBrush x:Key="BrBackground" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Color="#0D121B" Offset="0"/>
+      <GradientStop Color="#06080C" Offset="0.6"/>
+      <GradientStop Color="#120609" Offset="1"/>
+    </LinearGradientBrush>
+    <!-- Pointy-top hexagons, radius 14: one hex and the joining edge per tile. -->
+    <DrawingBrush x:Key="BrHex" TileMode="Tile" DestinationRect="0,0,24.249,42" SourceRect="0,0,24.249,42" Stretch="None">
+      <DrawingBrush.Drawing>
+        <GeometryDrawing Geometry="M12.124,0 L24.249,7 L24.249,21 L12.124,28 L0,21 L0,7 Z M12.124,28 L12.124,42">
+          <GeometryDrawing.Pen><Pen Brush="#1CFF4655" Thickness="1"/></GeometryDrawing.Pen>
+        </GeometryDrawing>
+      </DrawingBrush.Drawing>
+    </DrawingBrush>
+    <DrawingBrush x:Key="BrScan" TileMode="Tile" DestinationRect="0,0,4,4" SourceRect="0,0,4,4" Stretch="None">
+      <DrawingBrush.Drawing>
+        <DrawingGroup>
+          <GeometryDrawing Brush="#00000000" Geometry="M0,0 H4 V3 H0 Z"/>
+          <GeometryDrawing Brush="#2E000000" Geometry="M0,3 H4 V4 H0 Z"/>
+        </DrawingGroup>
+      </DrawingBrush.Drawing>
+    </DrawingBrush>
+    <!-- Hazard stripes, as a mask for a bar. -->
+    <DrawingBrush x:Key="BrStripes" TileMode="Tile" DestinationRect="0,0,10,10" SourceRect="0,0,10,10" Stretch="None">
+      <DrawingBrush.Drawing>
+        <DrawingGroup>
+          <GeometryDrawing Brush="#00000000" Geometry="M0,0 H10 V10 H0 Z"/>
+          <GeometryDrawing Brush="#FF000000" Geometry="M0,10 L5,0 H10 L5,10 Z"/>
+        </DrawingGroup>
+      </DrawingBrush.Drawing>
+    </DrawingBrush>
+    <VisualBrush x:Key="BrHazard" TileMode="Tile" DestinationRect="0,0,16,16" SourceRect="0,0,16,16" Stretch="None">
+      <VisualBrush.Visual>
+        <Canvas Width="16" Height="16" Background="#07080A">
+          <Path Fill="#F3E600" Data="M0,16 L8,0 H16 L8,16 Z"/>
+        </Canvas>
+      </VisualBrush.Visual>
+    </VisualBrush>
+    <RadialGradientBrush x:Key="BrVignette" RadiusX="75%" RadiusY="75%">
+      <GradientStop Color="#00000000" Offset="0.6"/>
+      <GradientStop Color="#99000000" Offset="1"/>
+    </RadialGradientBrush>
+    <LinearGradientBrush x:Key="BrScanBeam" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Color="#0022E5F0" Offset="0"/>
+      <GradientStop Color="#1422E5F0" Offset="0.9"/>
+      <GradientStop Color="#8022E5F0" Offset="1"/>
+    </LinearGradientBrush>
+    <DropShadowEffect x:Key="BrRedGlow" Color="#FF4655" BlurRadius="14" OffsetX="0" OffsetY="0" Opacity="0.9"/>
+    <DropShadowEffect x:Key="BrCyanGlow" Color="#22E5F0" BlurRadius="10" OffsetX="0" OffsetY="0" Opacity="0.8"/>
+    <DropShadowEffect x:Key="BrYellowGlow" Color="#F3E600" BlurRadius="16" OffsetX="0" OffsetY="0" Opacity="0.7"/>
+  </Styles.Resources>
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{StaticResource BrBackground}"/>
+  </Style>
+
+  <!-- ===== Decor ===== -->
+  <Style Selector="ContentControl.backdrop">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel ClipToBounds="True">
+          <Rectangle Fill="{StaticResource BrHex}"/>
+          <!-- A big angled slab behind the header, and a hazard strip. -->
+          <Path HorizontalAlignment="Right" VerticalAlignment="Top" Fill="#14FF4655" Data="M120,0 H520 V150 H0 Z"/>
+          <Rectangle HorizontalAlignment="Right" VerticalAlignment="Top" Width="150" Height="8" Margin="0,100,24,0" Fill="{StaticResource BrHazard}" Opacity="0.85"/>
+          <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,8,90" FontFamily="{DynamicResource TlpMonoFont}" FontSize="10"
+                     Foreground="#3322E5F0" LineHeight="13" TextAlignment="Right"
+                     Text="3F A7 0D C2&#10;9E 51 B8 3F&#10;0D 0D A7 E2&#10;C2 51 9E 0D&#10;A7 3F B8 C2&#10;51 E2 0D 9E"/>
+          <Rectangle Classes="beam" Height="90" VerticalAlignment="Top" Fill="{StaticResource BrScanBeam}">
+            <Rectangle.RenderTransform><TranslateTransform Y="-90"/></Rectangle.RenderTransform>
+          </Rectangle>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ContentControl.backdrop:not(.still) /template/ Rectangle.beam">
+    <Style.Animations>
+      <Animation Duration="0:0:7" IterationCount="Infinite">
+        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.Y" Value="-90"/></KeyFrame>
+        <KeyFrame Cue="70%"><Setter Property="TranslateTransform.Y" Value="1300"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.Y" Value="1300"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <Style Selector="ContentControl.overlay">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Rectangle Fill="{StaticResource BrScan}"/>
+          <Rectangle Fill="{StaticResource BrVignette}"/>
+          <d:CornerMarks Margin="7" Stroke="#FF4655" Length="26" Thickness="2"/>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- ===== Header ===== -->
+  <Style Selector="ContentControl.kicker">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="2,0,0,2">
+          <Path Fill="#FF4655" Data="M0,0 H10 L6,8 H0 Z" VerticalAlignment="Center"/>
+          <TextBlock Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}, ConverterParameter='{}{0} // SYNC VIEWER'}"
+                     FontFamily="{DynamicResource TlpMonoFont}" FontSize="12" LetterSpacing="3" Foreground="#22E5F0" VerticalAlignment="Center"/>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ContentControl.brand">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel>
+          <Panel>
+            <TextBlock Classes="title red" Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}" Foreground="#FF2A4F" Opacity="0.85">
+              <TextBlock.RenderTransform><TranslateTransform X="-3"/></TextBlock.RenderTransform>
+            </TextBlock>
+            <TextBlock Classes="title cyan" Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}" Foreground="#22E5F0" Opacity="0.75">
+              <TextBlock.RenderTransform><TranslateTransform X="3"/></TextBlock.RenderTransform>
+            </TextBlock>
+            <TextBlock Classes="title" Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}"/>
+          </Panel>
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="2,2,0,0">
+            <Rectangle Width="120" Height="4" Fill="#F3E600" VerticalAlignment="Center"/>
+            <Rectangle Width="18" Height="4" Fill="#F3E600" VerticalAlignment="Center"/>
+            <Rectangle Width="6" Height="4" Fill="#F3E600" VerticalAlignment="Center"/>
+            <TextBlock Text="NIGHT_PROTOCOL.EXE" FontFamily="{DynamicResource TlpMonoFont}" FontSize="11" LetterSpacing="2" Foreground="#F3E600" VerticalAlignment="Center"/>
+          </StackPanel>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="#F4FEFF"/>
+  </Style>
+  <Style Selector="ContentControl.brand:not(.still) /template/ TextBlock.red">
+    <Style.Animations>
+      <Animation Duration="0:0:4.7" IterationCount="Infinite">
+        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="-3"/></KeyFrame>
+        <KeyFrame Cue="90%"><Setter Property="TranslateTransform.X" Value="-3"/></KeyFrame>
+        <KeyFrame Cue="91%"><Setter Property="TranslateTransform.X" Value="-11"/></KeyFrame>
+        <KeyFrame Cue="93%"><Setter Property="TranslateTransform.X" Value="4"/></KeyFrame>
+        <KeyFrame Cue="95%"><Setter Property="TranslateTransform.X" Value="-7"/></KeyFrame>
+        <KeyFrame Cue="97%"><Setter Property="TranslateTransform.X" Value="-3"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="-3"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ContentControl.brand:not(.still) /template/ TextBlock.cyan">
+    <Style.Animations>
+      <Animation Duration="0:0:4.7" IterationCount="Infinite">
+        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="3"/></KeyFrame>
+        <KeyFrame Cue="90%"><Setter Property="TranslateTransform.X" Value="3"/></KeyFrame>
+        <KeyFrame Cue="91%"><Setter Property="TranslateTransform.X" Value="9"/></KeyFrame>
+        <KeyFrame Cue="93%"><Setter Property="TranslateTransform.X" Value="-5"/></KeyFrame>
+        <KeyFrame Cue="95%"><Setter Property="TranslateTransform.X" Value="6"/></KeyFrame>
+        <KeyFrame Cue="97%"><Setter Property="TranslateTransform.X" Value="3"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="3"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <!-- The side: a code buffer readout and the time. -->
+  <Style Selector="ContentControl.side">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <d:Chamfer Background="#CC07090D" BorderBrush="#8822E5F0" BorderThickness="1" Cuts="10,0,10,0" Padding="12,6,12,8" Margin="0,0,4,0">
+          <StackPanel Spacing="3">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="BUFFER" FontFamily="{DynamicResource TlpMonoFont}" FontSize="10" LetterSpacing="2" Foreground="#6E9AA3"/>
+              <d:Clock Grid.Column="1" Format="HH:mm" FontFamily="{DynamicResource TlpMonoFont}" FontSize="10" LetterSpacing="1" Foreground="#6E9AA3"/>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+              <Border Background="#F3E600" Padding="4,0"><TextBlock Text="3F" Foreground="#07080A" FontFamily="{DynamicResource TlpMonoFont}" FontSize="16"/></Border>
+              <Border Background="#F3E600" Padding="4,0"><TextBlock Text="A7" Foreground="#07080A" FontFamily="{DynamicResource TlpMonoFont}" FontSize="16"/></Border>
+              <Border Classes="cell" BorderBrush="#22E5F0" BorderThickness="1" Padding="3,-1"><TextBlock Text="0D" Foreground="#22E5F0" FontFamily="{DynamicResource TlpMonoFont}" FontSize="16"/></Border>
+              <Border BorderBrush="#3322E5F0" BorderThickness="1" Padding="3,-1"><TextBlock Text="C2" Foreground="#4D8B95" FontFamily="{DynamicResource TlpMonoFont}" FontSize="16"/></Border>
+              <Border BorderBrush="#3322E5F0" BorderThickness="1" Padding="3,-1"><TextBlock Text="9E" Foreground="#4D8B95" FontFamily="{DynamicResource TlpMonoFont}" FontSize="16"/></Border>
+            </StackPanel>
+          </StackPanel>
+        </d:Chamfer>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ContentControl.side:not(.still) /template/ Border.cell">
+    <Style.Animations>
+      <Animation Duration="0:0:0.9" IterationCount="Infinite">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        <KeyFrame Cue="49%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0.25"/></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.25"/></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <!-- ===== Panels: angled boxes with a red name tab ===== -->
+  <Style Selector="HeaderedContentControl.panel">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <d:Chamfer Margin="0,13,0,0" Background="#D90B0F16" BorderBrush="#B3FF4655" BorderThickness="1" Cuts="0,18,0,18" Padding="16,22,16,14">
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </d:Chamfer>
+          <d:Chamfer HorizontalAlignment="Left" VerticalAlignment="Top" Background="#FF4655" BorderThickness="0" Cuts="0,0,12,0" Padding="10,3,22,3">
+            <ContentPresenter x:Name="PART_HeaderPresenter" Content="{TemplateBinding Header, Converter={x:Static d:UpperConverter.Instance}}"
+                              FontFamily="{DynamicResource TlpHeadFont}" FontWeight="Bold" FontSize="{DynamicResource TlpHeadSize}" Foreground="#06080C"/>
+          </d:Chamfer>
+          <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal" Spacing="3" Margin="0,4,30,0">
+            <Rectangle Width="14" Height="3" Fill="#22E5F0"/>
+            <Rectangle Width="5" Height="3" Fill="#22E5F0"/>
+            <Rectangle Width="5" Height="3" Fill="#5522E5F0"/>
+          </StackPanel>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ToggleButton.exphead">
+    <Setter Property="Foreground" Value="#06080C"/>
+    <Setter Property="FontFamily" Value="{DynamicResource TlpHeadFont}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontSize" Value="{DynamicResource TlpHeadSize}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock x:Name="chev" Text="▸" Foreground="{TemplateBinding Foreground}"/>
+            <TextBlock Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}" LetterSpacing="2" Foreground="{TemplateBinding Foreground}"/>
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ToggleButton.exphead:pointerover">
+    <Setter Property="Foreground" Value="#06080C"/>
+  </Style>
+
+  <Style Selector="ContentControl.statusbar">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <d:Chamfer Background="#E60A0D13" BorderBrush="#8022E5F0" BorderThickness="1" Cuts="12,0,12,0" Padding="12,8,10,8">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Left" Text="SYS//" Margin="0,0,10,0" VerticalAlignment="Center"
+                       FontFamily="{DynamicResource TlpMonoFont}" FontSize="13" Foreground="#FF4655"/>
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"/>
+          </DockPanel>
+        </d:Chamfer>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.item">
+    <Setter Property="Background" Value="#B3080B10"/>
+    <Setter Property="BorderBrush" Value="#22E5F0"/>
+    <Setter Property="BorderThickness" Value="2,0,0,0"/>
+    <Setter Property="CornerRadius" Value="0"/>
+    <Setter Property="Padding" Value="12,8"/>
+    <Setter Property="Margin" Value="0,0,0,10"/>
+  </Style>
+
+  <!-- ===== Text ===== -->
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontFamily" Value="{DynamicResource TlpHeadFont}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="#F3E600"/>
+    <Setter Property="LetterSpacing" Value="1"/>
+  </Style>
+
+  <!-- ===== Controls ===== -->
+  <Style Selector="ProgressBar">
+    <Setter Property="MinHeight" Value="8"/>
+    <Setter Property="Height" Value="8"/>
+    <Setter Property="CornerRadius" Value="0"/>
+    <Setter Property="Background" Value="#1F22E5F0"/>
+    <Setter Property="Foreground" Value="#F3E600"/>
+  </Style>
+  <Style Selector="ProgressBar /template/ Border#PART_Indicator">
+    <Setter Property="OpacityMask" Value="{StaticResource BrStripes}"/>
+    <Setter Property="CornerRadius" Value="0"/>
+  </Style>
+
+  <Style Selector="Button">
+    <Setter Property="Background" Value="#1AFF4655"/>
+    <Setter Property="BorderBrush" Value="#FF4655"/>
+    <Setter Property="Foreground" Value="#FF5A67"/>
+    <Setter Property="Padding" Value="14,6,16,6"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FontFamily" Value="{DynamicResource TlpHeadFont}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <d:Chamfer Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Cuts="0,0,10,0" Padding="{TemplateBinding Padding}">
+          <TextBlock Foreground="{TemplateBinding Foreground}" LetterSpacing="2" VerticalAlignment="Center"
+                     Text="{TemplateBinding Content, Converter={x:Static d:UpperConverter.Instance}}"/>
+        </d:Chamfer>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button:pointerover, Button:focus-visible">
+    <Setter Property="Background" Value="#FF4655"/>
+    <Setter Property="Foreground" Value="#06080C"/>
+  </Style>
+  <Style Selector="Button.accent">
+    <Setter Property="Background" Value="#F3E600"/>
+    <Setter Property="BorderBrush" Value="#F3E600"/>
+    <Setter Property="Foreground" Value="#07080A"/>
+    <Setter Property="Effect" Value="{StaticResource BrYellowGlow}"/>
+  </Style>
+  <Style Selector="Button.accent:pointerover">
+    <Setter Property="Background" Value="#22E5F0"/>
+    <Setter Property="BorderBrush" Value="#22E5F0"/>
+  </Style>
+  <Style Selector="Button:disabled">
+    <Setter Property="Opacity" Value="0.35"/>
+    <Setter Property="Effect" Value="{x:Null}"/>
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="FontSize" Value="15"/>
+  </Style>
+</Styles>
